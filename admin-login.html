@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Login — Tanushree Collections</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .admin-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(201,168,76,0.1);
+      border: 1px solid rgba(201,168,76,0.25);
+      border-radius: 99px;
+      padding: 0.3rem 1rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+<div id="toastContainer"></div>
+
+<div class="auth-bg">
+  <div class="auth-card">
+
+    <div style="text-align:center;margin-bottom:2rem;">
+      <div class="brand-name">Tanushree Collections</div>
+      <div style="margin-top:0.75rem;">
+        <span class="admin-badge">⚙ Admin Portal</span>
+      </div>
+      <div class="gold-line"></div>
+    </div>
+
+    <!-- EMAIL -->
+    <div style="margin-bottom:1.1rem;">
+      <label class="tc-label">Admin Email</label>
+      <input class="tc-input" type="email" id="email" placeholder="admin@example.com" autocomplete="email">
+      <div class="field-error" id="emailError"></div>
+    </div>
+
+    <!-- PASSWORD -->
+    <div style="margin-bottom:1.5rem;">
+      <label class="tc-label">Password</label>
+      <input class="tc-input" type="password" id="password" placeholder="Enter password" autocomplete="current-password">
+      <div class="field-error" id="passwordError"></div>
+    </div>
+
+    <button class="btn-gold" id="loginBtn" onclick="doAdminLogin()">
+      <span class="spinner" id="spinner"></span>
+      <span id="btnText">Access Dashboard</span>
+    </button>
+
+  </div>
+</div>
+
+<!-- Firebase SDKs BEFORE firebase-init.js -->
+<!-- Firebase SDKs BEFORE firebase-init.js -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+
+<script src="firebase-init.js"></script>
+
+<script>
+
+// Wait until Firebase is ready
+function waitForFirebase(callback) {
+  if (window.auth && window.db) {
+    callback();
+  } else {
+    setTimeout(() => waitForFirebase(callback), 50);
+  }
+}
+
+// 🔐 Redirect if already logged in AND is admin
+waitForFirebase(() => {
+
+  window.auth.onAuthStateChanged(async user => {
+
+    if (!user) return;
+
+    try {
+      const adminDoc = await window.db.collection('admins').doc(user.email).get();
+
+      if (adminDoc.exists && adminDoc.data().role === 'admin') {
+        window.location.href = 'admin-dashboard.html';
+      }
+
+    } catch (err) {
+      console.error("Admin check error:", err);
+    }
+
+  });
+
+});
+
+// Toast
+function showToast(msg, type = 'success') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span>${type === 'success' ? '✓' : '✕'}</span> ${msg}`;
+  document.getElementById('toastContainer').appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+// Errors
+function setError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.classList.toggle('show', !!msg);
+  const inputEl = document.getElementById(id.replace('Error', ''));
+  if (inputEl) inputEl.classList.toggle('error', !!msg);
+}
+
+// Loading state
+function setLoading(on) {
+  document.getElementById('loginBtn').disabled = on;
+  document.getElementById('spinner').classList.toggle('show', on);
+  document.getElementById('btnText').textContent = on ? 'Logging in...' : 'Access Dashboard';
+}
+
+// 🔐 ADMIN LOGIN FUNCTION
+async function doAdminLogin() {
+  setError('emailError', '');
+  setError('passwordError', '');
+
+  const email    = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+
+  let valid = true;
+  if (!email)    { setError('emailError', 'Email is required'); valid = false; }
+  if (!password) { setError('passwordError', 'Password is required'); valid = false; }
+  if (!valid) return;
+
+  setLoading(true);
+
+  try {
+    await window.auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+    const cred = await window.auth.signInWithEmailAndPassword(email, password);
+    const user = cred.user;
+
+    // 🔐 Check admin in Firestore
+    const adminDoc = await window.db.collection('admins').doc(user.email).get();
+
+    if (!adminDoc.exists || adminDoc.data().role !== 'admin') {
+      await window.auth.signOut();
+      showToast('Not authorized as admin', 'error');
+      setLoading(false);
+      return;
+    }
+
+    // ✅ SUCCESS
+    window.location.href = 'admin-dashboard.html';
+
+  } catch (err) {
+    if (err.code === 'auth/user-not-found')      setError('emailError', 'No account found');
+    else if (err.code === 'auth/wrong-password') setError('passwordError', 'Incorrect password');
+    else if (err.code === 'auth/invalid-email')  setError('emailError', 'Invalid email address');
+    else showToast(err.message, 'error');
+
+    setLoading(false);
+  }
+}
+
+// Enter key support
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') doAdminLogin();
+});
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign In — Tanushree Collections</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .divider {
+      display: flex; align-items: center; gap: 1rem; margin: 1.5rem 0;
+    }
+    .divider::before, .divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border);
+    }
+    .divider span { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; letter-spacing: 0.1em; text-transform: uppercase; }
+
+    .btn-google {
+      width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.75rem;
+      background: var(--dark-3); border: 1px solid var(--border);
+      color: var(--cream); border-radius: var(--radius-sm);
+      padding: 0.75rem 1.5rem; font-family: 'Jost', sans-serif;
+      font-size: 0.92rem; cursor: pointer; transition: all 0.3s;
+    }
+    .btn-google:hover { border-color: rgba(201,168,76,0.5); background: var(--dark-4); }
+    .btn-google svg { width: 20px; height: 20px; flex-shrink: 0; }
+
+    .success-box {
+      background: rgba(76,175,128,0.1); border: 1px solid rgba(76,175,128,0.3);
+      border-radius: var(--radius-sm); padding: 1.25rem; text-align: center; display: none;
+    }
+    .success-box.show { display: block; }
+    .success-box .icon { font-size: 2rem; margin-bottom: 0.5rem; }
+    .success-box p { font-size: 0.88rem; color: #4caf82; margin: 0; }
+
+    .info-chip {
+      background: rgba(201,168,76,0.07); border: 1px solid rgba(201,168,76,0.18);
+      border-radius: var(--radius-sm); padding: 0.75rem 1rem;
+      font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.5rem;
+      display: flex; align-items: flex-start; gap: 0.5rem;
+    }
+
+    .processing-overlay {
+      position: fixed; inset: 0; background: rgba(15,10,4,0.92);
+      z-index: 9999; display: none; align-items: center; justify-content: center;
+      flex-direction: column; gap: 1rem;
+    }
+    .processing-overlay.show { display: flex; }
+    .processing-overlay p { font-size: 0.9rem; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+<div id="toastContainer"></div>
+
+<!-- Processing overlay for magic link verification -->
+<div class="processing-overlay" id="processingOverlay">
+  <div style="width:48px;height:48px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+  <p>Signing you in...</p>
+</div>
+
+<div class="auth-bg">
+  <div class="auth-card">
+
+    <div style="text-align:center;margin-bottom:2rem;">
+      <div class="brand-name">Tanushree Collections</div>
+      <div class="brand-sub">Sign in to your account</div>
+      <div class="gold-line"></div>
+    </div>
+
+    <div class="info-chip">
+      ✉️ <span>Enter your email to receive a secure magic sign-in link — no password needed.</span>
+    </div>
+
+    <div>
+      <div style="margin-bottom:1.4rem;">
+        <label class="tc-label">Email Address</label>
+        <input class="tc-input" type="email" id="mlEmail" placeholder="you@example.com" autocomplete="email">
+        <div class="field-error" id="mlEmailError"></div>
+      </div>
+
+      <button class="btn-gold" id="mlBtn" onclick="sendMagicLink()">
+        <span class="spinner" id="mlSpinner"></span>
+        <span id="mlBtnText">Send Magic Link</span>
+      </button>
+
+      <div class="success-box" id="mlSuccess" style="margin-top:1rem;">
+        <div class="icon">✉️</div>
+        <p>Magic link sent! Check your inbox and click the link to sign in.</p>
+        <p style="margin-top:0.5rem;font-size:0.78rem;color:var(--text-muted);">Link expires in 30 minutes. Check your spam folder if needed.</p>
+      </div>
+    </div>
+
+    <div class="divider" style="margin-top:1.5rem;"><span>or continue with</span></div>
+
+    <button class="btn-google" onclick="doGoogleLogin()">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
+      Continue with Google
+    </button>
+
+    <div class="gold-line"></div>
+
+    <p style="text-align:center;font-size:0.85rem;color:var(--text-muted);">
+      New here? <a href="signup.html" style="color:var(--gold);text-decoration:none;">Create an account</a>
+    </p>
+
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="firebase-init.js"></script>
+
+<script>
+
+// ✅ WAIT FOR FIREBASE
+function waitForFirebase(callback) {
+  if (window.auth && window.db) {
+    callback();
+  } else {
+    setTimeout(() => waitForFirebase(callback), 50);
+  }
+}
+
+// ── Handle email link sign-in on page load ──
+waitForFirebase(() => {
+
+  (async function handleEmailLink() {
+
+    if (!window.auth.isSignInWithEmailLink(window.location.href)) return;
+
+    document.getElementById('processingOverlay').classList.add('show');
+
+    let email = window.localStorage.getItem('emailForSignIn');
+    if (!email) {
+      email = window.prompt('Please provide your email for confirmation');
+    }
+
+    if (!email) {
+      document.getElementById('processingOverlay').classList.remove('show');
+      return;
+    }
+
+    try {
+      const result = await window.auth.signInWithEmailLink(email, window.location.href);
+      window.localStorage.removeItem('emailForSignIn');
+
+      const user = result.user;
+
+      const pendingName  = window.localStorage.getItem('pendingName')  || user.displayName || email.split('@')[0];
+      const pendingPhone = window.localStorage.getItem('pendingPhone') || '';
+
+      try {
+        const docSnap = await window.db.collection('users').doc(user.uid).get();
+
+        if (!docSnap.exists) {
+          await window.db.collection('users').doc(user.uid).set({
+            name: pendingName,
+            email: user.email,
+            phone: pendingPhone,
+            provider: 'emailLink',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        } else if (pendingPhone) {
+          await window.db.collection('users').doc(user.uid).update({
+            name: pendingName,
+            phone: pendingPhone
+          });
+        }
+
+      } catch (e) {
+        console.error('Firestore write error:', e);
+      }
+
+      window.localStorage.removeItem('pendingName');
+      window.localStorage.removeItem('pendingPhone');
+
+      showToast('Signed in successfully!');
+      setTimeout(() => window.location.href = 'account.html', 1000);
+
+    } catch (err) {
+      document.getElementById('processingOverlay').classList.remove('show');
+      showToast(err.message, 'error');
+    }
+
+  })();
+
+});
+
+// ── Redirect if already logged in ──
+waitForFirebase(() => {
+
+  window.auth.onAuthStateChanged(user => {
+
+    const isMagicLink = window.auth.isSignInWithEmailLink(window.location.href);
+
+    if (user && !isMagicLink) {
+      window.location.href = 'account.html';
+    }
+
+  });
+
+});
+
+// ── Toast ──
+function showToast(msg, type = 'success') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span>${type === 'success' ? '✓' : '✕'}</span> ${msg}`;
+  document.getElementById('toastContainer').appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+// ── Error helper ──
+function setError(id, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.toggle('show', !!msg);
+}
+
+// ── Magic Link ──
+async function sendMagicLink() {
+
+  waitForFirebase(async () => {
+
+    setError('mlEmailError', '');
+
+    const email = document.getElementById('mlEmail').value.trim();
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError('mlEmailError', 'Valid email required');
+      return;
+    }
+
+    document.getElementById('mlBtn').disabled = true;
+    document.getElementById('mlSpinner').classList.add('show');
+    document.getElementById('mlBtnText').textContent = 'Sending...';
+
+    const actionCodeSettings = {
+      url: window.location.origin + '/login.html',
+      handleCodeInApp: true
+    };
+
+    try {
+      await window.auth.sendSignInLinkToEmail(email, actionCodeSettings);
+
+      window.localStorage.setItem('emailForSignIn', email);
+
+      document.getElementById('mlSuccess').classList.add('show');
+      document.getElementById('mlBtn').style.display = 'none';
+
+    } catch (err) {
+      showToast(err.message, 'error');
+
+      document.getElementById('mlBtn').disabled = false;
+      document.getElementById('mlSpinner').classList.remove('show');
+      document.getElementById('mlBtnText').textContent = 'Send Magic Link';
+    }
+
+  });
+
+}
+
+// ── Google Login ──
+async function doGoogleLogin() {
+
+  waitForFirebase(async () => {
+
+    const provider = new firebase.auth.GoogleAuthProvider();
+
+    try {
+      const result = await window.auth.signInWithPopup(provider);
+      const user = result.user;
+
+      try {
+        const docSnap = await window.db.collection('users').doc(user.uid).get();
+
+        if (!docSnap.exists) {
+          await window.db.collection('users').doc(user.uid).set({
+            name: user.displayName || '',
+            email: user.email,
+            phone: user.phoneNumber || '',
+            provider: 'google',
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+          });
+        }
+
+      } catch (e) {
+        console.error('Firestore write error:', e);
+      }
+
+      showToast('Signed in with Google!');
+      setTimeout(() => window.location.href = 'account.html', 1000);
+
+    } catch (err) {
+      if (err.code !== 'auth/popup-closed-by-user') {
+        showToast(err.message, 'error');
+      }
+    }
+
+  });
+
+}
+
+// ── Enter key support ──
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') sendMagicLink();
+});
+
+</script>
+</body>
+</html>

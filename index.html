@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tanushree Collections — Premium Jewellery</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400;1,600&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* ─── FILTERS LAYOUT ─── */
+    .filters-wrap { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; padding: 2.75rem 2rem 2rem; position: relative; }
+    .filters-wrap::before {
+      content: 'COLLECTIONS';
+      position: absolute; top: 1.1rem; left: 50%; transform: translateX(-50%);
+      font-size: 0.62rem; letter-spacing: 0.3em; color: var(--text-muted);
+      font-weight: 500; white-space: nowrap;
+    }
+
+    /* ─── PRODUCTS GRID ─── */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 1.75rem;
+      padding: 0.5rem 2rem 5rem;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+    .empty-state {
+      grid-column: 1/-1; text-align: center; padding: 5rem 2rem;
+      color: var(--text-muted); font-size: 0.9rem; letter-spacing: 0.06em;
+    }
+
+    /* ─── SECTION LABEL ─── */
+    .section-eyebrow {
+      text-align: center;
+      font-size: 0.62rem;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      font-weight: 500;
+      padding-top: 0.5rem;
+    }
+
+    /* ─── CART DRAWER ─── */
+    .drawer-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+      z-index: 200; display: none; backdrop-filter: blur(4px);
+    }
+    .drawer-overlay.open { display: block; }
+    .cart-drawer {
+      position: fixed; top: 0; right: -440px; width: 400px; max-width: 100vw;
+      height: 100vh; background: var(--dark-2); border-left: 1px solid var(--border);
+      z-index: 201; display: flex; flex-direction: column;
+      transition: right 0.38s cubic-bezier(0.4,0,0.2,1);
+      box-shadow: -24px 0 80px rgba(0,0,0,0.4);
+    }
+    .cart-drawer.open { right: 0; }
+    .drawer-header {
+      padding: 1.5rem 1.75rem;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      background: linear-gradient(180deg, var(--dark-3), var(--dark-2));
+    }
+    .drawer-items { flex: 1; overflow-y: auto; padding: 1rem 1.25rem; }
+    .cart-item {
+      display: flex; gap: 1rem; padding: 1rem 0;
+      border-bottom: 1px solid var(--border);
+      transition: background var(--transition);
+    }
+    .cart-item img {
+      width: 64px; height: 64px; object-fit: cover; border-radius: 8px;
+      flex-shrink: 0; border: 1px solid var(--border);
+    }
+    .cart-item-info { flex: 1; }
+    .cart-item-name { font-size: 0.88rem; margin-bottom: 0.2rem; color: var(--cream); }
+    .cart-item-price { color: var(--gold); font-size: 0.82rem; font-weight: 500; }
+    .qty-ctrl { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.5rem; }
+    .qty-btn {
+      background: var(--dark-3); border: 1px solid var(--border);
+      color: var(--cream-dim); width: 26px; height: 26px; border-radius: 5px;
+      cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s;
+    }
+    .qty-btn:hover { border-color: var(--gold); color: var(--gold); background: var(--gold-muted); }
+    .drawer-footer {
+      padding: 1.5rem 1.75rem;
+      border-top: 1px solid var(--border);
+      background: linear-gradient(0deg, var(--dark-3), var(--dark-2));
+    }
+    .close-btn {
+      background: var(--dark-3); border: 1px solid var(--border);
+      color: var(--text-muted); font-size: 1rem; cursor: pointer;
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s; line-height: 1;
+    }
+    .close-btn:hover { color: var(--cream); border-color: var(--border-hover); }
+
+    /* ─── PRODUCT PREVIEW MODAL ─── */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.92);
+      z-index: 300; display: none; align-items: center; justify-content: center;
+      padding: 1rem; backdrop-filter: blur(10px);
+    }
+    .modal-overlay.open { display: flex; }
+    .modal-box {
+      background: var(--dark-2); border: 1px solid var(--border);
+      border-radius: var(--radius); max-width: 920px; width: 100%;
+      max-height: 90vh; overflow-y: auto;
+      box-shadow: 0 48px 120px rgba(0,0,0,0.8), 0 0 0 1px rgba(201,168,76,0.08);
+      display: grid; grid-template-columns: 1fr 1fr;
+      animation: modalIn 0.32s cubic-bezier(0.34,1.1,0.64,1);
+    }
+    @keyframes modalIn {
+      from { opacity:0; transform: scale(0.93) translateY(12px); }
+      to   { opacity:1; transform: scale(1) translateY(0); }
+    }
+    .modal-gallery {
+      position: relative; background: var(--dark-3);
+      border-radius: var(--radius) 0 0 var(--radius);
+      overflow: hidden; display: flex; flex-direction: column;
+    }
+      .modal-main-media {
+        position: relative;
+        overflow: hidden;
+        cursor: zoom-in;
+        background: var(--dark-3);
+        width: 100%;
+        height: 500px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .modal-main-img {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        transition: transform 0.45s ease;
+        display: block;
+      }
+
+      .modal-main-img.zoomed {
+        transform: scale(1.95);
+        cursor: zoom-out;
+      }
+
+      .modal-video {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        border: none;
+        background: #000;
+        display: block;
+      }
+      
+      @media (max-width:768px){
+      .modal-main-media{
+        height:300px;
+      }
+
+      }
+
+    .modal-thumbs {
+      display: flex; gap: 0.5rem; padding: 0.85rem; flex-wrap: wrap;
+      background: var(--dark-2); border-top: 1px solid var(--border);
+    }
+    .thumb {
+      width: 56px; height: 56px; object-fit: cover; border-radius: 7px;
+      border: 2px solid transparent; cursor: pointer; transition: border-color 0.2s; flex-shrink: 0;
+    }
+    .thumb.active, .thumb:hover { border-color: var(--gold); }
+    .thumb-video-btn {
+      width: 56px; height: 56px; background: var(--dark-4); border-radius: 7px;
+      border: 2px solid transparent; cursor: pointer; display: flex;
+      align-items: center; justify-content: center; font-size: 1.2rem;
+      flex-shrink: 0; transition: border-color 0.2s; color: var(--gold);
+    }
+    .thumb-video-btn.active, .thumb-video-btn:hover { border-color: var(--gold); }
+    .zoom-hint {
+      position: absolute; bottom: 10px; right: 12px;
+      font-size: 0.65rem; color: rgba(255,255,255,0.35);
+      letter-spacing: 0.08em; pointer-events: none; font-weight: 300;
+    }
+    .modal-info { padding: 2.25rem 2rem; display: flex; flex-direction: column; }
+    .modal-close {
+      position: absolute; top: 1rem; right: 1rem; z-index: 10;
+      background: rgba(10,7,5,0.7); border: 1px solid var(--border);
+      color: var(--cream-dim); width: 36px; height: 36px; border-radius: 50%;
+      font-size: 0.9rem; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s; backdrop-filter: blur(4px);
+    }
+    .modal-close:hover { background: var(--dark-4); color: var(--gold); border-color: var(--border-hover); }
+    .modal-category { font-size: 0.65rem; letter-spacing: 0.24em; text-transform: uppercase; color: var(--gold); margin-bottom: 0.6rem; font-weight: 500; opacity: 0.85; }
+    .modal-name { font-family: 'Cormorant Garamond', serif; font-size: 1.9rem; margin-bottom: 0.6rem; font-weight: 600; color: var(--cream); }
+    .modal-price { font-size: 1.5rem; font-weight: 600; color: var(--gold); margin-bottom: 1.1rem; }
+    .modal-desc { font-size: 0.87rem; color: var(--text-muted); line-height: 1.8; margin-bottom: 1.75rem; flex: 1; font-weight: 300; }
+
+    /* ─── MOBILE IMAGE NAV ─── */
+    .img-nav-btn {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: rgba(10,7,5,0.65); border: 1px solid var(--border);
+      color: var(--cream); width: 34px; height: 34px; border-radius: 50%;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; z-index: 5; transition: all 0.2s; backdrop-filter: blur(4px);
+    }
+    .img-nav-btn:hover { background: var(--dark-4); color: var(--gold); border-color: var(--border-hover); }
+    .img-nav-prev { left: 10px; }
+    .img-nav-next { right: 10px; }
+
+    /* ─── ADD BUTTON on product card ─── */
+    .card-add-btn {
+      background: var(--gold-muted);
+      border: 1px solid rgba(201,168,76,0.3);
+      color: var(--gold);
+      border-radius: var(--radius-xs);
+      padding: 0.35rem 0.85rem;
+      font-size: 0.73rem;
+      font-family: 'Jost', sans-serif;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      cursor: pointer;
+      transition: all 0.22s;
+    }
+    .card-add-btn:hover {
+      background: var(--gold);
+      color: var(--dark);
+      border-color: var(--gold);
+      transform: scale(1.04);
+    }
+
+    /* ─── CONTACT MODAL ─── */
+    .modal-overlay-contact {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+      z-index: 400; display: none; align-items: center; justify-content: center;
+      backdrop-filter: blur(10px);
+    }
+    .modal-overlay-contact.open { display: flex; }
+    .contact-modal-box {
+      background: var(--dark-2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 3rem 2.5rem;
+      max-width: 360px; width: 90%; text-align: center;
+      box-shadow: var(--shadow), 0 0 80px rgba(201,168,76,0.06);
+      animation: popScale 0.3s cubic-bezier(0.34,1.2,0.64,1);
+    }
+    @keyframes popScale {
+      from { opacity: 0; transform: scale(0.92) translateY(8px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    @media (max-width: 700px) {
+      .modal-box { grid-template-columns: 1fr; max-height: 95vh; }
+      .modal-gallery { border-radius: var(--radius) var(--radius) 0 0; }
+      .modal-info { padding: 1.75rem 1.25rem; }
+    }
+    @media (max-width: 576px) {
+      .products-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; padding: 0.5rem 1rem 4rem; }
+      .product-card img { height: 180px; }
+    }
+  </style>
+</head>
+<body>
+<div id="toastContainer"></div>
+
+<!-- ─── NAVBAR ─── -->
+<nav class="tc-nav">
+  <div class="brand-name">Tanushree Collection</div>
+  <div class="nav-links">
+    <a href="account.html">Account</a>
+    <button class="nav-contact-btn" onclick="openContactModal()">📞 Contact</button>
+    <button class="nav-cart-btn" onclick="openCart()">
+      🛍 Cart <span class="nav-cart-badge" id="cartBadge">0</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ─── HERO BANNER ─── -->
+<div class="hero-banner">
+  <div class="hero-bg" style="background-image:url('visit.jpg');"></div>
+  <div class="hero-overlay"></div>
+  <div class="hero-content">
+    <div class="hero-tag">✦ Handcrafted Luxury Since Forever ✦</div>
+    <h1>Close to heart<br><em>.....</em></h1>
+    <div class="hero-divider"></div>
+    <p>Worn with Grace</p>
+    <p style="margin-top:0.4rem;font-size:0.8rem;letter-spacing:0.12em;">Ramkrishna Pally, Malda, West Bengal, pin-732101</p>
+  </div>
+</div>
+
+<!-- ─── FILTERS ─── -->
+<div class="filters-wrap" id="filterBar">
+  <button class="filter-btn active" onclick="filterCategory('all',this)">All</button>
+  <button class="filter-btn" onclick="filterCategory('BRIDAL JEWELLERY',this)">Bridal</button>
+  <button class="filter-btn" onclick="filterCategory('KUNDAN JEWELLERY',this)">Kundan</button>
+  <button class="filter-btn" onclick="filterCategory('GOLD',this)">Gold</button>
+  <button class="filter-btn" onclick="filterCategory('PLATED',this)">Plated</button>
+  <button class="filter-btn" onclick="filterCategory('SOUTH INDIAN',this)">South Indian</button>
+  <button class="filter-btn" onclick="filterCategory('AD JEWELLERY',this)">AD Jewellery</button>
+  <button class="filter-btn" onclick="filterCategory('LADIES BAGS',this)">Ladies Bags</button>
+</div>
+
+<!-- ─── PRODUCTS GRID ─── -->
+<div class="products-grid" id="productsGrid">
+  <div class="empty-state">
+    <div style="font-size:2rem;margin-bottom:0.75rem;">✦</div>
+    <p>Loading collection...</p>
+  </div>
+</div>
+
+<!-- ─── FOOTER ─── -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">Tanushree Collections</div>
+      <div class="footer-tagline">Crafted with Elegance</div>
+      <div style="margin-top:1rem;font-size:0.85rem;color:var(--text-muted);line-height:1.85;font-weight:300;">
+        Premium jewellery for every occasion, curated with love and crafted with precision.
+      </div>
+    </div>
+    <div>
+      <div class="footer-heading">Visit Us</div>
+      <div class="footer-text">
+        Ramkrishna Pally,<br>
+        Near Durga Mandap,<br>
+        Malda, West Bengal
+      </div>
+      <div style="margin-top:0.9rem;font-size:0.88rem;color:var(--gold);font-weight:400;">📞 8145739629</div>
+    </div>
+    <div>
+      <div class="footer-heading">Quick Links</div>
+      <a class="footer-link" href="index.html">Shop</a>
+      <a class="footer-link" href="account.html">My Account</a>
+      <a class="footer-link" href="#" onclick="openContactModal();return false;">Contact Us</a>
+      <div style="margin-top:1.25rem;">
+        <div class="footer-heading">Follow Us</div>
+        <div style="display:flex;gap:0.75rem;margin-top:0.6rem;">
+          <a href="https://www.facebook.com/tanushreecollectionmalda/" class="footer-link" style="font-size:1.2rem;" title="Facebook">📘</a>
+          <a href="https://www.instagram.com/tanushreecollectionmalda" class="footer-link" style="font-size:1.2rem;" title="Instagram">📸</a>
+          <a href="https://wa.me/918145739629" class="footer-link" style="font-size:1.2rem;" title="WhatsApp">💬</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 Tanushree Collections. All rights reserved.</p>
+    <p>Ramkrishna Pally, Malda · +91 8145739629</p>
+  </div>
+</footer>
+
+<!-- ─── CONTACT MODAL ─── -->
+<div class="modal-overlay-contact" id="contactModal" onclick="if(event.target===this)closeContactModal()">
+  <div class="contact-modal-box">
+    <div style="font-size:2.5rem;margin-bottom:1rem;">📞</div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:1.6rem;margin-bottom:0.5rem;">Contact Us</div>
+    <div class="gold-line" style="margin:0.75rem 0;"></div>
+    <div style="font-size:1.4rem;font-weight:600;color:var(--gold);margin-bottom:0.25rem;">+91 8145739629</div>
+    <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:1.5rem;font-weight:300;">
+      Ramkrishna Pally, Near Durga Mandap, Malda
+    </div>
+    <a href="tel:+918145739629" class="btn-gold" style="text-decoration:none;display:inline-flex;width:auto;padding:0.7rem 2rem;margin-bottom:0.75rem;">Call Now</a>
+    <div>
+      <button onclick="closeContactModal()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.85rem;margin-top:0.5rem;font-family:'Jost',sans-serif;">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── CART DRAWER ─── -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeCart()"></div>
+<div class="cart-drawer" id="cartDrawer">
+  <div class="drawer-header">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:600;">Your Cart</div>
+    <button class="close-btn" onclick="closeCart()">✕</button>
+  </div>
+  <div class="drawer-items" id="drawerItems"></div>
+  <div class="drawer-footer">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.1rem;">
+      <span style="color:var(--text-muted);font-size:0.8rem;letter-spacing:0.1em;text-transform:uppercase;">Total</span>
+      <span style="font-size:1.3rem;font-weight:600;color:var(--gold);font-family:'Cormorant Garamond',serif;" id="drawerTotal">₹0</span>
+    </div>
+    <button class="btn-gold" onclick="goCheckout()">Proceed to Checkout</button>
+  </div>
+</div>
+
+<!-- ─── PRODUCT MODAL ─── -->
+<div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box" id="modalBox" style="position:relative;">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+
+    <!-- Gallery -->
+    <div class="modal-gallery" id="modalGallery">
+      <div class="modal-main-media" id="modalMainMedia">
+        <img class="modal-main-img" id="modalMainImg" src="" alt="" onclick="toggleZoom(this)">
+        <span class="zoom-hint">Click to zoom</span>
+        <button class="img-nav-btn img-nav-prev" onclick="navImage(-1)">‹</button>
+        <button class="img-nav-btn img-nav-next" onclick="navImage(1)">›</button>
+      </div>
+      <div class="modal-thumbs" id="modalThumbs"></div>
+    </div>
+
+    <!-- Info -->
+    <div class="modal-info" id="modalInfo">
+      <div class="modal-category" id="modalCategory"></div>
+      <div class="modal-name" id="modalName"></div>
+      <div class="modal-price" id="modalPrice"></div>
+      <div class="gold-line" style="margin:0 0 1.1rem;"></div>
+      <div class="modal-desc" id="modalDesc"></div>
+      <button class="btn-gold" onclick="addToCartModal()">Add to Cart</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── FIREBASE SDKs ─── -->
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="firebase-init.js"></script>
+
+<script>
+// ── STATE ──
+let allProducts = [];
+let currentFilter = 'all';
+let activeProduct = null;
+let activeMediaIndex = 0;
+let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+
+// ── CART HELPERS ──
+function saveCart() {
+  localStorage.setItem('cart', JSON.stringify(cart));
+  updateCartBadge();
+}
+function updateCartBadge() {
+  const total = cart.reduce((s, i) => s + i.quantity, 0);
+  document.getElementById('cartBadge').textContent = total;
+}
+function openCart() {
+  renderDrawer();
+  document.getElementById('cartDrawer').classList.add('open');
+  document.getElementById('drawerOverlay').classList.add('open');
+}
+function closeCart() {
+  document.getElementById('cartDrawer').classList.remove('open');
+  document.getElementById('drawerOverlay').classList.remove('open');
+}
+function goCheckout() {
+  if (!cart.length) { showToast('Cart is empty', 'error'); return; }
+  window.location.href = 'checkout.html';
+}
+
+function renderDrawer() {
+  const el = document.getElementById('drawerItems');
+  if (!cart.length) {
+    el.innerHTML = `<div style="text-align:center;padding:3rem;color:var(--text-muted);">
+      <div style="font-size:2rem;margin-bottom:0.75rem;">🛍</div>
+      <p>Your cart is empty</p>
+    </div>`;
+    document.getElementById('drawerTotal').textContent = '₹0';
+    return;
+  }
+  let total = 0;
+  el.innerHTML = cart.map((item, idx) => {
+    total += item.price * item.quantity;
+    return `<div class="cart-item">
+      <img src="${item.images?.[0] || 'no-image.png'}" alt="${item.name}">
+      <div class="cart-item-info">
+        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-price">₹${item.price}</div>
+        <div class="qty-ctrl">
+          <button class="qty-btn" onclick="changeQty(${idx},-1)">−</button>
+          <span style="min-width:20px;text-align:center;font-size:0.9rem;">${item.quantity}</span>
+          <button class="qty-btn" onclick="changeQty(${idx},1)">+</button>
+          <button class="qty-btn" onclick="removeItem(${idx})" style="margin-left:0.25rem;color:#e05252;">✕</button>
+        </div>
+      </div>
+      <div style="font-size:0.95rem;color:var(--gold);font-weight:600;font-family:'Cormorant Garamond',serif;">₹${item.price * item.quantity}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('drawerTotal').textContent = '₹' + total;
+}
+
+function changeQty(idx, delta) {
+  cart[idx].quantity += delta;
+  if (cart[idx].quantity <= 0) cart.splice(idx, 1);
+  saveCart();
+  renderDrawer();
+}
+function removeItem(idx) {
+  cart.splice(idx, 1);
+  saveCart();
+  renderDrawer();
+}
+
+function addToCart(product) {
+  const existing = cart.find(i => i.id === product.id);
+  if (existing) { existing.quantity++; }
+  else { cart.push({ ...product, quantity: 1 }); }
+  saveCart();
+  showToast(`${product.name} added to cart`);
+}
+function addToCartModal() {
+  if (!activeProduct) return;
+  addToCart(activeProduct);
+}
+
+// ── CONTACT MODAL ──
+function openContactModal() { document.getElementById('contactModal').classList.add('open'); }
+function closeContactModal() { document.getElementById('contactModal').classList.remove('open'); }
+
+// ── PRODUCT MODAL ──
+function openModal(product) {
+  activeProduct = product;
+  activeMediaIndex = 0;
+
+  const allMedia = [...(product.images || [])];
+  const hasVideo = !!product.videoUrl;
+
+  document.getElementById('modalCategory').textContent = product.category || '';
+  document.getElementById('modalName').textContent = product.name;
+  document.getElementById('modalPrice').textContent = '₹' + product.price;
+  document.getElementById('modalDesc').textContent = product.desc || 'A beautifully crafted piece from Tanushree Collections.';
+
+  renderModalMedia(allMedia, hasVideo, product.videoUrl, 0);
+  document.getElementById('modalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function renderModalMedia(images, hasVideo, videoUrl, activeIdx) {
+  setMainMedia(images, hasVideo, videoUrl, activeIdx);
+
+  let thumbsHTML = images.map((url, i) =>
+    `<img class="thumb ${i === activeIdx ? 'active' : ''}" src="${url}" onclick="switchMedia(${i})">`
+  ).join('');
+  if (hasVideo) {
+    thumbsHTML += `<div class="thumb-video-btn ${activeIdx === images.length ? 'active' : ''}" onclick="switchMedia(${images.length})" title="Video">▶</div>`;
+  }
+  document.getElementById('modalThumbs').innerHTML = thumbsHTML;
+}
+
+function setMainMedia(images, hasVideo, videoUrl, idx) {
+  const imgEl = document.getElementById('modalMainImg');
+  const container = document.getElementById('modalMainMedia');
+
+  const existingVideo = container.querySelector('.modal-video');
+  if (existingVideo) existingVideo.remove();
+  imgEl.style.display = 'block';
+  imgEl.classList.remove('zoomed');
+
+  const isVideo = hasVideo && idx >= images.length;
+  if (isVideo) {
+    imgEl.style.display = 'none';
+    const v = document.createElement('video');
+    v.className = 'modal-video';
+    v.controls = true;
+    v.autoplay = false;
+    v.src = videoUrl;
+    container.insertBefore(v, container.querySelector('.zoom-hint'));
+  } else {
+    imgEl.src = images[idx] || 'no-image.png';
+  }
+}
+
+function switchMedia(idx) {
+  if (!activeProduct) return;
+  const images = activeProduct.images || [];
+  const hasVideo = !!activeProduct.videoUrl;
+  activeMediaIndex = idx;
+
+  setMainMedia(images, hasVideo, activeProduct.videoUrl, idx);
+
+  document.querySelectorAll('#modalThumbs .thumb, #modalThumbs .thumb-video-btn').forEach((el, i) => {
+    el.classList.toggle('active', i === idx);
+  });
+}
+
+function navImage(dir) {
+  if (!activeProduct) return;
+  const images = activeProduct.images || [];
+  const total = images.length + (activeProduct.videoUrl ? 1 : 0);
+  activeMediaIndex = (activeMediaIndex + dir + total) % total;
+  switchMedia(activeMediaIndex);
+}
+
+function toggleZoom(img) {
+  img.classList.toggle('zoomed');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  const v = document.querySelector('#modalMainMedia .modal-video');
+  if (v) v.pause();
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+// ── PRODUCTS ──
+function filterCategory(cat, btn) {
+  currentFilter = cat;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderProducts();
+}
+
+function renderProducts() {
+  const grid = document.getElementById('productsGrid');
+  let items = currentFilter === 'all'
+    ? allProducts
+    : allProducts.filter(p => p.category === currentFilter);
+
+  if (!items.length) {
+    grid.innerHTML = `<div class="empty-state">
+      <div style="font-size:2rem;margin-bottom:0.75rem;">✦</div>
+      <p>No products in this category yet.</p>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = items.map(p => `
+    <div class="product-card" onclick='openModal(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
+      <img src="${p.images?.[0] || 'no-image.png'}" alt="${p.name}" loading="lazy">
+      <div class="product-info">
+        <div class="product-category">${p.category || ''}</div>
+        <div class="product-name">${p.name}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.65rem;">
+          <div class="product-price">₹${p.price}</div>
+          <button class="card-add-btn" onclick="event.stopPropagation();addToCart(${JSON.stringify(p).replace(/'/g,"&#39;")})">
+            + Add
+          </button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function loadProducts() {
+  try {
+    let snap;
+    try {
+      snap = await window.db.collection('products').orderBy('createdAt', 'desc').get();
+    } catch (e) {
+      snap = await window.db.collection('products').get();
+    }
+    allProducts = snap.docs.map(doc => {
+      const d = doc.data();
+      return {
+        id: doc.id,
+        name: d.name,
+        price: d.price,
+        category: d.category,
+        desc: d.desc,
+        images: d.imageUrls || [],
+        videoUrl: d.videoUrl || null
+      };
+    });
+    renderProducts();
+  } catch (err) {
+    console.error('loadProducts error:', err);
+    document.getElementById('productsGrid').innerHTML = `<div class="empty-state"><p>Could not load products. Please try again.</p></div>`;
+  }
+}
+
+function showToast(msg, type = 'success') {
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span>${type === 'success' ? '✓' : '✕'}</span> ${msg}`;
+  document.getElementById('toastContainer').appendChild(t);
+  setTimeout(() => t.remove(), 3000);
+}
+
+// ── INIT ──
+updateCartBadge();
+
+function waitForFirebase(callback) {
+  if (window.auth && window.db) { callback(); }
+  else { setTimeout(() => waitForFirebase(callback), 50); }
+}
+waitForFirebase(loadProducts);
+</script>
+</body>
+</html>

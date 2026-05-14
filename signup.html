@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign Up — Tanushree Collections</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .success-box {
+      background: rgba(76,175,128,0.1); border: 1px solid rgba(76,175,128,0.3);
+      border-radius: var(--radius-sm); padding: 1.25rem; text-align: center; display: none;
+    }
+    .success-box.show { display: block; }
+    .success-box .icon { font-size: 2rem; margin-bottom: 0.5rem; }
+    .success-box p { font-size: 0.88rem; color: #4caf82; margin: 0; }
+    .info-chip {
+      background: rgba(201,168,76,0.07); border: 1px solid rgba(201,168,76,0.18);
+      border-radius: var(--radius-sm); padding: 0.75rem 1rem;
+      font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1.5rem;
+      display: flex; align-items: flex-start; gap: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+
+<div id="toastContainer"></div>
+
+<div class="auth-bg">
+  <div class="auth-card">
+
+    <div style="text-align:center;margin-bottom:2rem;">
+      <div class="brand-name">Tanushree Collections</div>
+      <div class="brand-sub">Create your account</div>
+      <div class="gold-line"></div>
+    </div>
+
+    <div class="info-chip">
+      ✉️ <span>We'll send a magic sign-in link to your email — no password needed.</span>
+    </div>
+
+    <!-- NAME -->
+    <div style="margin-bottom:1.1rem;">
+      <label class="tc-label">Full Name</label>
+      <input class="tc-input" type="text" id="name" placeholder="Enter your name" autocomplete="name">
+      <div class="field-error" id="nameError"></div>
+    </div>
+
+    <!-- EMAIL -->
+    <div style="margin-bottom:1.1rem;">
+      <label class="tc-label">Email Address</label>
+      <input class="tc-input" type="email" id="email" placeholder="you@example.com" autocomplete="email">
+      <div class="field-error" id="emailError"></div>
+    </div>
+
+    <!-- PHONE -->
+    <div style="margin-bottom:1.5rem;">
+      <label class="tc-label">Phone Number</label>
+      <input class="tc-input" type="tel" id="phone" placeholder="+91 98765 43210" autocomplete="tel">
+      <div class="field-error" id="phoneError"></div>
+    </div>
+
+    <button class="btn-gold" id="signupBtn" onclick="doSignup()">
+      <span class="spinner" id="spinner"></span>
+      <span id="btnText">Create Account &amp; Send Link</span>
+    </button>
+
+    <div class="success-box" id="successBox" style="margin-top:1rem;">
+      <div class="icon">✉️</div>
+      <p>Magic link sent! Check your inbox and click the link to sign in.</p>
+      <p style="margin-top:0.5rem;font-size:0.78rem;color:var(--text-muted);">Link expires in 30 minutes. Check your spam folder if needed.</p>
+    </div>
+
+    <div class="gold-line"></div>
+
+    <p style="text-align:center;font-size:0.85rem;color:var(--text-muted);">
+      Already have an account?
+      <a href="login.html" style="color:var(--gold);text-decoration:none;">Sign In</a>
+    </p>
+
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+<script src="firebase-init.js"></script>
+
+<script>
+
+// ✅ WAIT FOR FIREBASE
+function waitForFirebase(callback) {
+  if (window.auth && window.db) {
+    callback();
+  } else {
+    setTimeout(() => waitForFirebase(callback), 50);
+  }
+}
+
+// ✅ Redirect if already logged in
+waitForFirebase(() => {
+  window.auth.onAuthStateChanged(user => {
+    if (user) window.location.href = 'account.html';
+  });
+});
+
+// ── Toast ──
+function showToast(msg, type = "success") {
+  const t = document.createElement("div");
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span>${type === "success" ? "✓" : "✕"}</span> ${msg}`;
+  document.getElementById("toastContainer").appendChild(t);
+  setTimeout(() => t.remove(), 3500);
+}
+
+// ── Error handling ──
+function setError(id, msg) {
+  const el = document.getElementById(id);
+  if (!el) return;
+
+  el.textContent = msg;
+  el.classList.toggle("show", !!msg);
+
+  const inputEl = document.getElementById(id.replace("Error",""));
+  if (inputEl) inputEl.classList.toggle("error", !!msg);
+}
+
+function clearErrors() {
+  ["name","email","phone"].forEach(f => setError(f+"Error",""));
+}
+
+function setLoading(on) {
+  document.getElementById("signupBtn").disabled = on;
+  document.getElementById("spinner").classList.toggle("show", on);
+  document.getElementById("btnText").textContent = on ? "Sending Link..." : "Create Account & Send Link";
+}
+
+// ── Signup ──
+async function doSignup() {
+
+  waitForFirebase(async () => {
+
+    clearErrors();
+
+    const name  = document.getElementById("name").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const phone = document.getElementById("phone").value.trim();
+
+    let valid = true;
+
+    if (!name) {
+      setError("nameError", "Name is required");
+      valid = false;
+    }
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setError("emailError", "Valid email required");
+      valid = false;
+    }
+
+    if (!phone || phone.length < 6) {
+      setError("phoneError", "Phone number required");
+      valid = false;
+    }
+
+    if (!valid) return;
+
+    setLoading(true);
+
+    const actionCodeSettings = {
+      url: window.location.origin + '/login.html',
+      handleCodeInApp: true
+    };
+
+    try {
+
+      await window.auth.sendSignInLinkToEmail(email, actionCodeSettings);
+
+      // ✅ Save for login.html
+      window.localStorage.setItem('emailForSignIn', email);
+      window.localStorage.setItem('pendingName', name);
+      window.localStorage.setItem('pendingPhone', phone);
+
+      document.getElementById('successBox').classList.add('show');
+      document.getElementById('signupBtn').style.display = 'none';
+
+    } catch (err) {
+      showToast(err.message, "error");
+      setLoading(false);
+    }
+
+  });
+
+}
+
+// ── Enter key support ──
+document.addEventListener("keydown", e => {
+  if (e.key === "Enter") doSignup();
+});
+
+</script>
+
+</body>
+</html>
