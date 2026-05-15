@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Return Policy | Tanushree Collection – Luxury Jewellery</title>
+  <meta name="description" content="Return Policy for Tanushree Collection. Returns are accepted only for damaged, defective, or incorrect products with mandatory unboxing video proof submitted within 3 days of delivery." />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:title" content="Return Policy | Tanushree Collection" />
+  <meta property="og:description" content="Tanushree Collection's return policy — applicable only for damaged, defective, or incorrect jewellery with a mandatory unboxing video requirement." />
+  <meta property="og:type" content="website" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💎</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gold: #C9A84C;
+      --gold-light: #E8C97A;
+      --gold-dim: #8B6914;
+      --gold-muted: rgba(201,168,76,0.35);
+      --black: #050505;
+      --black-2: #0D0D0D;
+      --black-3: #111111;
+      --black-4: #1A1A1A;
+      --white: #F5F0E8;
+      --white-dim: rgba(245,240,232,0.6);
+      --white-faint: rgba(245,240,232,0.35);
+      --glass: rgba(201,168,76,0.05);
+      --glass-border: rgba(201,168,76,0.18);
+      --glow: rgba(201,168,76,0.2);
+      --glow-strong: rgba(201,168,76,0.35);
+      --red-accent: #D97070;
+      --red-bg: rgba(200,80,80,0.07);
+      --green-accent: #7DC98A;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--white);
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 300;
+      line-height: 1.8;
+      overflow-x: hidden;
+    }
+
+    /* ── GRAIN OVERLAY ── */
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: 0;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      background-size: 180px;
+      opacity: 0.4;
+    }
+
+    /* ── LOADER ── */
+    #loader {
+      position: fixed; inset: 0; z-index: 9999;
+      background: var(--black);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      transition: opacity 0.9s ease, visibility 0.9s ease;
+    }
+    #loader.hidden { opacity: 0; visibility: hidden; }
+    .loader-diamond {
+      position: relative; width: 56px; height: 56px;
+      margin-bottom: 2rem;
+    }
+    .loader-diamond::before {
+      content: '';
+      position: absolute; inset: 0;
+      border: 1px solid var(--gold-dim);
+      transform: rotate(45deg);
+      animation: diamondSpin 2s linear infinite;
+    }
+    .loader-diamond::after {
+      content: '';
+      position: absolute; inset: 8px;
+      border: 1px solid var(--gold);
+      transform: rotate(45deg);
+      animation: diamondSpin 2s linear infinite reverse;
+    }
+    .loader-inner {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+    }
+    .loader-wordmark {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.68rem; font-weight: 400;
+      color: var(--gold); letter-spacing: 0.5em;
+      text-transform: uppercase;
+      animation: breathe 1.8s ease-in-out infinite;
+    }
+    .loader-subtitle {
+      font-size: 0.55rem; letter-spacing: 0.35em;
+      color: var(--gold-dim); text-transform: uppercase;
+      margin-top: 0.5rem; text-align: center;
+      animation: breathe 1.8s ease-in-out infinite 0.4s;
+    }
+    @keyframes diamondSpin { to { transform: rotate(225deg); } }
+    @keyframes breathe { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes shimmer { 0% { background-position: -200% center; } 100% { background-position: 200% center; } }
+
+    /* ── NAVBAR ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 999;
+      height: 80px; padding: 0 5%;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(5,5,5,0.90);
+      backdrop-filter: blur(24px) saturate(180%);
+      border-bottom: 1px solid var(--glass-border);
+      transition: height 0.4s ease, background 0.4s ease;
+    }
+    nav.scrolled { height: 64px; background: rgba(5,5,5,0.97); }
+    .nav-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.48rem; font-weight: 500;
+      color: var(--gold); text-decoration: none;
+      letter-spacing: 0.06em;
+    }
+    .nav-logo em { font-style: italic; color: var(--gold-light); }
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a {
+      color: var(--white-dim); text-decoration: none;
+      font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase;
+      transition: color 0.3s; position: relative;
+    }
+    .nav-links a::after {
+      content: ''; position: absolute; bottom: -5px; left: 0; right: 0;
+      height: 1px; background: linear-gradient(to right, transparent, var(--gold), transparent);
+      transform: scaleX(0); transform-origin: center;
+      transition: transform 0.35s ease;
+    }
+    .nav-links a:hover { color: var(--gold-light); }
+    .nav-links a:hover::after, .nav-links a.active::after { transform: scaleX(1); }
+    .nav-links a.active { color: var(--gold); }
+    .hamburger {
+      display: none; flex-direction: column; gap: 5px;
+      cursor: pointer; padding: 5px; background: none; border: none;
+    }
+    .hamburger span { display: block; width: 22px; height: 1px; background: var(--gold); transition: all 0.3s; }
+    .hamburger.open span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+    .hamburger.open span:nth-child(2) { opacity: 0; }
+    .hamburger.open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+    .nav-mobile {
+      display: none; position: fixed; top: 80px; inset-inline: 0; bottom: 0;
+      background: rgba(5,5,5,0.97); backdrop-filter: blur(30px);
+      flex-direction: column; align-items: center; justify-content: center;
+      gap: 2.8rem; z-index: 998;
+    }
+    .nav-mobile.open { display: flex; }
+    .nav-mobile a {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem; letter-spacing: 0.15em;
+      color: var(--white-dim); text-decoration: none;
+      text-transform: uppercase; transition: color 0.3s;
+    }
+    .nav-mobile a:hover, .nav-mobile a.active { color: var(--gold-light); }
+
+    /* ── HERO ── */
+    .page-hero {
+      min-height: 52vh; padding: 150px 5% 90px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center; position: relative; overflow: hidden;
+    }
+    .hero-radial {
+      position: absolute; inset: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse 55% 55% at 50% 45%, rgba(201,168,76,0.09) 0%, transparent 65%),
+        radial-gradient(ellipse 30% 20% at 20% 80%, rgba(201,168,76,0.04) 0%, transparent 60%),
+        radial-gradient(ellipse 25% 20% at 80% 20%, rgba(201,168,76,0.04) 0%, transparent 60%);
+    }
+    .hero-ornament {
+      width: 1px; height: 64px;
+      background: linear-gradient(to bottom, transparent, var(--gold), transparent);
+      margin: 0 auto 2rem;
+      animation: fadeUp 1s ease 0.4s both;
+    }
+    .hero-eyebrow {
+      font-size: 0.62rem; letter-spacing: 0.55em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 1.4rem;
+      animation: fadeUp 1s ease 0.6s both;
+    }
+    .hero-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: clamp(3rem, 6.5vw, 5.2rem); font-weight: 300;
+      color: var(--white); line-height: 1.05; margin-bottom: 1.4rem;
+      animation: fadeUp 1s ease 0.8s both;
+    }
+    .hero-title em { font-style: italic; color: var(--gold-light); }
+    .hero-desc {
+      font-size: 0.76rem; letter-spacing: 0.14em; color: var(--white-dim);
+      max-width: 480px; margin: 0 auto;
+      animation: fadeUp 1s ease 1s both;
+    }
+    .hero-rule {
+      width: 130px; height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold), transparent);
+      margin: 2.2rem auto 0;
+      animation: fadeUp 1s ease 1.2s both;
+    }
+
+    /* ── ALERT STRIP ── */
+    .alert-wrap {
+      max-width: 920px; margin: 0 auto 3.5rem;
+      padding: 0 5%;
+      animation: fadeUp 1s ease 1.4s both;
+    }
+    .alert-box {
+      border: 1px solid var(--gold);
+      background: rgba(201,168,76,0.06);
+      border-radius: 2px; padding: 2rem 2.8rem;
+      position: relative; overflow: hidden;
+    }
+    .alert-box::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--gold), var(--gold-light), var(--gold), transparent);
+    }
+    .alert-head {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.15rem; color: var(--gold-light);
+      margin-bottom: 0.7rem; letter-spacing: 0.04em;
+    }
+    .alert-body { font-size: 0.81rem; color: var(--white-dim); line-height: 1.75; }
+    .alert-body strong { color: var(--gold-light); font-weight: 500; }
+
+    /* ── CONTENT ── */
+    .content {
+      max-width: 920px; margin: 0 auto;
+      padding: 0 5% 110px;
+    }
+    .section {
+      margin-bottom: 2.5rem;
+      opacity: 0; transform: translateY(36px);
+      transition: opacity 0.75s ease, transform 0.75s ease;
+    }
+    .section.visible { opacity: 1; transform: translateY(0); }
+
+    /* Card base */
+    .card {
+      border: 1px solid var(--glass-border);
+      background: var(--glass);
+      border-radius: 2px; padding: 2.6rem 3.2rem;
+      position: relative; overflow: hidden;
+      transition: border-color 0.4s, box-shadow 0.4s;
+    }
+    .card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold-muted), transparent);
+    }
+    .card:hover {
+      border-color: rgba(201,168,76,0.32);
+      box-shadow: 0 0 50px var(--glow);
+    }
+
+    /* Accented card */
+    .card-accent {
+      border-color: var(--gold);
+      background: rgba(201,168,76,0.05);
+    }
+    .card-accent::before {
+      background: linear-gradient(to right, transparent, var(--gold-light), transparent);
+      height: 2px;
+    }
+    .card-accent:hover { box-shadow: 0 0 60px var(--glow-strong); }
+
+    /* Danger card */
+    .card-danger {
+      border-color: rgba(217,112,112,0.35);
+      background: var(--red-bg);
+    }
+    .card-danger::before {
+      background: linear-gradient(to right, transparent, var(--red-accent), transparent);
+    }
+
+    .sec-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.67rem; color: var(--gold-dim);
+      letter-spacing: 0.42em; text-transform: uppercase; margin-bottom: 0.45rem;
+    }
+    .sec-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.72rem; font-weight: 400;
+      color: var(--gold-light); line-height: 1.2; margin-bottom: 1.5rem;
+    }
+    .sec-body { font-size: 0.84rem; color: var(--white-dim); line-height: 1.95; }
+    .sec-body p { margin-bottom: 0.9rem; }
+    .sec-body p:last-child { margin-bottom: 0; }
+    .sec-body strong { color: var(--white); font-weight: 500; }
+    .sec-body a {
+      color: var(--gold); text-decoration: none;
+      border-bottom: 1px solid var(--gold-dim);
+      transition: color 0.3s, border-color 0.3s;
+    }
+    .sec-body a:hover { color: var(--gold-light); border-color: var(--gold-light); }
+
+    /* ── DIAMOND LIST ── */
+    .dl { list-style: none; margin: 1rem 0; }
+    .dl li {
+      padding: 0.55rem 0 0.55rem 1.6rem;
+      position: relative;
+      border-bottom: 1px solid rgba(201,168,76,0.07);
+      font-size: 0.83rem; color: var(--white-dim);
+    }
+    .dl li:last-child { border-bottom: none; }
+    .dl li::before {
+      content: '◆'; position: absolute; left: 0; top: 0.65rem;
+      color: var(--gold); font-size: 0.4rem;
+    }
+
+    /* ── CROSS LIST (not eligible) ── */
+    .xl { list-style: none; margin: 1rem 0; }
+    .xl li {
+      padding: 0.5rem 0 0.5rem 1.8rem;
+      position: relative;
+      border-bottom: 1px solid rgba(200,80,80,0.1);
+      font-size: 0.82rem; color: rgba(245,240,232,0.45);
+    }
+    .xl li:last-child { border-bottom: none; }
+    .xl li::before {
+      content: '✕'; position: absolute; left: 0; top: 0.52rem;
+      color: var(--red-accent); font-size: 0.72rem; font-weight: 500;
+    }
+
+    /* ── CHECK LIST (eligible) ── */
+    .cl { list-style: none; margin: 1rem 0; }
+    .cl li {
+      padding: 0.55rem 0 0.55rem 1.8rem;
+      position: relative;
+      border-bottom: 1px solid rgba(125,201,138,0.1);
+      font-size: 0.83rem; color: var(--white-dim);
+    }
+    .cl li:last-child { border-bottom: none; }
+    .cl li::before {
+      content: '✓'; position: absolute; left: 0; top: 0.52rem;
+      color: var(--green-accent); font-size: 0.75rem; font-weight: 500;
+    }
+
+    /* ── PROCESS FLOW ── */
+    .process-flow {
+      display: flex; flex-direction: column; gap: 0;
+      margin-top: 1.8rem; position: relative;
+    }
+    .process-flow::before {
+      content: '';
+      position: absolute; left: 22px; top: 0; bottom: 0; width: 1px;
+      background: linear-gradient(to bottom, var(--gold), var(--gold-dim), transparent);
+    }
+    .flow-step {
+      display: flex; align-items: flex-start; gap: 1.6rem;
+      padding: 1.2rem 1.2rem 1.2rem 0;
+      border-bottom: 1px solid rgba(201,168,76,0.07);
+      transition: background 0.3s;
+    }
+    .flow-step:last-child { border-bottom: none; }
+    .flow-step:hover { background: rgba(201,168,76,0.04); }
+    .flow-num {
+      min-width: 44px; height: 44px;
+      border: 1px solid var(--gold); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem; color: var(--gold);
+      background: var(--black); z-index: 1;
+      flex-shrink: 0;
+    }
+    .flow-content {}
+    .flow-label {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem; color: var(--white);
+      margin-bottom: 0.25rem;
+    }
+    .flow-desc { font-size: 0.79rem; color: var(--white-dim); }
+
+    /* ── VIDEO GRID ── */
+    .video-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1rem; margin-top: 1.8rem;
+    }
+    .vid-item {
+      background: rgba(201,168,76,0.06);
+      border: 1px solid var(--glass-border);
+      border-radius: 2px; padding: 1.4rem 1.6rem;
+      display: flex; gap: 1.1rem; align-items: flex-start;
+      transition: border-color 0.3s, transform 0.3s;
+    }
+    .vid-item:hover { border-color: var(--gold-muted); transform: translateY(-3px); }
+    .vid-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem; color: var(--gold);
+      line-height: 1; min-width: 28px;
+    }
+    .vid-text { font-size: 0.79rem; color: var(--white-dim); line-height: 1.55; }
+    .vid-text strong { color: var(--white); display: block; margin-bottom: 0.18rem; font-size: 0.82rem; }
+
+    /* ── CONDITIONS GRID ── */
+    .conditions-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1.5rem; margin-top: 1.2rem;
+    }
+    .cond-col {}
+    .cond-head {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem; letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 0.8rem; padding-bottom: 0.6rem;
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .cond-head.yes { color: var(--green-accent); }
+    .cond-head.no { color: var(--red-accent); }
+
+    /* ── TIMELINE ── */
+    .timeline { position: relative; padding-left: 2rem; margin: 1.5rem 0; }
+    .timeline::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 1px;
+      background: linear-gradient(to bottom, var(--gold), var(--gold-dim), transparent);
+    }
+    .tl-item { position: relative; margin-bottom: 1.4rem; padding-left: 1rem; }
+    .tl-item::before {
+      content: ''; position: absolute; left: -2rem; top: 0.45rem;
+      width: 8px; height: 8px;
+      border: 1px solid var(--gold); border-radius: 50%;
+      background: var(--black);
+    }
+    .tl-label {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1rem; color: var(--gold-light); margin-bottom: 0.25rem;
+    }
+    .tl-desc { font-size: 0.79rem; color: var(--white-dim); }
+
+    /* ── SPLIT ROW ── */
+    .split { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-top: 0.5rem; }
+    .split-card {
+      background: rgba(201,168,76,0.05);
+      border: 1px solid var(--glass-border);
+      border-radius: 2px; padding: 1.6rem;
+      transition: border-color 0.3s;
+    }
+    .split-card:hover { border-color: var(--gold-muted); }
+    .split-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.95rem; color: var(--gold-light);
+      letter-spacing: 0.1em; margin-bottom: 0.8rem;
+    }
+    .split-body { font-size: 0.79rem; color: var(--white-dim); line-height: 1.65; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--black-2);
+      border-top: 1px solid var(--glass-border);
+      padding: 5.5rem 5% 2.5rem;
+    }
+    .footer-inner {
+      max-width: 1100px; margin: 0 auto;
+    }
+    .footer-grid {
+      display: grid; grid-template-columns: 2fr 1fr 1fr;
+      gap: 4rem; margin-bottom: 4rem;
+    }
+    .footer-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.55rem; font-weight: 500;
+      color: var(--gold); display: block; margin-bottom: 0.8rem;
+    }
+    .footer-logo em { font-style: italic; color: var(--gold-light); }
+    .footer-tagline {
+      font-size: 0.7rem; letter-spacing: 0.22em; text-transform: uppercase;
+      color: var(--white-dim); margin-bottom: 1.8rem;
+    }
+    .footer-contact p { font-size: 0.79rem; color: var(--white-dim); margin-bottom: 0.55rem; }
+    .footer-contact a { color: var(--gold); text-decoration: none; transition: color 0.3s; }
+    .footer-contact a:hover { color: var(--gold-light); }
+    .footer-col-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.95rem; color: var(--gold);
+      letter-spacing: 0.18em; text-transform: uppercase;
+      padding-bottom: 0.8rem; margin-bottom: 1.4rem;
+      position: relative;
+    }
+    .footer-col-title::after {
+      content: ''; position: absolute; bottom: 0; left: 0;
+      width: 28px; height: 1px; background: var(--gold);
+    }
+    .footer-links { list-style: none; }
+    .footer-links li { margin-bottom: 0.75rem; }
+    .footer-links a {
+      color: var(--white-dim); text-decoration: none;
+      font-size: 0.76rem; letter-spacing: 0.08em;
+      transition: color 0.3s, padding-left 0.3s; display: inline-block;
+    }
+    .footer-links a:hover { color: var(--gold); padding-left: 5px; }
+    .footer-divider {
+      width: 100%; height: 1px;
+      background: linear-gradient(to right, transparent, var(--glass-border), transparent);
+      margin-bottom: 2rem;
+    }
+    .footer-bottom {
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 1rem;
+    }
+    .footer-copy { font-size: 0.7rem; color: var(--white-faint); letter-spacing: 0.07em; }
+    .footer-legal { display: flex; gap: 1.5rem; }
+    .footer-legal a { font-size: 0.7rem; color: var(--white-faint); text-decoration: none; transition: color 0.3s; }
+    .footer-legal a:hover { color: var(--gold); }
+
+    /* ── WHATSAPP ── */
+    .wa-btn {
+      position: fixed; bottom: 28px; right: 28px; z-index: 888;
+      width: 56px; height: 56px; background: #25D366;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 22px rgba(37,211,102,0.45);
+      text-decoration: none;
+      animation: waFloat 3s ease-in-out infinite;
+      transition: transform 0.3s, box-shadow 0.3s;
+    }
+    .wa-btn:hover { transform: scale(1.12); box-shadow: 0 6px 32px rgba(37,211,102,0.65); }
+    .wa-btn svg { width: 26px; height: 26px; fill: #fff; }
+    @keyframes waFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .hero-title { font-size: 2.6rem; }
+      .card, .card-accent, .card-danger { padding: 2rem 1.6rem; }
+      .video-grid, .conditions-grid, .split { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+      .footer-bottom { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <div class="loader-diamond"><span class="loader-inner">💎</span></div>
+  <p class="loader-wordmark">Tanushree Collection</p>
+  <p class="loader-subtitle">Return Policy</p>
+</div>
+
+<!-- NAV -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">Tanushree <em>Collection</em></a>
+  <ul class="nav-links">
+    <li><a href="privacy-policy.html">Privacy</a></li>
+    <li><a href="refund-policy.html">Refund</a></li>
+    <li><a href="return-policy.html" class="active">Returns</a></li>
+    <li><a href="disclaimer.html">Disclaimer</a></li>
+  </ul>
+  <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="nav-mobile" id="mobileMenu">
+  <a href="privacy-policy.html">Privacy Policy</a>
+  <a href="refund-policy.html">Refund Policy</a>
+  <a href="return-policy.html" class="active">Return Policy</a>
+  <a href="disclaimer.html">Disclaimer</a>
+</div>
+
+<!-- HERO -->
+<header class="page-hero">
+  <div class="hero-radial"></div>
+  <div class="hero-ornament"></div>
+  <p class="hero-eyebrow">Policy · Returns · Conditions</p>
+  <h1 class="hero-title">Return <em>Policy</em></h1>
+  <p class="hero-desc">Crafted with integrity — our standards for returns and resolutions</p>
+  <div class="hero-rule"></div>
+</header>
+
+<main>
+
+  <!-- ALERT -->
+  <div class="alert-wrap">
+    <div class="alert-box">
+      <h3 class="alert-head">⬥ Key Conditions at a Glance</h3>
+      <p class="alert-body">Returns are accepted <strong>only for damaged, defective, or incorrectly dispatched products</strong>. You must contact us <strong>within 3 calendar days of delivery</strong>. A <strong>complete, uncut unboxing video is mandatory</strong> — no exceptions. The item must be <strong>unused, unworn, and in its original packaging</strong>.</p>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- 01 -->
+    <div class="section">
+      <div class="card card-accent">
+        <p class="sec-num">01 — Eligibility</p>
+        <h2 class="sec-title">What Qualifies for a Return?</h2>
+        <div class="sec-body">
+          <p>Tanushree Collection accepts returns exclusively under the following conditions. We maintain a strict policy to ensure every piece that reaches you meets our quality benchmarks — and to protect both our customers and our brand.</p>
+          <div class="conditions-grid">
+            <div class="cond-col">
+              <p class="cond-head yes">✓ &nbsp;Eligible</p>
+              <ul class="cl">
+                <li>Product received is <strong>physically damaged</strong> — cracked, broken, or structurally compromised</li>
+                <li>Product is <strong>functionally defective</strong> — missing stone, broken clasp, plating failure at dispatch</li>
+                <li><strong>Incorrect item</strong> sent — wrong design, size, metal, or colour variant</li>
+              </ul>
+            </div>
+            <div class="cond-col">
+              <p class="cond-head no">✕ &nbsp;Not Eligible</p>
+              <ul class="xl">
+                <li>Change of mind or preference after order</li>
+                <li>Minor colour variation due to screen or lighting</li>
+                <li>Worn, used, resized, or altered items</li>
+                <li>Missing original packaging or tags</li>
+                <li>Requests raised after the 3-day window</li>
+                <li>No valid unboxing video provided</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 02 -->
+    <div class="section">
+      <div class="card">
+        <p class="sec-num">02 — Time Limit</p>
+        <h2 class="sec-title">The 3-Day Delivery Window</h2>
+        <div class="sec-body">
+          <p>All return requests must be initiated within <strong>3 calendar days</strong> of the confirmed delivery date as recorded by our courier partner's tracking system. We urge all customers to inspect their purchase thoroughly upon receipt.</p>
+          <div class="timeline">
+            <div class="tl-item">
+              <p class="tl-label">Day 0 — Delivery Confirmed</p>
+              <p class="tl-desc">The courier marks delivery. Your 3-day window begins at this moment.</p>
+            </div>
+            <div class="tl-item">
+              <p class="tl-label">Days 1–3 — Contact Window</p>
+              <p class="tl-desc">Record your unboxing video and raise your return request via WhatsApp or email with order ID and issue details.</p>
+            </div>
+            <div class="tl-item">
+              <p class="tl-label">Day 4 Onwards — Window Closed</p>
+              <p class="tl-desc">No return request will be entertained after the 3-day period under any circumstances, including delayed reports or courier-related delays in communication.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 03 -->
+    <div class="section">
+      <div class="card card-accent">
+        <p class="sec-num">03 — Mandatory Requirement</p>
+        <h2 class="sec-title">Unboxing Video — Absolutely Non-Negotiable</h2>
+        <div class="sec-body">
+          <p>An <strong>uncut, continuous unboxing video</strong> is required for every return request. This single requirement protects you as a buyer and helps us resolve genuine claims with speed and accuracy. No return will be processed without this video — no exceptions, no alternatives.</p>
+          <p>Your video must clearly show all four of the following:</p>
+          <div class="video-grid">
+            <div class="vid-item">
+              <span class="vid-num">01</span>
+              <div class="vid-text"><strong>Intact, Sealed Package</strong>Film the package fully sealed and unopened before you begin opening it.</div>
+            </div>
+            <div class="vid-item">
+              <span class="vid-num">02</span>
+              <div class="vid-text"><strong>Visible Shipping Label</strong>Your name, address, and order ID on the courier label must be clearly legible.</div>
+            </div>
+            <div class="vid-item">
+              <span class="vid-num">03</span>
+              <div class="vid-text"><strong>Full Opening Sequence</strong>Record the entire unpacking process in one single, uninterrupted take.</div>
+            </div>
+            <div class="vid-item">
+              <span class="vid-num">04</span>
+              <div class="vid-text"><strong>Product Condition</strong>Show the item clearly from multiple angles under adequate light, so the defect or discrepancy is unmistakable.</div>
+            </div>
+          </div>
+          <p style="margin-top: 1.5rem; color: var(--white-faint); font-size: 0.76rem;">Edited, trimmed, blurry, dimly lit, or incomplete videos will not be accepted. Tanushree Collection reserves the right to reject a return request if the video does not meet these standards. We recommend recording in natural light, landscape orientation, in a single continuous shot.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 04 -->
+    <div class="section">
+      <div class="card">
+        <p class="sec-num">04 — Product Conditions for Return</p>
+        <h2 class="sec-title">State of the Item</h2>
+        <div class="sec-body">
+          <p>In addition to the unboxing video, the following physical conditions must be met for a return to be considered:</p>
+          <ul class="dl">
+            <li>The product must be completely <strong>unused and unworn</strong></li>
+            <li>All <strong>original packaging</strong> — box, pouch, tissue, tags — must be intact and included</li>
+            <li>No alterations, resizing, polishing, or cleaning performed after receipt</li>
+            <li>The product must not carry any <strong>scent of perfume, chemicals, or cosmetics</strong></li>
+            <li>All included certificates or documentation (if any) must be returned</li>
+          </ul>
+          <p>Items that do not meet these conditions upon inspection will be returned to the customer at their expense, and no refund or exchange will be issued.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 05 -->
+    <div class="section">
+      <div class="card">
+        <p class="sec-num">05 — How to Raise a Return Request</p>
+        <h2 class="sec-title">Step-by-Step Process</h2>
+        <div class="sec-body">
+          <p>To raise a return, follow this process precisely. Incomplete submissions will not be processed.</p>
+          <div class="process-flow">
+            <div class="flow-step">
+              <div class="flow-num">1</div>
+              <div class="flow-content">
+                <p class="flow-label">Record the Full Unboxing Video</p>
+                <p class="flow-desc">Before opening, ensure your camera is recording. Do not stop or edit the video at any point.</p>
+              </div>
+            </div>
+            <div class="flow-step">
+              <div class="flow-num">2</div>
+              <div class="flow-content">
+                <p class="flow-label">Contact Us Within 3 Days</p>
+                <p class="flow-desc">Reach out via WhatsApp at <a href="https://wa.me/918145739629">+918145739629</a> or email us at <a href="tanushreecollection@gmail.com">tanushreecollection@gmail.com</a>.</p>
+              </div>
+            </div>
+            <div class="flow-step">
+              <div class="flow-num">3</div>
+              <div class="flow-content">
+                <p class="flow-label">Share Your Details</p>
+                <p class="flow-desc">Provide your Order ID, the unboxing video, clear photos of the issue, and a written description of the problem.</p>
+              </div>
+            </div>
+            <div class="flow-step">
+              <div class="flow-num">4</div>
+              <div class="flow-content">
+                <p class="flow-label">Await Review (2–4 Business Days)</p>
+                <p class="flow-desc">Our team will assess your submission and respond with a decision — approval, rejection, or request for additional evidence.</p>
+              </div>
+            </div>
+            <div class="flow-step">
+              <div class="flow-num">5</div>
+              <div class="flow-content">
+                <p class="flow-label">Return Shipment (If Approved)</p>
+                <p class="flow-desc">If your return is approved, we will provide you with return shipment instructions. Do not send back the product without our written confirmation.</p>
+              </div>
+            </div>
+            <div class="flow-step">
+              <div class="flow-num">6</div>
+              <div class="flow-content">
+                <p class="flow-label">Resolution — Replacement or Refund</p>
+                <p class="flow-desc">Once we receive and inspect the returned item, we will process a replacement, store credit, or refund within 7–10 business days.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 06 -->
+    <div class="section">
+      <div class="card">
+        <p class="sec-num">06 — Shipping for Returns</p>
+        <h2 class="sec-title">Who Bears the Return Shipping Cost?</h2>
+        <div class="sec-body">
+          <div class="split">
+            <div class="split-card">
+              <p class="split-title">If We Are At Fault</p>
+              <p class="split-body">If the return is due to a defective, damaged, or incorrect product dispatched from our end, <strong style="color:var(--gold-light)">Tanushree Collection will arrange and bear the return shipping cost</strong>.</p>
+            </div>
+            <div class="split-card">
+              <p class="split-title">All Other Cases</p>
+              <p class="split-body">For any other approved return scenario, <strong style="color:var(--white)">return shipping is borne by the customer</strong>. We recommend using a tracked courier service to ensure safe delivery.</p>
+            </div>
+          </div>
+          <p style="margin-top: 1.5rem;">Please note: <strong>Do not ship back any item without prior written approval</strong> from our team. Unauthorised returns will not be accepted and no compensation will be issued for such shipments.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 07 -->
+    <div class="section">
+      <div class="card card-danger">
+        <p class="sec-num">07 — Non-Returnable Items</p>
+        <h2 class="sec-title" style="color: var(--red-accent);">Items We Cannot Accept Back</h2>
+        <div class="sec-body">
+          <p>The following are explicitly excluded from our return policy under all circumstances:</p>
+          <ul class="xl">
+            <li>Items returned without a valid, uncut unboxing video</li>
+            <li>Products that have been worn, used, altered, resized, or polished</li>
+            <li>Items missing original packaging, box, pouch, or tags</li>
+            <li>Returns requested after the 3-day window has expired</li>
+            <li>Products damaged after delivery due to customer mishandling, exposure, or negligence</li>
+            <li>Items returned without prior written approval from our team</li>
+            <li>Change-of-mind returns or preference-based returns</li>
+            <li>Colour variation due to photographic lighting or screen calibration</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 08 -->
+    <div class="section">
+      <div class="card">
+        <p class="sec-num">08 — Colour Variation Disclaimer</p>
+        <h2 class="sec-title">A Note on Colour & Appearance</h2>
+        <div class="sec-body">
+          <p>Jewellery, by its very nature, responds to light in complex and beautiful ways. Our product photographs are taken under controlled studio lighting which may cause slight differences in perceived colour, lustre, or finish when compared to the physical item in your hands under natural or indoor light.</p>
+          <ul class="dl">
+            <li>Monitor and screen colour calibration varies between devices</li>
+            <li>Studio photography lighting differs from ambient indoor light</li>
+            <li>Metal and stone surfaces reflect differently at varying angles</li>
+            <li>Photographic enhancement may bring out certain tones more vividly</li>
+          </ul>
+          <p>Such variations are <strong>not considered a defect or discrepancy</strong> and do not constitute grounds for a return.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 09 -->
+    <div class="section">
+      <div class="card">
+        <p class="sec-num">09 — Courier Delays</p>
+        <h2 class="sec-title">Third-Party Delivery Responsibility</h2>
+        <div class="sec-body">
+          <p>Tanushree Collection partners with reputable courier services for order dispatch. However, once the package is handed to the courier, delivery timelines are governed by the logistics partner and are subject to external factors beyond our control.</p>
+          <p>We are <strong>not responsible</strong> for delays caused by courier partners, incorrect delivery attempts, weather disruptions, public holidays, or local logistics constraints. Delivery delay claims directed at Tanushree Collection will not be entertained.</p>
+          <p>If you experience a significant delay, please contact the courier directly using the tracking number provided in your dispatch confirmation.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10 -->
+    <div class="section">
+      <div class="card">
+        <p class="sec-num">10 — Resolution Options</p>
+        <h2 class="sec-title">What We Offer Upon Approval</h2>
+        <div class="sec-body">
+          <p>Once a return is approved and the product is received and inspected by our team, we will offer one of the following resolutions at our discretion, based on product availability and the nature of the issue:</p>
+          <ul class="dl">
+            <li><strong>Replacement:</strong> A fresh unit of the same product dispatched to you at no additional cost</li>
+            <li><strong>Store Credit:</strong> Full value credited to your account for use on any future order</li>
+            <li><strong>Refund:</strong> Full or partial refund to your original payment method within 7–10 business days</li>
+          </ul>
+          <p>Tanushree Collection reserves the right to make the final determination on all return resolutions. Our decision, once communicated, is conclusive.</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-grid">
+      <div>
+        <span class="footer-logo">Tanushree <em>Collection</em></span>
+        <p class="footer-tagline">Crafted in Gold · Born in Bengal</p>
+        <div class="footer-contact">
+          <p>📍 Malda, West Bengal, India</p>
+          <p>✉ <a href="tanushreecollection@gmail.com">tanushreecollection@gmail.com</a></p>
+          <p>💬 <a href="https://wa.me/918145739629">+918145739629</a></p>
+        </div>
+      </div>
+      <div>
+        <h4 class="footer-col-title">Legal</h4>
+        <ul class="footer-links">
+          <li><a href="privacy-policy.html">Privacy Policy</a></li>
+          <li><a href="refund-policy.html">Refund Policy</a></li>
+          <li><a href="return-policy.html">Return Policy</a></li>
+          <li><a href="disclaimer.html">Disclaimer</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="footer-col-title">Support</h4>
+        <ul class="footer-links">
+          <li><a href="https://wa.me/918145739629">WhatsApp Us</a></li>
+          <li><a href="mailto:hello@tanushreecollection.com">Email Support</a></li>
+          <li><a href="#">Track Order</a></li>
+          <li><a href="#">FAQs</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-divider"></div>
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2025 Tanushree Collection. All rights reserved. Malda, West Bengal, India.</p>
+      <div class="footer-legal">
+        <a href="privacy-policy.html">Privacy</a>
+        <a href="refund-policy.html">Refund</a>
+        <a href="disclaimer.html">Disclaimer</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<a href="https://wa.me/919999999999" class="wa-btn" target="_blank" rel="noopener" aria-label="Chat on WhatsApp">
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+  </svg>
+</a>
+
+<script>
+  window.addEventListener('load', () => {
+    setTimeout(() => document.getElementById('loader').classList.add('hidden'), 1300);
+  });
+  window.addEventListener('scroll', () => {
+    document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+  });
+  const hbg = document.getElementById('hamburger');
+  const mob = document.getElementById('mobileMenu');
+  hbg.addEventListener('click', () => {
+    hbg.classList.toggle('open');
+    mob.classList.toggle('open');
+  });
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.section').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
