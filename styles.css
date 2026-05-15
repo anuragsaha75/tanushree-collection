@@ -337,9 +337,9 @@ h1, h2, h3, h4, h5 {
 /* ─── HERO BANNER ─── */
 .hero-banner {
   position: relative;
-  height: 92vh;
+  height: 100vh;
   min-height: 580px;
-  max-height: 900px;
+
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -349,12 +349,19 @@ h1, h2, h3, h4, h5 {
 .hero-bg {
   position: absolute;
   inset: 0;
+
   background-size: cover;
-  background-position: center 30%;
+  background-position: center top;
   background-repeat: no-repeat;
-  transform: scale(1.06);
+
+  transform: scale(1);
   transition: transform 8s ease;
-  filter: brightness(0.55) saturate(0.8);
+
+  filter: brightness(0.42) saturate(0.9);
+}
+
+.hero-banner:hover .hero-bg {
+  transform: scale(1.02);
 }
 
 .hero-banner:hover .hero-bg { transform: scale(1.02); }
@@ -823,6 +830,25 @@ h1, h2, h3, h4, h5 {
   .nav-contact-btn { display: none; }
 }
 
+
+/* MOBILE HERO FIX */
+
+@media(max-width:768px){
+
+  .hero-banner{
+    height: 78vh;
+    min-height: 520px;
+  }
+
+  .hero-bg{
+    background-position: center center;
+  }
+
+  .hero-content h1{
+    font-size: clamp(2.8rem, 14vw, 5rem);
+  }
+
+}
 
 
 
