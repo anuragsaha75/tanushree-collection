@@ -349,7 +349,7 @@ h1, h2, h3, h4, h5 {
 .hero-bg {
   position: absolute;
   inset: 0;
-
+  background-image: url('visit.jpg');
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;
@@ -358,6 +358,20 @@ h1, h2, h3, h4, h5 {
   transition: transform 8s ease;
 
   filter: brightness(0.42) saturate(0.9);
+}
+@media (max-width: 768px) {
+
+  .hero-bg {
+    background-image: url('visit-mobile.jpg');
+    background-size: cover;
+    background-position: center center;
+
+    transform: none;
+    transition: none;
+
+    filter: brightness(0.5);
+  }
+
 }
 
 .hero-banner:hover .hero-bg {
