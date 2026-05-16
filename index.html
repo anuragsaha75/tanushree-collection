@@ -6,19 +6,29 @@
   <meta name="keywords" content="jewellery, earrings, necklace, bangles, luxury jewellery, Tanushree Collection, Malda jewellery shop, tanushree collection, তনুশ্রী কালেকশন">
 
   <meta name="author" content="Tanushree Collection">
+
   <meta property="og:title" content="Tanushree Collection">
   <meta property="og:site_name" content="Tanushree Collection">
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <meta property="og:image" content="https://tanushree-collections.web.app/logo.jpg">
   <meta property="og:description" content="Premium Luxury Jewellery Store">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://tanushree-collections.web.app">
+
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" href="/favicon.ico">
+
+  <meta name="application-name" content="Tanushree Collection">
+
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+
   <title>Tanushree Collection — Premium Jewellery</title>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
+
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400;1,600&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="styles.css">
   <style>
     /* ─── FILTERS LAYOUT ─── */
@@ -271,16 +281,495 @@
       .products-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; padding: 0.5rem 1rem 4rem; }
       .product-card img { height: 180px; }
     }
+
+    /* ════════════════════════════════════════════════════
+       HAMBURGER — visible on ALL screens (desktop + mobile)
+    ════════════════════════════════════════════════════ */
+    .mob-hamburger {
+      display: flex; /* always visible */
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      width: 44px;
+      height: 44px;
+      padding: 10px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+      position: relative;
+      z-index: 1;
+    }
+    .mob-hamburger span {
+      display: block;
+      width: 22px;
+      height: 1.5px;
+      background: var(--gold);
+      border-radius: 2px;
+      transition: transform 0.35s cubic-bezier(0.23,1,0.32,1),
+                  opacity   0.25s ease,
+                  width     0.3s  ease;
+      transform-origin: center;
+      pointer-events: none;
+    }
+    /* Hover state — subtle gold glow on desktop */
+    .mob-hamburger:hover span {
+      background: #e8c97a;
+    }
+
+    /* ════════════════════════════════════════════════════
+       MOBILE SIDEBAR OVERLAY
+    ════════════════════════════════════════════════════ */
+    .mob-sidebar-overlay {
+      display: none; /* only mobile */
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0);
+      z-index: 500;
+      transition: background 0.42s cubic-bezier(0.23,1,0.32,1);
+      pointer-events: none;
+    }
+    @media (max-width: 768px) {
+      .mob-sidebar-overlay { display: block; }
+    }
+    .mob-sidebar-overlay.open {
+      background: rgba(0, 0, 0, 0.72);
+      pointer-events: all;
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+    }
+
+    /* ════════════════════════════════════════════════════
+       MOBILE SIDEBAR PANEL
+    ════════════════════════════════════════════════════ */
+    .mob-sidebar {
+      position: fixed;
+      top: 0;
+      left: -105%; /* start fully off-screen */
+      width: min(320px, 88vw);
+      height: 100dvh; /* dynamic viewport height — iOS safe */
+      background: #0a0705;
+      border-right: 1px solid rgba(201,168,76,0.18);
+      z-index: 501;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      /* Smooth cubic slide */
+      transition: left 0.44s cubic-bezier(0.23,1,0.32,1);
+      box-shadow: 12px 0 60px rgba(0,0,0,0.7);
+    }
+    .mob-sidebar.open {
+      left: 0;
+    }
+
+    /* Gold shimmer line at top */
+    .mob-sidebar::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(201,168,76,0.6), transparent);
+    }
+
+    /* ── Sidebar Header ── */
+    .mob-sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.35rem 1.4rem 1.2rem;
+      border-bottom: 1px solid rgba(201,168,76,0.1);
+      flex-shrink: 0;
+    }
+    .mob-sidebar-brand {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .mob-sidebar-brand-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #f0e8d8;
+      letter-spacing: 0.06em;
+      line-height: 1;
+    }
+    .mob-sidebar-brand-sub {
+      font-family: 'Jost', sans-serif;
+      font-size: 0.55rem;
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+      color: rgba(201,168,76,0.6);
+      font-weight: 400;
+    }
+
+    /* Close button — SVG only, zero pseudo-element risk */
+    .mob-sidebar-close {
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: 1px solid rgba(201,168,76,0.2);
+      border-radius: 50%;
+      cursor: pointer;
+      color: transparent; /* kill any text/emoji bleed */
+      flex-shrink: 0;
+      transition: border-color 0.25s, background 0.25s, transform 0.3s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .mob-sidebar-close::before,
+    .mob-sidebar-close::after { display: none !important; content: none !important; }
+    .mob-sidebar-close:active {
+      border-color: rgba(201,168,76,0.6);
+      background: rgba(201,168,76,0.08);
+      transform: rotate(90deg);
+    }
+    .mob-sidebar-close svg {
+      width: 15px;
+      height: 15px;
+      stroke: rgba(201,168,76,0.85);
+      fill: none;
+      stroke-width: 1.5;
+      stroke-linecap: round;
+      display: block;
+      flex-shrink: 0;
+      pointer-events: none;
+    }
+
+    /* ── Sidebar Nav Links ── */
+    .mob-sidebar-nav {
+      flex: 1;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 0.6rem 0 1.5rem;
+    }
+    .mob-sidebar-nav a {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.5rem;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(201,168,76,0.06);
+      position: relative;
+      /* Stagger entrance */
+      opacity: 0;
+      transform: translateX(-18px);
+      transition:
+        color     0.25s ease,
+        background 0.25s ease,
+        opacity   0.38s cubic-bezier(0.23,1,0.32,1),
+        transform 0.38s cubic-bezier(0.23,1,0.32,1);
+    }
+    .mob-sidebar-nav a:first-child { border-top: 1px solid rgba(201,168,76,0.06); }
+    /* Entrance animation when sidebar opens */
+    .mob-sidebar.open .mob-sidebar-nav a {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    /* Stagger delays */
+    .mob-sidebar.open .mob-sidebar-nav a:nth-child(1) { transition-delay: 0.07s; }
+    .mob-sidebar.open .mob-sidebar-nav a:nth-child(2) { transition-delay: 0.12s; }
+    .mob-sidebar.open .mob-sidebar-nav a:nth-child(3) { transition-delay: 0.17s; }
+    .mob-sidebar.open .mob-sidebar-nav a:nth-child(4) { transition-delay: 0.22s; }
+    .mob-sidebar.open .mob-sidebar-nav a:nth-child(5) { transition-delay: 0.27s; }
+
+    .mob-sidebar-nav a:active {
+      background: rgba(201,168,76,0.07);
+    }
+
+    /* Gold left-bar on active tap */
+    .mob-sidebar-nav a::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 20%; bottom: 20%;
+      width: 2px;
+      background: var(--gold, #c9a84c);
+      border-radius: 0 2px 2px 0;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .mob-sidebar-nav a:active::before { opacity: 1; }
+
+    /* Icon wrapper */
+    .mob-nav-icon {
+      width: 36px;
+      height: 36px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(201,168,76,0.07);
+      border: 1px solid rgba(201,168,76,0.14);
+      border-radius: 9px;
+      flex-shrink: 0;
+      font-size: 1.05rem;
+      transition: background 0.25s, border-color 0.25s;
+    }
+    .mob-sidebar-nav a:active .mob-nav-icon {
+      background: rgba(201,168,76,0.14);
+      border-color: rgba(201,168,76,0.3);
+    }
+
+    /* Text block */
+    .mob-nav-text { display: flex; flex-direction: column; gap: 1px; }
+    .mob-nav-label {
+      font-family: 'Jost', sans-serif;
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: #e8dfc8;
+      letter-spacing: 0.04em;
+    }
+    .mob-nav-sub {
+      font-family: 'Jost', sans-serif;
+      font-size: 0.62rem;
+      color: rgba(201,168,76,0.55);
+      letter-spacing: 0.1em;
+      font-weight: 300;
+    }
+
+    /* Chevron */
+    .mob-nav-chevron {
+      margin-left: auto;
+      color: rgba(201,168,76,0.3);
+      font-size: 0.75rem;
+      transition: color 0.25s, transform 0.25s;
+      flex-shrink: 0;
+    }
+    .mob-sidebar-nav a:active .mob-nav-chevron {
+      color: rgba(201,168,76,0.7);
+      transform: translateX(3px);
+    }
+
+    /* ── Sidebar Footer ── */
+    .mob-sidebar-footer {
+      padding: 1.1rem 1.5rem;
+      border-top: 1px solid rgba(201,168,76,0.1);
+      flex-shrink: 0;
+    }
+    .mob-sidebar-footer-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 0.72rem;
+      color: rgba(201,168,76,0.35);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+    .mob-sidebar-footer-line {
+      width: 40px;
+      height: 1px;
+      background: rgba(201,168,76,0.2);
+      margin: 0.6rem auto 0.5rem;
+    }
+    .mob-sidebar-footer-loc {
+      font-family: 'Jost', sans-serif;
+      font-size: 0.6rem;
+      color: rgba(247,242,234,0.25);
+      letter-spacing: 0.12em;
+      text-align: center;
+      font-weight: 300;
+    }
+    /* ════════════════════════════════════════════════════
+       NAVBAR LAYOUT FIX — desktop brand group + mobile account
+    ════════════════════════════════════════════════════ */
+
+    /*
+      tc-nav is already display:flex in styles.css.
+      We restructure the left cluster and push nav-links to the right.
+    */
+
+    /* ── LEFT BRAND CLUSTER: [Hamburger][favicon][Brand Text] tight together ── */
+    .tc-nav {
+      display: flex !important;
+      align-items: center !important;
+      gap: 0 !important;            /* no gap — we control spacing manually */
+    }
+
+    /* The hamburger already has its own padding; give it a tiny right nudge */
+    .mob-hamburger {
+      margin-right: 6px;
+    }
+
+    /* favicon — always visible on all screen sizes */
+    .brand-logo-img {
+      display: block;               /* show on ALL screens */
+      width: 32px;
+      height: 32px;
+      object-fit: contain;
+      object-position: center;
+      border-radius: 6px;
+      box-shadow: 0 0 0 1px rgba(201,168,76,0.22), 0 2px 8px rgba(0,0,0,0.4);
+      flex-shrink: 0;
+      image-rendering: -webkit-optimize-contrast;
+      image-rendering: crisp-edges;
+      margin-right: 8px;            /* small gap before brand text */
+    }
+
+    /* brand-name wraps both favicon + text in a tight flex row */
+    .brand-name {
+      display: flex !important;
+      align-items: center !important;
+      flex-shrink: 0;
+      min-width: 0;
+      /* flex:1 pushes nav-links to the right */
+      flex: 1;
+    }
+
+    /* brand text — desktop: visible; mobile: hidden (brand shown via favicon) */
+    .brand-text {
+      display: block;             /* visible on desktop */
+      white-space: nowrap;
+    }
+
+    /* nav-links stays at the right edge, never grows */
+    .nav-links {
+      flex-shrink: 0;
+      margin-left: auto;          /* safety: already pushed by brand-name flex:1 */
+    }
+
+    /* ── MOBILE ── */
+    @media (max-width: 768px) {
+      /* Hide brand text on mobile — favicon alone represents the brand */
+      .brand-text {
+        display: none;
+      }
+
+      /* Remove the right margin on favicon since text is gone */
+      .brand-logo-img {
+        margin-right: 0;
+      }
+
+      /* Show Account link on mobile navbar */
+      .nav-account-link {
+        display: inline-flex !important;
+        align-items: center;
+        white-space: nowrap;
+      }
+
+      /* Tighten nav-links gap on mobile */
+      .nav-links {
+        gap: 0.4rem !important;
+      }
+
+      /* Hide Contact button on mobile to save space (it's in the sidebar) */
+      .nav-contact-btn {
+        display: none !important;
+      }
+    }
+
+    /* Extra-small phones: tighten cart button text so it's never cut off */
+    @media (max-width: 380px) {
+      .nav-cart-btn {
+        font-size: 0.72rem !important;
+        padding: 0.35rem 0.6rem !important;
+        letter-spacing: 0 !important;
+      }
+      .nav-account-link {
+        font-size: 0.72rem !important;
+        padding: 0.35rem 0.5rem !important;
+      }
+    }
   </style>
 </head>
 <body>
 <div id="toastContainer"></div>
 
+<!-- ─── MOBILE SIDEBAR OVERLAY ─── -->
+<div class="mob-sidebar-overlay" id="mobSidebarOverlay" onclick="closeMobSidebar()"></div>
+
+<!-- ─── MOBILE SIDEBAR PANEL ─── -->
+<div class="mob-sidebar" id="mobSidebar" role="dialog" aria-modal="true" aria-label="Navigation menu">
+
+  <div class="mob-sidebar-header">
+    <div class="mob-sidebar-brand">
+      <div class="mob-sidebar-brand-name">Tanushree Collection</div>
+      <div class="mob-sidebar-brand-sub">Premium Jewellery &amp; Fashion</div>
+    </div>
+    <button class="mob-sidebar-close" id="mobSidebarClose" aria-label="Close menu" type="button"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+  </div>
+
+  <nav class="mob-sidebar-nav" aria-label="Mobile navigation">
+
+    <a href="account.html">
+      <span class="mob-nav-icon" aria-hidden="true">📦</span>
+      <span class="mob-nav-text">
+        <span class="mob-nav-label">Orders &amp; History</span>
+        <span class="mob-nav-sub">Track your purchases</span>
+      </span>
+      <span class="mob-nav-chevron" aria-hidden="true">›</span>
+    </a>
+
+    <a href="javascript:void(0)" onclick="closeMobSidebar();openCart();">
+      <span class="mob-nav-icon" aria-hidden="true">🛍</span>
+      <span class="mob-nav-text">
+        <span class="mob-nav-label">Cart</span>
+        <span class="mob-nav-sub">View your bag</span>
+      </span>
+      <span class="mob-nav-chevron" aria-hidden="true">›</span>
+    </a>
+
+    <a href="tanushree-collection-about.html">
+      <span class="mob-nav-icon" aria-hidden="true">✦</span>
+      <span class="mob-nav-text">
+        <span class="mob-nav-label">About Us</span>
+        <span class="mob-nav-sub">Our story &amp; vision</span>
+      </span>
+      <span class="mob-nav-chevron" aria-hidden="true">›</span>
+    </a>
+
+    <a href="refund-policy.html">
+      <span class="mob-nav-icon" aria-hidden="true">↩</span>
+      <span class="mob-nav-text">
+        <span class="mob-nav-label">Refund Policy</span>
+        <span class="mob-nav-sub">Easy hassle-free refunds</span>
+      </span>
+      <span class="mob-nav-chevron" aria-hidden="true">›</span>
+    </a>
+
+    <a href="return-policy.html">
+      <span class="mob-nav-icon" aria-hidden="true">🔄</span>
+      <span class="mob-nav-text">
+        <span class="mob-nav-label">Return Policy</span>
+        <span class="mob-nav-sub">Simple return process</span>
+      </span>
+      <span class="mob-nav-chevron" aria-hidden="true">›</span>
+    </a>
+
+  </nav>
+
+  <div class="mob-sidebar-footer">
+    <div class="mob-sidebar-footer-line"></div>
+    <div class="mob-sidebar-footer-brand">Tanushree Collection</div>
+    <div class="mob-sidebar-footer-loc">Ramkrishna Pally · Malda · West Bengal</div>
+  </div>
+
+</div>
+
 <!-- ─── NAVBAR ─── -->
 <nav class="tc-nav">
-  <div class="brand-name">Tanushree Collection</div>
+  <!-- Hamburger: mobile only, top-left -->
+  <button class="mob-hamburger" id="mobHamburger" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobSidebar" type="button">
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+  </button>
+
+  <!-- Desktop: text logo | Mobile: favicon image logo -->
+  <div class="brand-name" aria-label="Tanushree Collection">
+    <!-- Text logo — desktop only -->
+    <span class="brand-text">Tanushree Collection</span>
+    <!-- Image logo — mobile only -->
+    <img
+      class="brand-logo-img"
+      src="favicon.ico"
+      alt="Tanushree Collection"
+      width="36"
+      height="36"
+    />
+  </div>
+
   <div class="nav-links">
-    <a href="account.html">Account</a>
+    <a href="account.html" class="nav-account-link">Account</a>
     <button class="nav-contact-btn" onclick="openContactModal()">📞 Contact</button>
     <button class="nav-cart-btn" onclick="openCart()">
       🛍 Cart <span class="nav-cart-badge" id="cartBadge">0</span>
@@ -293,9 +782,10 @@
   <div class="hero-bg"></div>
   <div class="hero-overlay"></div>
   <div class="hero-content">
-    <div class="hero-tag">✦ Handcrafted Luxury Since Forever ✦</div>
+    <br><br><br><br><br><br><br>
     <h1><em>Close to</em><em>Heart</em></h1>
     <div class="hero-divider"></div>
+    <div class="hero-tag">✦ Handcrafted Luxury Since Forever ✦</div>
     <p>Worn with Grace</p>
     <p style="margin-top:0.4rem;font-size:0.8rem;letter-spacing:0.12em;">Ramkrishna Pally, Malda, West Bengal, pin-732101</p>
   </div>
@@ -352,6 +842,7 @@
     <div>
       <div class="footer-heading">Quick Links</div>
       <a class="footer-link" href="index.html">Shop</a>
+      <a class="footer-link" href="tanushree-collection-about.html">About Us</a>
       <a class="footer-link" href="refund-policy.html">Refund Policy</a>
       <a class="footer-link" href="return-policy.html">Return Policy</a>
       <a class="footer-link" href="privacy-policy.html">Privacy Policy</a>
@@ -694,6 +1185,45 @@ function showToast(msg, type = 'success') {
   document.getElementById('toastContainer').appendChild(t);
   setTimeout(() => t.remove(), 3000);
 }
+
+// ── MOBILE SIDEBAR ──
+var mobSidebar        = document.getElementById('mobSidebar');
+var mobSidebarOverlay = document.getElementById('mobSidebarOverlay');
+var mobHamburger      = document.getElementById('mobHamburger');
+var mobSidebarClose   = document.getElementById('mobSidebarClose');
+var mobSidebarOpen    = false;
+
+function openMobSidebar() {
+  mobSidebarOpen = true;
+  mobSidebar.classList.add('open');
+  mobSidebarOverlay.classList.add('open');
+  mobHamburger.setAttribute('aria-expanded', 'true');
+  document.body.style.overflow = 'hidden';
+  document.body.style.position = 'relative';
+}
+
+function closeMobSidebar() {
+  mobSidebarOpen = false;
+  mobSidebar.classList.remove('open');
+  mobSidebarOverlay.classList.remove('open');
+  mobHamburger.setAttribute('aria-expanded', 'false');
+  document.body.style.overflow = '';
+  document.body.style.position = '';
+}
+
+mobHamburger.addEventListener('click', function(e) {
+  e.stopPropagation();
+  if (mobSidebarOpen) { closeMobSidebar(); } else { openMobSidebar(); }
+});
+
+mobSidebarClose.addEventListener('click', function(e) {
+  e.stopPropagation();
+  closeMobSidebar();
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape' && mobSidebarOpen) closeMobSidebar();
+});
 
 // ── INIT ──
 updateCartBadge();

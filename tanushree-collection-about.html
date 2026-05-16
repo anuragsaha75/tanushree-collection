@@ -1,0 +1,2501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#060606" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<title>About Us — Tanushree Collection</title>
+
+<!-- Preconnect for faster font loading -->
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<!-- FIX: Removed duplicate display=swap param -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Cinzel:wght@400;600&family=Raleway:wght@300;400;500&display=swap" rel="stylesheet" />
+
+<style>
+/* ═══════════════════════════════════════════════════════════
+   CSS CUSTOM PROPERTIES — LUXURY TOKEN SYSTEM
+═══════════════════════════════════════════════════════════ */
+:root {
+  /* Gold palette */
+  --gold:         #c9a84c;
+  --gold-light:   #e8c97a;
+  --gold-dim:     #8a6d2f;
+  --gold-pale:    rgba(201,168,76,0.10);
+  --gold-glow:    rgba(201,168,76,0.22);
+
+  /* Black palette */
+  --black:        #060606;
+  --black-2:      #0d0d0d;
+  --black-3:      #111111;
+  --black-4:      #161616;
+
+  /* White palette */
+  --white:        #f7f2ea;
+  --white-dim:    rgba(247,242,234,0.72);
+  --white-faint:  rgba(247,242,234,0.42);
+
+  /* Glass effects */
+  --glass-bg:     rgba(255,255,255,0.030);
+  --glass-border: rgba(201,168,76,0.15);
+
+  /* Typography */
+  --ff-display:   'Cinzel', serif;
+  --ff-serif:     'Cormorant Garamond', serif;
+  --ff-sans:      'Raleway', sans-serif;
+
+  /* Transitions — eased for luxury feel */
+  --transition:   0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  --trans-fast:   0.28s cubic-bezier(0.23, 1, 0.32, 1);
+
+  /* Spacing scale — mobile-first, scaled up */
+  --section-pad:  clamp(60px, 10vw, 130px);
+  --container-px: clamp(20px, 6vw, 60px);
+
+  /* Nav height for scroll offset calculations */
+  --nav-h:        70px;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   RESET & BASE
+═══════════════════════════════════════════════════════════ */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent; /* Remove iOS tap flash */
+}
+
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+  overscroll-behavior-x: none; /* Prevent iOS horizontal rubber-band */
+}
+
+body {
+  background: var(--black);
+  color: var(--white);
+  font-family: var(--ff-serif);
+  font-size: clamp(15px, 2vw, 18px);
+  line-height: 1.8;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch; /* Smooth momentum scrolling on iOS */
+}
+
+/* Prevent text overflow globally */
+h1, h2, h3, h4, p, a, span, li {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+img, svg { max-width: 100%; display: block; }
+
+::selection { background: var(--gold-dim); color: var(--white); }
+
+/* ═══════════════════════════════════════════════════════════
+   GLOBAL ATMOSPHERE — Disabled on mobile (GPU perf)
+═══════════════════════════════════════════════════════════ */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: min(900px, 100vw);
+  height: 600px;
+  background: radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.06) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LOADER
+═══════════════════════════════════════════════════════════ */
+#loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: var(--black);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  transition: opacity 0.8s ease, visibility 0.8s ease;
+}
+#loader.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.loader-brand {
+  font-family: var(--ff-display);
+  font-size: clamp(0.78rem, 3.5vw, 1.4rem);
+  letter-spacing: 0.3em;
+  color: var(--gold);
+  text-transform: uppercase;
+  text-align: center;
+  padding: 0 24px;
+  animation: loaderPulse 2s ease-in-out infinite;
+}
+@keyframes loaderPulse { 0%,100%{opacity:0.35} 50%{opacity:1} }
+
+.loader-ring {
+  width: 48px; height: 48px;
+  border: 1px solid var(--gold-dim);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: loaderSpin 1.2s linear infinite;
+  will-change: transform;
+}
+@keyframes loaderSpin { to { transform: rotate(360deg); } }
+
+.loader-line {
+  width: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  animation: loaderExpand 1.8s ease-in-out infinite;
+}
+@keyframes loaderExpand {
+  0%   { width: 0; opacity: 0; }
+  50%  { width: min(140px, 55vw); opacity: 1; }
+  100% { width: 0; opacity: 0; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   NAVBAR
+   FIX: Rebuilt mobile nav to be fully reliable
+═══════════════════════════════════════════════════════════ */
+#navbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 900;
+  padding: 18px var(--container-px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  transition: background var(--trans-fast), padding var(--trans-fast), border-color var(--trans-fast);
+  min-width: 0;
+}
+#navbar.scrolled {
+  background: rgba(6,6,6,0.94);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--glass-border);
+  padding: 12px var(--container-px);
+}
+
+/* Logo */
+.nav-logo {
+  display: flex;
+  flex-direction: column;
+  line-height: 1;
+  text-decoration: none;
+  gap: 3px;
+  flex-shrink: 0;
+  min-width: 0;
+}
+.nav-logo-main {
+  font-family: var(--ff-display);
+  font-size: clamp(0.68rem, 2.5vw, 0.95rem);
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  text-transform: uppercase;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 54vw;
+}
+.nav-logo-sub {
+  font-family: var(--ff-serif);
+  font-size: clamp(0.5rem, 1.4vw, 0.62rem);
+  letter-spacing: 0.16em;
+  color: var(--white-faint);
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Desktop nav links */
+.nav-links {
+  display: flex;
+  gap: clamp(14px, 2.5vw, 34px);
+  list-style: none;
+  flex-shrink: 1;
+}
+.nav-links a {
+  font-family: var(--ff-sans);
+  font-size: clamp(0.58rem, 0.9vw, 0.70rem);
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: var(--white-dim);
+  text-decoration: none;
+  text-transform: uppercase;
+  position: relative;
+  white-space: nowrap;
+  transition: color var(--trans-fast);
+}
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  bottom: -3px; left: 0;
+  width: 0; height: 1px;
+  background: var(--gold);
+  transition: width 0.35s ease;
+}
+.nav-links a:hover { color: var(--gold); }
+.nav-links a:hover::after { width: 100%; }
+
+/* ─── Hamburger Button ─── */
+/* FIX: Redesigned for reliability — bigger touch target, simpler structure */
+.nav-hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 5px;
+  cursor: pointer;
+  padding: 10px;
+  border: none;
+  background: none;
+  flex-shrink: 0;
+  /* Apple HIG minimum touch target 44×44px */
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  /* Ensure it's always above everything it needs to be */
+  position: relative;
+  z-index: 910;
+}
+.nav-hamburger span {
+  width: 22px; height: 1px;
+  background: var(--gold);
+  display: block;
+  pointer-events: none;
+  transition: transform 0.35s ease, opacity 0.35s ease, width 0.35s ease;
+  transform-origin: center;
+}
+/* Animated X state — triggered by [aria-expanded="true"] for CSS-only fallback safety */
+.nav-hamburger[aria-expanded="true"] span:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+.nav-hamburger[aria-expanded="true"] span:nth-child(2) {
+  opacity: 0;
+  width: 0;
+}
+.nav-hamburger[aria-expanded="true"] span:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
+/* FIX: When menu is open, fully hide the hamburger behind the overlay.
+   The hamburger animates into an X shape (z-index:910) and was showing THROUGH
+   the overlay (z-index:850), creating the double-X bug. */
+.nav-hamburger[aria-expanded="true"] {
+  opacity: 0;
+  pointer-events: none;
+  z-index: 800; /* Sink below overlay (z-index:950) */
+  transition: opacity 0.2s ease, z-index 0s 0.2s;
+}
+
+/* FIX: When mobile menu is open, disable the navbar so it can't intercept close-button taps.
+   Navbar z-index:900 sits above overlay z-index:950 in the top area where close button lives. */
+body.menu-open #navbar {
+  pointer-events: none;
+}
+
+/* ─── Mobile Nav Overlay ─── */
+/* FIX: Changed from display:none → display:flex toggle (which breaks transitions)
+        to visibility + opacity + pointer-events approach for smooth animation */
+.nav-mobile {
+  position: fixed;
+  inset: 0;
+  z-index: 950; /* MUST be above navbar (z-index:900) so close button is clickable */
+  /* Deep opaque background — no heavy blur on mobile for perf */
+  background: rgba(6,6,6,0.98);
+  display: flex;                /* Always flex — transition-safe */
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  /* CLOSED state */
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  /* Smooth cubic ease */
+  transition: opacity 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+              visibility 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  /* Safe area insets for notched phones */
+  padding-top: max(80px, env(safe-area-inset-top, 80px));
+  padding-bottom: max(40px, env(safe-area-inset-bottom, 40px));
+  padding-left: 32px;
+  padding-right: 32px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+/* OPEN state */
+.nav-mobile.open {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: all;
+}
+
+/* Gold accent line at top of mobile menu */
+.nav-mobile::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 10%; right: 10%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+/* Mobile nav logo inside overlay */
+.nav-mobile-brand {
+  font-family: var(--ff-display);
+  font-size: clamp(0.65rem, 3vw, 0.85rem);
+  letter-spacing: 0.3em;
+  color: var(--gold-dim);
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: clamp(32px, 7vw, 56px);
+  position: relative;
+}
+.nav-mobile-brand::after {
+  content: '';
+  display: block;
+  width: 40px;
+  height: 1px;
+  background: var(--gold-dim);
+  margin: 10px auto 0;
+}
+
+/* Mobile nav links — staggered slide-in */
+.nav-mobile-links {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  width: 100%;
+}
+.nav-mobile-links a {
+  font-family: var(--ff-display);
+  font-size: clamp(1.05rem, 5.5vw, 1.6rem);
+  letter-spacing: 0.18em;
+  color: var(--white-faint);
+  text-decoration: none;
+  text-transform: uppercase;
+  padding: clamp(13px, 3vw, 18px) 0;
+  width: 100%;
+  text-align: center;
+  border-bottom: 1px solid rgba(201,168,76,0.07);
+  position: relative;
+  /* Individual link animation */
+  transform: translateY(16px);
+  opacity: 0;
+  transition: color 0.28s ease,
+              transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+              opacity 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.nav-mobile-links a:first-child { border-top: 1px solid rgba(201,168,76,0.07); }
+/* Reveal links when menu opens */
+.nav-mobile.open .nav-mobile-links a {
+  opacity: 1;
+  transform: translateY(0);
+}
+/* Stagger delays for each link */
+.nav-mobile.open .nav-mobile-links a:nth-child(1) { transition-delay: 0.05s; }
+.nav-mobile.open .nav-mobile-links a:nth-child(2) { transition-delay: 0.10s; }
+.nav-mobile.open .nav-mobile-links a:nth-child(3) { transition-delay: 0.15s; }
+.nav-mobile.open .nav-mobile-links a:nth-child(4) { transition-delay: 0.20s; }
+.nav-mobile.open .nav-mobile-links a:nth-child(5) { transition-delay: 0.25s; }
+.nav-mobile.open .nav-mobile-links a:nth-child(6) { transition-delay: 0.30s; }
+.nav-mobile.open .nav-mobile-links a:nth-child(7) { transition-delay: 0.35s; }
+
+.nav-mobile-links a:active,
+.nav-mobile-links a:hover { color: var(--gold); }
+
+/* Close button — single clean SVG X, no pseudo-element icons */
+.nav-close {
+  position: absolute;
+  /* Respect iOS status bar */
+  top: max(20px, env(safe-area-inset-top, 20px));
+  right: 20px;
+  z-index: 960; /* Above overlay (z-index:950) */
+  pointer-events: auto;
+  background: none;
+  border: 1px solid rgba(201,168,76,0.2);
+  /* FIX: no color set here — prevents any text/content pseudo-elements from inheriting a visible color */
+  color: transparent;
+  cursor: pointer;
+  /* Touch target */
+  width: 44px; height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: border-color 0.28s, background 0.28s, transform 0.28s;
+  /* FIX: Explicitly kill any pseudo-element content on the button itself */
+  overflow: hidden;
+}
+/* FIX: Nuke ::before and ::after on the close button so no extra X can appear */
+.nav-close::before,
+.nav-close::after {
+  display: none !important;
+  content: none !important;
+}
+.nav-close:hover,
+.nav-close:active {
+  border-color: var(--gold);
+  background: rgba(201,168,76,0.08);
+  transform: rotate(90deg);
+}
+/* SVG X icon — the ONE and ONLY close icon */
+.nav-close svg {
+  width: 16px; height: 16px;
+  stroke: var(--gold);
+  fill: none;
+  stroke-width: 1.5;
+  pointer-events: none;
+  flex-shrink: 0;
+  display: block;
+}
+
+/* WhatsApp CTA at bottom of mobile menu */
+.nav-mobile-cta {
+  margin-top: clamp(28px, 6vw, 44px);
+  font-family: var(--ff-sans);
+  font-size: clamp(0.58rem, 2.5vw, 0.65rem);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--black);
+  background: linear-gradient(135deg, var(--gold-light), var(--gold));
+  padding: 14px 28px;
+  text-decoration: none;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  /* Stagger reveal */
+  transform: translateY(16px);
+  opacity: 0;
+  transition: opacity 0.4s ease 0.4s,
+              transform 0.4s cubic-bezier(0.23, 1, 0.32, 1) 0.4s,
+              box-shadow 0.28s ease;
+}
+.nav-mobile.open .nav-mobile-cta {
+  opacity: 1;
+  transform: translateY(0);
+}
+.nav-mobile-cta:active {
+  box-shadow: 0 8px 28px rgba(201,168,76,0.3);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ORNAMENT DIVIDER
+═══════════════════════════════════════════════════════════ */
+.ornament {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
+  margin: 14px 0;
+}
+.ornament-line {
+  flex: 1;
+  max-width: 100px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold-dim));
+}
+.ornament-line.r { background: linear-gradient(90deg, var(--gold-dim), transparent); }
+.ornament-diamond {
+  width: 5px; height: 5px;
+  background: var(--gold);
+  transform: rotate(45deg);
+  flex-shrink: 0;
+}
+
+.section-label {
+  font-family: var(--ff-sans);
+  font-size: clamp(0.56rem, 1.4vw, 0.62rem);
+  letter-spacing: 0.30em;
+  color: var(--gold);
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   SCROLL REVEAL — Reduced motion on mobile
+═══════════════════════════════════════════════════════════ */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.75s ease, transform 0.75s ease;
+  will-change: opacity, transform;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+  will-change: auto;
+}
+.reveal-left {
+  opacity: 0;
+  transform: translateX(-24px);
+  transition: opacity 0.75s ease, transform 0.75s ease;
+  will-change: opacity, transform;
+}
+.reveal-right {
+  opacity: 0;
+  transform: translateX(24px);
+  transition: opacity 0.75s ease, transform 0.75s ease;
+  will-change: opacity, transform;
+}
+.reveal-left.visible,
+.reveal-right.visible {
+  opacity: 1;
+  transform: translate(0);
+  will-change: auto;
+}
+
+/* Stagger delays — reduced to feel snappier */
+.delay-1 { transition-delay: 0.10s; }
+.delay-2 { transition-delay: 0.20s; }
+.delay-3 { transition-delay: 0.30s; }
+.delay-4 { transition-delay: 0.40s; }
+
+/* ═══════════════════════════════════════════════════════════
+   LAYOUT SHELLS
+═══════════════════════════════════════════════════════════ */
+section { position: relative; z-index: 1; }
+
+.container {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 0 var(--container-px);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   TYPOGRAPHY HELPERS
+═══════════════════════════════════════════════════════════ */
+.section-heading {
+  font-family: var(--ff-display);
+  font-size: clamp(1.4rem, 4vw, 2.7rem);
+  font-weight: 400;
+  letter-spacing: 0.07em;
+  color: var(--white);
+  line-height: 1.28;
+  margin-bottom: 18px;
+}
+.section-heading span { color: var(--gold); }
+
+.body-text {
+  font-family: var(--ff-serif);
+  font-size: clamp(0.97rem, 1.7vw, 1.12rem);
+  font-weight: 300;
+  color: var(--white-dim);
+  line-height: 1.85;
+  letter-spacing: 0.01em;
+}
+.body-text + .body-text { margin-top: 16px; }
+
+.text-center { text-align: center; }
+.max-680 { max-width: 680px; margin-left: auto; margin-right: auto; }
+
+/* ═══════════════════════════════════════════════════════════
+   GOLD SEPARATOR
+═══════════════════════════════════════════════════════════ */
+.gold-sep {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--gold-dim) 30%, var(--gold) 50%, var(--gold-dim) 70%, transparent 100%);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   1. HERO
+═══════════════════════════════════════════════════════════ */
+#hero {
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: clamp(100px, 18vw, 140px) var(--container-px) clamp(80px, 12vw, 110px);
+  position: relative;
+  overflow: hidden;
+}
+#hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 80% 55% at 50% 10%, rgba(201,168,76,0.09) 0%, transparent 60%),
+    radial-gradient(ellipse 50% 40% at 20% 80%, rgba(201,168,76,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 40% at 80% 80%, rgba(201,168,76,0.04) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+/* Floating particles — desktop only (spawned via JS) */
+.particle {
+  position: absolute;
+  width: 2px; height: 2px;
+  background: var(--gold);
+  border-radius: 50%;
+  animation: floatParticle linear infinite;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+@keyframes floatParticle {
+  0%   { transform: translateY(100vh) scale(0); opacity: 0; }
+  10%  { opacity: 0.45; }
+  90%  { opacity: 0.45; }
+  100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+}
+
+.hero-eyebrow {
+  font-family: var(--ff-sans);
+  font-size: clamp(0.56rem, 1.8vw, 0.66rem);
+  letter-spacing: 0.38em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: clamp(14px, 3vw, 26px);
+  animation: fadeUp 1.2s ease 0.3s both;
+  padding: 0 8px;
+}
+
+.hero-title {
+  font-family: var(--ff-display);
+  font-size: clamp(2rem, 8vw, 5.6rem);
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  line-height: 1.12;
+  color: var(--white);
+  margin-bottom: 8px;
+  animation: fadeUp 1.2s ease 0.5s both;
+}
+.hero-title em {
+  font-style: italic;
+  color: var(--gold);
+  font-family: var(--ff-serif);
+  font-weight: 300;
+}
+
+.hero-subtitle {
+  font-family: var(--ff-serif);
+  font-size: clamp(1rem, 3.2vw, 1.9rem);
+  font-weight: 300;
+  font-style: italic;
+  color: var(--white-dim);
+  letter-spacing: 0.03em;
+  margin: clamp(10px, 2vw, 16px) 0 clamp(18px, 3.5vw, 32px);
+  animation: fadeUp 1.2s ease 0.7s both;
+}
+
+.hero-intro {
+  font-family: var(--ff-serif);
+  font-size: clamp(0.97rem, 1.9vw, 1.2rem);
+  font-weight: 300;
+  color: var(--white-faint);
+  max-width: 580px;
+  margin: 0 auto;
+  letter-spacing: 0.01em;
+  animation: fadeUp 1.2s ease 0.9s both;
+  padding: 0 4px;
+}
+
+.hero-scroll-hint {
+  position: absolute;
+  bottom: max(24px, env(safe-area-inset-bottom, 24px));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: fadeUp 1.2s ease 1.4s both;
+}
+.scroll-text {
+  font-family: var(--ff-sans);
+  font-size: clamp(0.52rem, 1.4vw, 0.58rem);
+  letter-spacing: 0.28em;
+  color: var(--gold-dim);
+  text-transform: uppercase;
+}
+.scroll-line {
+  width: 1px; height: 36px;
+  background: linear-gradient(to bottom, var(--gold), transparent);
+  animation: scrollDown 1.8s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+@keyframes scrollDown {
+  0%,100% { transform: scaleY(1); opacity: 1; }
+  50% { transform: scaleY(0.4); opacity: 0.35; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   2. OUR STORY
+═══════════════════════════════════════════════════════════ */
+#story {
+  padding: var(--section-pad) 0;
+  background: var(--black-2);
+  position: relative;
+  overflow: hidden;
+}
+#story::after {
+  content: '';
+  position: absolute;
+  right: -160px; top: 50%;
+  transform: translateY(-50%);
+  width: 400px; height: 400px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(201,168,76,0.05) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.story-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(32px, 6vw, 80px);
+  align-items: center;
+}
+
+.story-frame {
+  border: 1px solid var(--glass-border);
+  padding: clamp(28px, 5vw, 48px) clamp(22px, 4vw, 36px);
+  background: var(--glass-bg);
+  position: relative;
+}
+/* Corner accents */
+.story-frame::before, .story-frame::after {
+  content: '';
+  position: absolute;
+  width: 18px; height: 18px;
+  border-color: var(--gold);
+  border-style: solid;
+}
+.story-frame::before { top: 10px; left: 10px; border-width: 1px 0 0 1px; }
+.story-frame::after  { bottom: 10px; right: 10px; border-width: 0 1px 1px 0; }
+
+.story-number {
+  font-family: var(--ff-display);
+  font-size: clamp(3rem, 9vw, 8rem);
+  font-weight: 700;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--gold-dim) 0%, var(--gold) 50%, transparent 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  opacity: 0.32;
+  display: block;
+  margin-bottom: 10px;
+}
+.story-caption {
+  font-family: var(--ff-serif);
+  font-size: clamp(0.92rem, 1.7vw, 1.02rem);
+  font-style: italic;
+  color: var(--gold);
+  letter-spacing: 0.05em;
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   3. FOUNDERS
+═══════════════════════════════════════════════════════════ */
+#founders {
+  padding: var(--section-pad) 0;
+  background: var(--black);
+  position: relative;
+}
+
+.founders-intro {
+  text-align: center;
+  max-width: 660px;
+  margin: 0 auto clamp(36px, 6vw, 72px);
+}
+
+.founders-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(18px, 3vw, 40px);
+}
+
+.founder-card {
+  position: relative;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  padding: clamp(28px, 5vw, 52px) clamp(22px, 4vw, 44px);
+  overflow: hidden;
+  transition: border-color var(--transition), transform var(--transition), box-shadow var(--transition);
+}
+.founder-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.07) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity var(--transition);
+  pointer-events: none;
+}
+.founder-card:hover {
+  border-color: var(--gold);
+  transform: translateY(-4px);
+  box-shadow: 0 18px 44px rgba(201,168,76,0.09);
+}
+.founder-card:hover::before { opacity: 1; }
+
+.founder-initial {
+  font-family: var(--ff-display);
+  font-size: clamp(2.4rem, 6vw, 5rem);
+  font-weight: 700;
+  line-height: 1;
+  background: linear-gradient(135deg, var(--gold-dim), var(--gold-light));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 14px;
+  display: block;
+}
+.founder-name {
+  font-family: var(--ff-display);
+  font-size: clamp(0.78rem, 1.7vw, 1.1rem);
+  letter-spacing: 0.14em;
+  color: var(--white);
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+.founder-role {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: clamp(0.85rem, 1.4vw, 0.93rem);
+  color: var(--gold);
+  letter-spacing: 0.04em;
+  margin-bottom: 20px;
+}
+.founder-bio {
+  font-family: var(--ff-serif);
+  font-size: clamp(0.92rem, 1.5vw, 1rem);
+  font-weight: 300;
+  color: var(--white-faint);
+  line-height: 1.82;
+}
+/* Bottom accent bar */
+.founder-accent {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  transform: scaleX(0);
+  transition: transform var(--transition);
+  transform-origin: center;
+}
+.founder-card:hover .founder-accent { transform: scaleX(1); }
+
+/* ═══════════════════════════════════════════════════════════
+   4. WHAT MAKES US DIFFERENT
+═══════════════════════════════════════════════════════════ */
+#difference {
+  padding: var(--section-pad) 0;
+  background: var(--black-3);
+  position: relative;
+  overflow: hidden;
+}
+#difference::before {
+  content: '';
+  position: absolute;
+  left: 50%; top: 0;
+  transform: translateX(-50%);
+  width: 1px; height: 100%;
+  background: linear-gradient(to bottom, transparent, var(--gold-dim), transparent);
+  opacity: 0.15;
+  pointer-events: none;
+}
+
+.diff-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(14px, 2.2vw, 26px);
+  margin-top: clamp(36px, 5.5vw, 66px);
+}
+
+.diff-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  padding: clamp(24px, 3.8vw, 42px) clamp(18px, 2.8vw, 30px);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+}
+.diff-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  transform: scaleX(0);
+  transition: transform var(--transition);
+}
+.diff-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(201,168,76,0.32);
+  box-shadow: 0 22px 55px rgba(0,0,0,0.45), 0 0 32px rgba(201,168,76,0.06);
+}
+.diff-card:hover::after { transform: scaleX(1); }
+
+.diff-icon {
+  width: 48px; height: 48px;
+  margin: 0 auto 18px;
+  border: 1px solid var(--glass-border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.diff-card:hover .diff-icon {
+  border-color: var(--gold);
+  box-shadow: 0 0 16px rgba(201,168,76,0.18);
+}
+.diff-icon svg { width: 20px; height: 20px; stroke: var(--gold); fill: none; stroke-width: 1.5; }
+
+.diff-title {
+  font-family: var(--ff-display);
+  font-size: clamp(0.62rem, 1.3vw, 0.78rem);
+  letter-spacing: 0.16em;
+  color: var(--white);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.diff-text {
+  font-family: var(--ff-serif);
+  font-size: clamp(0.9rem, 1.45vw, 0.97rem);
+  color: var(--white-faint);
+  line-height: 1.76;
+  font-weight: 300;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   5. OUR VISION
+═══════════════════════════════════════════════════════════ */
+#vision {
+  padding: var(--section-pad) 0;
+  background: var(--black);
+  position: relative;
+  overflow: hidden;
+}
+.vision-inner {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: clamp(32px, 5.5vw, 80px);
+  align-items: start;
+}
+.vision-label-col {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-top: 6px;
+}
+.vision-number {
+  font-family: var(--ff-display);
+  font-size: clamp(3rem, 8vw, 7rem);
+  font-weight: 700;
+  line-height: 1;
+  color: transparent;
+  -webkit-text-stroke: 1px var(--gold-dim);
+  opacity: 0.28;
+}
+.vision-quote-mark {
+  font-family: var(--ff-serif);
+  font-size: clamp(3rem, 8vw, 5rem);
+  color: var(--gold);
+  line-height: 0.5;
+  opacity: 0.28;
+}
+.vision-heading {
+  font-family: var(--ff-display);
+  font-size: clamp(1.3rem, 3.2vw, 2.3rem);
+  font-weight: 400;
+  letter-spacing: 0.07em;
+  color: var(--white);
+  line-height: 1.35;
+  margin-bottom: 26px;
+}
+.vision-heading em {
+  color: var(--gold);
+  font-style: italic;
+  font-family: var(--ff-serif);
+  font-weight: 300;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   6. CRAFTSMANSHIP
+═══════════════════════════════════════════════════════════ */
+#craft {
+  padding: var(--section-pad) 0;
+  background: var(--black-4);
+  position: relative;
+  overflow: hidden;
+}
+.craft-header { text-align: center; margin-bottom: clamp(36px, 5.5vw, 76px); }
+
+.craft-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+}
+/* Vertical timeline line */
+.craft-steps::before {
+  content: '';
+  position: absolute;
+  left: 33px; top: 0; bottom: 0;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, var(--gold-dim) 15%, var(--gold-dim) 85%, transparent);
+  opacity: 0.5;
+}
+
+.craft-step {
+  display: grid;
+  grid-template-columns: 68px 1fr;
+  gap: clamp(14px, 2.8vw, 32px);
+  padding: clamp(22px, 3.8vw, 38px) 0;
+  align-items: start;
+  border-bottom: 1px solid rgba(201,168,76,0.06);
+}
+.craft-step:last-child { border-bottom: none; }
+
+.craft-num {
+  width: 48px; height: 48px;
+  border: 1px solid var(--glass-border);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--ff-display);
+  font-size: 0.68rem;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  background: var(--black-4);
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+  transition: border-color var(--transition), box-shadow var(--transition);
+}
+.craft-step:hover .craft-num {
+  border-color: var(--gold);
+  box-shadow: 0 0 16px rgba(201,168,76,0.20);
+}
+.craft-step-title {
+  font-family: var(--ff-display);
+  font-size: clamp(0.72rem, 1.5vw, 0.96rem);
+  letter-spacing: 0.15em;
+  color: var(--white);
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.craft-step-text {
+  font-family: var(--ff-serif);
+  font-size: clamp(0.92rem, 1.55vw, 1.01rem);
+  color: var(--white-faint);
+  font-weight: 300;
+  line-height: 1.82;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   7. CUSTOMER EXPERIENCE
+═══════════════════════════════════════════════════════════ */
+#experience {
+  padding: var(--section-pad) 0;
+  background: var(--black-2);
+}
+.exp-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(16px, 2.5vw, 30px);
+  margin-top: clamp(36px, 5.5vw, 66px);
+}
+.exp-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  padding: clamp(26px, 3.8vw, 46px) clamp(20px, 3.2vw, 36px);
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--transition), border-color var(--transition);
+}
+.exp-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(201,168,76,0.28);
+}
+.exp-card-top {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-bottom: 16px;
+}
+.exp-card-icon {
+  width: 42px; height: 42px;
+  border: 1px solid var(--gold-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.exp-card-icon svg { width: 18px; height: 18px; stroke: var(--gold); fill: none; stroke-width: 1.5; }
+.exp-card-title {
+  font-family: var(--ff-display);
+  font-size: clamp(0.68rem, 1.3vw, 0.78rem);
+  letter-spacing: 0.17em;
+  color: var(--white);
+  text-transform: uppercase;
+}
+.exp-card-text {
+  font-family: var(--ff-serif);
+  font-size: clamp(0.92rem, 1.5vw, 0.99rem);
+  font-weight: 300;
+  color: var(--white-faint);
+  line-height: 1.82;
+}
+/* Top accent glow */
+.exp-card-glow {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform var(--transition);
+}
+.exp-card:hover .exp-card-glow { transform: scaleX(1); }
+
+/* ═══════════════════════════════════════════════════════════
+   8. WHY CUSTOMERS LOVE US
+═══════════════════════════════════════════════════════════ */
+#love {
+  padding: var(--section-pad) 0;
+  background: var(--black);
+  position: relative;
+  overflow: hidden;
+}
+#love::before {
+  content: '';
+  position: absolute;
+  left: -80px; top: 50%;
+  transform: translateY(-50%);
+  width: 360px; height: 360px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(201,168,76,0.04), transparent 70%);
+  pointer-events: none;
+}
+.love-header { text-align: center; margin-bottom: clamp(36px, 5.5vw, 76px); }
+
+.love-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(12px, 1.8vw, 22px);
+}
+.love-card {
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  padding: clamp(22px, 3.8vw, 40px) clamp(16px, 2.8vw, 28px);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--transition), border-color var(--transition), box-shadow var(--transition);
+}
+.love-card:hover {
+  transform: translateY(-5px) scale(1.01);
+  border-color: var(--gold);
+  box-shadow: 0 16px 44px rgba(201,168,76,0.09);
+}
+.love-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 100%, rgba(201,168,76,0.055), transparent 60%);
+  opacity: 0;
+  transition: opacity var(--transition);
+  pointer-events: none;
+}
+.love-card:hover::before { opacity: 1; }
+.love-icon {
+  font-size: clamp(1.7rem, 2.8vw, 2.1rem);
+  margin-bottom: 12px;
+  display: block;
+  filter: drop-shadow(0 0 5px rgba(201,168,76,0.32));
+}
+.love-title {
+  font-family: var(--ff-display);
+  font-size: clamp(0.62rem, 1.2vw, 0.76rem);
+  letter-spacing: 0.16em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.love-text {
+  font-family: var(--ff-serif);
+  font-size: clamp(0.88rem, 1.4vw, 0.95rem);
+  color: var(--white-faint);
+  font-weight: 300;
+  line-height: 1.76;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   9. QUOTE
+═══════════════════════════════════════════════════════════ */
+#quote-section {
+  padding: clamp(60px, 11vw, 130px) var(--container-px);
+  background: var(--black-3);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+#quote-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 60% at 50% 50%, rgba(201,168,76,0.06) 0%, transparent 70%);
+  pointer-events: none;
+}
+.big-quote-mark {
+  font-family: var(--ff-serif);
+  font-size: clamp(3.5rem, 11vw, 8.5rem);
+  color: var(--gold);
+  opacity: 0.10;
+  line-height: 0.6;
+  display: block;
+  margin-bottom: 14px;
+}
+.quote-text {
+  font-family: var(--ff-serif);
+  font-size: clamp(1.15rem, 3.2vw, 2.3rem);
+  font-weight: 300;
+  font-style: italic;
+  color: var(--white);
+  line-height: 1.55;
+  max-width: 780px;
+  margin: 0 auto 24px;
+  letter-spacing: 0.01em;
+  position: relative;
+  z-index: 1;
+}
+.quote-text em { color: var(--gold); font-style: normal; }
+.quote-attr {
+  font-family: var(--ff-sans);
+  font-size: clamp(0.58rem, 1.4vw, 0.66rem);
+  letter-spacing: 0.28em;
+  color: var(--gold-dim);
+  text-transform: uppercase;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   10. CONTACT / VISIT
+═══════════════════════════════════════════════════════════ */
+#contact {
+  padding: var(--section-pad) 0;
+  background: var(--black-2);
+}
+.contact-header { text-align: center; margin-bottom: clamp(36px, 5.5vw, 76px); }
+
+.contact-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: clamp(14px, 2.2vw, 26px);
+  margin-bottom: clamp(24px, 4vw, 52px);
+}
+.contact-card {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  padding: clamp(26px, 3.8vw, 42px) clamp(16px, 2.8vw, 28px);
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--transition), border-color var(--transition);
+}
+.contact-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(201,168,76,0.32);
+}
+.contact-card-top {
+  width: 48px; height: 48px;
+  border: 1px solid var(--gold-dim);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+.contact-card-top svg { width: 19px; height: 19px; stroke: var(--gold); fill: none; stroke-width: 1.5; }
+.contact-card-label {
+  font-family: var(--ff-display);
+  font-size: clamp(0.60rem, 1.2vw, 0.70rem);
+  letter-spacing: 0.20em;
+  color: var(--white-dim);
+  text-transform: uppercase;
+  margin-bottom: 9px;
+}
+.contact-card-value {
+  font-family: var(--ff-serif);
+  font-size: clamp(0.92rem, 1.5vw, 1.03rem);
+  font-weight: 300;
+  color: var(--gold);
+  line-height: 1.6;
+  text-decoration: none;
+  display: block;
+  transition: color 0.28s;
+  word-break: break-word;
+}
+.contact-card-value:hover { color: var(--gold-light); }
+
+.visit-banner {
+  text-align: center;
+  padding: clamp(32px, 5.5vw, 58px) clamp(18px, 4.5vw, 40px);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  position: relative;
+  overflow: hidden;
+}
+.visit-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.06), transparent 60%);
+  pointer-events: none;
+}
+.visit-banner-title {
+  font-family: var(--ff-display);
+  font-size: clamp(1.1rem, 2.8vw, 1.9rem);
+  letter-spacing: 0.11em;
+  color: var(--white);
+  margin-bottom: 13px;
+  position: relative;
+}
+.visit-banner-text {
+  font-family: var(--ff-serif);
+  font-size: clamp(0.95rem, 1.6vw, 1.06rem);
+  font-weight: 300;
+  font-style: italic;
+  color: var(--white-faint);
+  max-width: 540px;
+  margin: 0 auto 26px;
+  line-height: 1.78;
+  position: relative;
+}
+
+/* CTA Button */
+.cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--ff-sans);
+  font-size: clamp(0.60rem, 1.3vw, 0.70rem);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--black);
+  background: linear-gradient(135deg, var(--gold-light), var(--gold));
+  padding: clamp(13px, 1.9vw, 15px) clamp(22px, 3.8vw, 34px);
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow var(--transition), transform var(--transition);
+  min-height: 48px; /* iOS touch target */
+}
+.cta-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(255,255,255,0.14);
+  transform: translateX(-105%);
+  transition: transform 0.38s ease;
+}
+.cta-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(201,168,76,0.28); }
+.cta-btn:hover::before { transform: translateX(105%); }
+.cta-btn:active { transform: translateY(0); }
+
+/* ═══════════════════════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════════════════════ */
+footer {
+  background: var(--black);
+  border-top: 1px solid var(--glass-border);
+  padding: clamp(44px, 7.5vw, 76px) var(--container-px) clamp(26px, 4vw, 40px);
+  position: relative;
+  padding-bottom: max(clamp(26px, 4vw, 40px), env(safe-area-inset-bottom, 26px));
+}
+footer::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: min(680px, 80vw);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: clamp(28px, 4.5vw, 56px);
+  margin-bottom: clamp(36px, 4.5vw, 56px);
+}
+.footer-brand-name {
+  font-family: var(--ff-display);
+  font-size: clamp(0.82rem, 1.8vw, 1.2rem);
+  letter-spacing: 0.26em;
+  color: var(--gold);
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 4px;
+}
+.footer-brand-sub {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: clamp(0.8rem, 1.3vw, 0.88rem);
+  color: var(--gold-dim);
+  letter-spacing: 0.07em;
+  display: block;
+  margin-bottom: 16px;
+}
+.footer-brand-desc {
+  font-family: var(--ff-serif);
+  font-size: clamp(0.86rem, 1.3vw, 0.93rem);
+  font-weight: 300;
+  color: var(--white-faint);
+  line-height: 1.78;
+}
+.footer-col-title {
+  font-family: var(--ff-sans);
+  font-size: clamp(0.55rem, 1.1vw, 0.60rem);
+  letter-spacing: 0.30em;
+  color: var(--gold);
+  text-transform: uppercase;
+  margin-bottom: 18px;
+}
+.footer-links { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+.footer-links a {
+  font-family: var(--ff-serif);
+  font-size: clamp(0.86rem, 1.3vw, 0.93rem);
+  font-weight: 300;
+  color: var(--white-faint);
+  text-decoration: none;
+  letter-spacing: 0.03em;
+  transition: color 0.28s;
+  display: block;
+  padding: 2px 0;
+}
+.footer-links a:hover { color: var(--gold); }
+
+.footer-info { list-style: none; display: flex; flex-direction: column; gap: 11px; }
+.footer-info li {
+  font-family: var(--ff-serif);
+  font-size: clamp(0.86rem, 1.3vw, 0.93rem);
+  font-weight: 300;
+  color: var(--white-faint);
+  line-height: 1.5;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+.footer-info li span:first-child {
+  color: var(--gold);
+  flex-shrink: 0;
+  font-size: 0.76rem;
+  margin-top: 3px;
+}
+
+.footer-bottom {
+  padding-top: 24px;
+  border-top: 1px solid rgba(201,168,76,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.footer-copy {
+  font-family: var(--ff-sans);
+  font-size: clamp(0.56rem, 1.1vw, 0.63rem);
+  letter-spacing: 0.12em;
+  color: var(--white-faint);
+  opacity: 0.45;
+}
+.footer-love {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: clamp(0.78rem, 1.2vw, 0.84rem);
+  color: var(--gold-dim);
+  opacity: 0.55;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   WHATSAPP FAB
+═══════════════════════════════════════════════════════════ */
+.whatsapp-fab {
+  position: fixed;
+  bottom: max(24px, env(safe-area-inset-bottom, 24px));
+  right: 20px;
+  z-index: 800;
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #128C7E, #25D366);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 5px 20px rgba(37,211,102,0.32);
+  text-decoration: none;
+  transition: transform var(--transition), box-shadow var(--transition);
+  animation: fabPop 0.55s ease 2s both;
+  will-change: transform;
+}
+.whatsapp-fab:hover {
+  transform: scale(1.1) translateY(-3px);
+  box-shadow: 0 12px 32px rgba(37,211,102,0.42);
+}
+.whatsapp-fab:active { transform: scale(0.96); }
+.whatsapp-fab svg { width: 25px; height: 25px; fill: #fff; }
+
+@keyframes fabPop {
+  from { transform: scale(0); opacity: 0; }
+  to   { transform: scale(1); opacity: 1; }
+}
+
+.fab-ping {
+  position: absolute;
+  top: -2px; right: -2px;
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  background: #25D366;
+  animation: ping 2s ease-in-out infinite;
+  will-change: transform, opacity;
+}
+@keyframes ping {
+  0%,100% { transform: scale(1); opacity: 1; }
+  50%     { transform: scale(1.85); opacity: 0; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   CARD STAGGER DELAYS
+═══════════════════════════════════════════════════════════ */
+.diff-grid > *:nth-child(1) { transition-delay: 0.04s; }
+.diff-grid > *:nth-child(2) { transition-delay: 0.10s; }
+.diff-grid > *:nth-child(3) { transition-delay: 0.16s; }
+.diff-grid > *:nth-child(4) { transition-delay: 0.22s; }
+.diff-grid > *:nth-child(5) { transition-delay: 0.28s; }
+.diff-grid > *:nth-child(6) { transition-delay: 0.34s; }
+.love-grid > *:nth-child(1) { transition-delay: 0.04s; }
+.love-grid > *:nth-child(2) { transition-delay: 0.10s; }
+.love-grid > *:nth-child(3) { transition-delay: 0.16s; }
+.love-grid > *:nth-child(4) { transition-delay: 0.22s; }
+.love-grid > *:nth-child(5) { transition-delay: 0.28s; }
+.love-grid > *:nth-child(6) { transition-delay: 0.34s; }
+
+/* ═══════════════════════════════════════════════════════════
+   ██████████████████████████████████████████████████████████
+   RESPONSIVE BREAKPOINTS — MOBILE-FIRST GROUPED STRUCTURE
+   ██████████████████████████████████████████████████████████
+═══════════════════════════════════════════════════════════ */
+
+/* ─── TABLET — 1024px ─────────────────────────────── */
+@media (max-width: 1024px) {
+  .diff-grid { grid-template-columns: repeat(2, 1fr); }
+  .love-grid { grid-template-columns: repeat(2, 1fr); }
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 36px; }
+}
+
+/* ─── LARGE MOBILE / SMALL TABLET — 860px ─────────── */
+@media (max-width: 860px) {
+  /* Show hamburger, hide desktop links */
+  .nav-links { display: none !important; }
+  .nav-hamburger { display: flex !important; }
+
+  /* Layout switches */
+  .story-grid   { grid-template-columns: 1fr; gap: 32px; }
+  .vision-inner { grid-template-columns: 1fr; gap: 36px; }
+  .contact-grid { grid-template-columns: 1fr 1fr; }
+
+  /* Vision — show decorative row instead of column */
+  .vision-label-col {
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+    padding-top: 0;
+  }
+}
+
+/* ─── TABLET PORTRAIT — 768px ────────────────────── */
+@media (max-width: 768px) {
+  .founders-grid { grid-template-columns: 1fr; gap: 18px; }
+  .exp-grid      { grid-template-columns: 1fr; gap: 16px; }
+  .footer-grid   { grid-template-columns: 1fr; gap: 32px; }
+  .footer-bottom { flex-direction: column; align-items: flex-start; gap: 8px; }
+  /* Hero padding to keep scroll hint from overlapping text */
+  #hero { padding-bottom: 84px; }
+}
+
+/* ─── SMALL PHONES LANDSCAPE — 640px ─────────────── */
+@media (max-width: 640px) {
+  .diff-grid    { grid-template-columns: 1fr; gap: 12px; }
+  .love-grid    { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .contact-grid { grid-template-columns: 1fr; gap: 12px; }
+
+  /* Craft timeline — tighten column width */
+  .craft-steps::before { left: 22px; }
+  .craft-step { grid-template-columns: 46px 1fr; gap: 12px; }
+  .craft-num  { width: 38px; height: 38px; font-size: 0.62rem; }
+
+  .story-frame { padding: 22px 18px; }
+  .ornament-line { max-width: 60px; }
+}
+
+/* ─── PRIMARY MOBILE TARGET — 480px ────────────────
+   This is the most important breakpoint for optimization
+   ────────────────────────────────────────────────── */
+@media (max-width: 480px) {
+  body { font-size: 15px; }
+
+  /* Navbar */
+  #navbar { padding: 14px var(--container-px); }
+  #navbar.scrolled { padding: 10px var(--container-px); }
+  /* Hide sub-label on smallest screens — keeps logo clean */
+  .nav-logo-sub { display: none; }
+
+  /* Hero — adjusted padding for comfortable layout */
+  #hero {
+    min-height: 95svh;
+    padding-top: clamp(82px, 21vw, 105px);
+    padding-bottom: 76px;
+    align-items: flex-start;
+  }
+  .hero-eyebrow { letter-spacing: 0.22em; margin-bottom: 12px; }
+  .hero-title   { letter-spacing: 0.03em; line-height: 1.13; }
+  .hero-subtitle { margin: 8px 0 14px; }
+
+  /* Section headings — tighter tracking */
+  .section-heading { letter-spacing: 0.05em; margin-bottom: 14px; }
+
+  /* Love grid — single column on very small phones */
+  .love-grid { grid-template-columns: 1fr; gap: 12px; }
+
+  /* Visit banner */
+  .visit-banner { padding: 26px 16px; }
+  /* Full-width CTA on mobile */
+  .cta-btn { width: 100%; justify-content: center; text-align: center; }
+
+  /* Quote section */
+  #quote-section { padding: 48px var(--container-px); }
+  .big-quote-mark { font-size: 3rem; margin-bottom: 8px; }
+
+  /* Footer */
+  footer { padding: 40px var(--container-px) 30px; }
+  .footer-grid { gap: 26px; }
+  .footer-bottom { padding-top: 18px; }
+
+  /* WhatsApp FAB */
+  .whatsapp-fab { width: 48px; height: 48px; right: 14px; }
+  .whatsapp-fab svg { width: 23px; height: 23px; }
+
+  /* Founder cards — tighter */
+  .founder-card { padding: 26px 20px; }
+
+  /* Exp grid text alignment */
+  .exp-card-top { flex-direction: column; align-items: flex-start; gap: 10px; }
+}
+
+/* ─── TINY PHONES — 375px (SE, older Androids) ────── */
+@media (max-width: 375px) {
+  /* Logo even tighter */
+  .nav-logo-main { font-size: clamp(0.60rem, 3.8vw, 0.78rem); letter-spacing: 0.14em; }
+
+  .hero-title { font-size: clamp(1.7rem, 8.5vw, 2.4rem); }
+
+  /* Hide decorative story visual to reduce scroll length */
+  .story-visual { display: none; }
+  .story-grid { grid-template-columns: 1fr; }
+
+  /* Hide decorative vision number column */
+  .vision-label-col { display: none; }
+  .vision-inner { grid-template-columns: 1fr; }
+
+  .craft-step { gap: 9px; }
+  .founders-grid { gap: 12px; }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   PERFORMANCE — .is-mobile class added by JS
+   Reduces GPU-heavy effects on touch devices
+═══════════════════════════════════════════════════════════ */
+.is-mobile body::before {
+  display: none; /* Remove fixed gradient overlay — frees GPU layer */
+}
+/* Remove backdrop-filter on mobile cards — biggest perf gain */
+.is-mobile .founder-card,
+.is-mobile .diff-card,
+.is-mobile .love-card,
+.is-mobile .exp-card,
+.is-mobile .contact-card {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+/* Keep light blur only on navbar */
+.is-mobile #navbar.scrolled {
+  backdrop-filter: blur(6px) !important;
+  -webkit-backdrop-filter: blur(6px) !important;
+}
+/* Mobile menu — solid bg, lighter blur */
+.is-mobile .nav-mobile {
+  background: rgba(6,6,6,0.99) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+/* Snappier transitions on mobile */
+.is-mobile * {
+  transition-duration: 0.22s !important;
+}
+.is-mobile .nav-mobile-links a {
+  /* Keep stagger transitions slightly longer for elegance */
+  transition-duration: 0.32s !important;
+}
+/* No particles on mobile */
+.is-mobile .particle { display: none !important; }
+
+/* ═══════════════════════════════════════════════════════════
+   REDUCED MOTION PREFERENCE
+═══════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .reveal, .reveal-left, .reveal-right {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .particle { display: none !important; }
+  /* Show nav links immediately */
+  .nav-mobile-links a { opacity: 1 !important; transform: none !important; }
+  .nav-mobile-cta { opacity: 1 !important; transform: none !important; }
+}
+</style>
+</head>
+
+<body>
+
+<!-- ══════════════ LOADER ══════════════ -->
+<div id="loader" role="status" aria-label="Loading Tanushree Collection">
+  <span class="loader-brand">Tanushree Collection</span>
+  <div class="loader-ring"></div>
+  <div class="loader-line"></div>
+</div>
+
+<!-- ══════════════ NAVBAR ══════════════ -->
+<nav id="navbar" role="navigation" aria-label="Main navigation">
+  <a href="#" class="nav-logo" aria-label="Tanushree Collection — Home">
+    <span class="nav-logo-main">Tanushree Collection</span>
+    <span class="nav-logo-sub">Premium Jewellery &amp; Fashion</span>
+  </a>
+
+  <ul class="nav-links" id="navLinks" role="list">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="#story">Our Story</a></li>
+    <li><a href="#founders">Founders</a></li>
+    <li><a href="#difference">Difference</a></li>
+    <li><a href="#craft">Craftsmanship</a></li>
+    <li><a href="#contact">Visit Us</a></li>
+  </ul>
+
+  <!-- FIX: Hamburger now toggles aria-expanded which drives CSS animation -->
+  <button class="nav-hamburger" id="hamburger"
+          aria-label="Open navigation menu"
+          aria-expanded="false"
+          aria-controls="mobileNav">
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+  </button>
+</nav>
+
+<!-- ══════════════ MOBILE NAV OVERLAY ══════════════ -->
+<!-- FIX: Completely restructured mobile nav:
+     - visibility+opacity approach (no display:none toggle = no broken transitions)
+     - close button uses SVG X for reliable rendering across all devices
+     - brand name inside overlay for luxury feel
+     - staggered link animation
+     - WhatsApp CTA at bottom
+-->
+<div class="nav-mobile" id="mobileNav"
+     role="dialog"
+     aria-modal="true"
+     aria-label="Mobile navigation menu">
+
+  <!-- Close button — single path X, no pseudo-elements -->
+  <button class="nav-close" id="navClose" aria-label="Close navigation menu" type="button"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+
+  <!-- Brand identity inside menu -->
+  <!-- <p class="nav-mobile-brand" aria-hidden="true">Tanushree Collection</p> -->
+
+  <!-- Nav links -->
+  <nav class="nav-mobile-links" aria-label="Mobile navigation links">
+    <a href="index.html">Home</a>
+    <a href="#story">Our Story</a>
+    <a href="#founders">Founders</a>
+    <a href="#difference">Difference</a>
+    <a href="#vision">Vision</a>
+    <a href="#craft">Craftsmanship</a>
+    <a href="#contact">Visit Us</a>
+  </nav>
+
+  <!-- WhatsApp CTA inside mobile menu -->
+  <a href="https://wa.me/918145739629"
+     class="nav-mobile-cta"
+     target="_blank"
+     rel="noopener noreferrer">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/>
+    </svg>
+    Chat on WhatsApp
+  </a>
+</div>
+
+<!-- ══════════════ HERO ══════════════ -->
+<section id="hero" aria-label="Hero — Where Gold Meets Eternal Grace">
+  <div class="container" style="position:relative;z-index:1;">
+    <p class="hero-eyebrow">Est. in Love &amp; Elegance — Malda, West Bengal</p>
+    <h1 class="hero-title">Where Gold Meets<br /><em>Eternal Grace</em></h1>
+    <p class="hero-subtitle">The Story Behind Every Jewel</p>
+    <div class="ornament" style="justify-content:center;margin:20px 0;">
+      <div class="ornament-line"></div>
+      <div class="ornament-diamond"></div>
+      <div class="ornament-line r"></div>
+    </div>
+    <p class="hero-intro">
+      Tanushree Collection is not merely a jewellery boutique — it is a living testament to beauty, trust and the timeless art of adornment. Born in the heartland of Bengal, crafted for the world.
+    </p>
+  </div>
+  <div class="hero-scroll-hint" aria-hidden="true">
+    <span class="scroll-text">Discover Our World</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<div class="gold-sep" role="separator" aria-hidden="true"></div>
+
+<!-- ══════════════ OUR STORY ══════════════ -->
+<section id="story" aria-labelledby="story-heading">
+  <div class="container">
+    <div class="story-grid">
+      <div class="story-visual reveal reveal-left">
+        <div class="story-frame">
+          <span class="story-number" aria-hidden="true">TC</span>
+          <p class="story-caption">
+            "Every jewel holds a memory.<br/>
+            Every piece, a promise."
+          </p>
+        </div>
+      </div>
+      <div class="story-content reveal reveal-right">
+        <p class="section-label">Our Beginning</p>
+        <div class="ornament" style="justify-content:flex-start;margin:12px 0 18px;">
+          <div class="ornament-line" style="max-width:56px;"></div>
+          <div class="ornament-diamond"></div>
+        </div>
+        <h2 id="story-heading" class="section-heading">A Dream Woven in<br /><span>Gold &amp; Passion</span></h2>
+        <p class="body-text">
+          Tanushree Collection was born from a belief that every woman deserves to wear something extraordinary — something that speaks without words, something that lingers in memory long after the moment has passed. Rooted in the rich cultural heritage of Bengal, we set out not merely to sell jewellery, but to create heirlooms that carry stories across generations.
+        </p>
+        <p class="body-text">
+          Our journey began in the quiet, spirited lanes of Ramkrishna Pally, Malda — a place where tradition breathes and craftsmanship is a way of life. From modest beginnings grew an unwavering vision: to build a brand that marries heritage with modern luxury, and whispers the language of elegance to every soul that adorns our pieces.
+        </p>
+        <p class="body-text">
+          Today, Tanushree Collection stands as a promise — a promise of authenticity, of exclusivity, and of beauty that does not fade with seasons or trends. We craft not for the moment, but for a lifetime.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="gold-sep" role="separator" aria-hidden="true"></div>
+
+<!-- ══════════════ FOUNDERS ══════════════ -->
+<section id="founders" aria-labelledby="founders-heading">
+  <div class="container">
+    <div class="founders-intro reveal">
+      <p class="section-label">The Visionaries</p>
+      <div class="ornament" style="margin:13px 0 18px;">
+        <div class="ornament-line"></div>
+        <div class="ornament-diamond"></div>
+        <div class="ornament-line r"></div>
+      </div>
+      <h2 id="founders-heading" class="section-heading" style="text-align:center;">The Souls Behind<br /><span>Every Masterpiece</span></h2>
+      <p class="body-text" style="text-align:center;margin-top:12px;">
+        Behind every great brand are great hearts. Tanushree Collection was forged by two individuals whose passion for beauty and belief in quality became the cornerstone of everything we stand for.
+      </p>
+    </div>
+    <div class="founders-grid">
+      <div class="founder-card reveal delay-1">
+        <div class="founder-accent" aria-hidden="true"></div>
+        <span class="founder-initial" aria-hidden="true">T</span>
+        <h3 class="founder-name">Tanushree Saha Gupta</h3>
+        <p class="founder-role">Co-Founder &amp; Creative Director</p>
+        <p class="founder-bio">
+          Tanushree is the soul of the collection. Her eye for beauty, her sensitivity to detail, and her deep-rooted love for jewellery as an art form have shaped every design that bears the Tanushree Collection name. Growing up immersed in the vibrant culture of Bengal, she developed an intuitive understanding of what makes a jewel truly precious — not its price, but its presence. Tanushree curates each collection as a poet crafts verses: with intention, emotion, and an unwavering pursuit of perfection.
+        </p>
+      </div>
+      <div class="founder-card reveal delay-2">
+        <div class="founder-accent" aria-hidden="true"></div>
+        <span class="founder-initial" aria-hidden="true">A</span>
+        <h3 class="founder-name">Anupam Saha</h3>
+        <p class="founder-role">Co-Founder &amp; Operations Visionary</p>
+        <p class="founder-bio">
+          Anupam is the strength that anchors the dream. With a clear strategic mind and a heart that deeply values customer trust, he has built the operational backbone of Tanushree Collection — ensuring that every order, every interaction, and every package reflects the premium standard the brand promises. His commitment to quality control and customer satisfaction transforms a purchase into an experience, and an experience into loyalty. Anupam believes that true luxury lies in the details others overlook.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="gold-sep" role="separator" aria-hidden="true"></div>
+
+<!-- ══════════════ WHAT MAKES US DIFFERENT ══════════════ -->
+<section id="difference" aria-labelledby="difference-heading">
+  <div class="container">
+    <div class="text-center reveal">
+      <p class="section-label">Our Distinction</p>
+      <div class="ornament" style="margin:13px 0 18px;">
+        <div class="ornament-line"></div>
+        <div class="ornament-diamond"></div>
+        <div class="ornament-line r"></div>
+      </div>
+      <h2 id="difference-heading" class="section-heading">What Sets Us<br /><span>Apart From the Rest</span></h2>
+      <p class="body-text max-680" style="margin-top:12px;">
+        In a world saturated with imitation, we chose the path of authenticity. Every decision, every design, every detail at Tanushree Collection is guided by one singular philosophy — genuine luxury is never accidental.
+      </p>
+    </div>
+    <div class="diff-grid">
+      <div class="diff-card reveal">
+        <div class="diff-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 2l2 7h7l-5.5 4 2 7L12 16l-5.5 4 2-7L3 9h7z"/></svg>
+        </div>
+        <h3 class="diff-title">Premium Craftsmanship</h3>
+        <p class="diff-text">Every piece is handled with artisan precision. We believe the hands that make a jewel are as important as the gold it carries.</p>
+      </div>
+      <div class="diff-card reveal">
+        <div class="diff-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <h3 class="diff-title">Luxury Finishing</h3>
+        <p class="diff-text">Our finishing process is meticulous, multi-layered, and uncompromising. The final polish of each piece undergoes rigorous quality review before it ever reaches you.</p>
+      </div>
+      <div class="diff-card reveal">
+        <div class="diff-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.22 4.22l2.12 2.12M17.66 17.66l2.12 2.12M2 12h3M19 12h3M4.22 19.78l2.12-2.12M17.66 6.34l2.12-2.12"/></svg>
+        </div>
+        <h3 class="diff-title">Exclusive Designs</h3>
+        <p class="diff-text">Our collections are never mass-produced. Each design is thoughtfully exclusive — created to make the wearer feel singular, rare, and irreplaceable.</p>
+      </div>
+      <div class="diff-card reveal">
+        <div class="diff-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <h3 class="diff-title">Deep Customer Trust</h3>
+        <p class="diff-text">Our customers return not just for our jewellery, but for how we make them feel. Trust is the foundation of every relationship we build.</p>
+      </div>
+      <div class="diff-card reveal">
+        <div class="diff-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        </div>
+        <h3 class="diff-title">Elegant Presentation</h3>
+        <p class="diff-text">From the first click to the final unboxing, the Tanushree Collection experience is designed to delight. Luxury is in every layer of our presentation.</p>
+      </div>
+      <div class="diff-card reveal">
+        <div class="diff-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M3.055 11H5a2 2 0 0 1 2 2v1a2 2 0 0 0 2 2 2 2 0 0 1 2 2v2.945"/><path d="M8 3.935V5.5A2.5 2.5 0 0 0 10.5 8h.5a2 2 0 0 1 2 2 2 2 0 0 0 4 0 2 2 0 0 1 2-2h1.064"/><circle cx="12" cy="12" r="10"/></svg>
+        </div>
+        <h3 class="diff-title">Bengali Heritage</h3>
+        <p class="diff-text">Rooted in Bengal's rich cultural tapestry, our designs honour tradition while embracing contemporary elegance — a rare and beautiful balance.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="gold-sep" role="separator" aria-hidden="true"></div>
+
+<!-- ══════════════ OUR VISION ══════════════ -->
+<section id="vision" aria-labelledby="vision-heading">
+  <div class="container">
+    <div class="vision-inner">
+      <div class="vision-label-col reveal reveal-left" aria-hidden="true">
+        <p class="section-label" style="text-align:left;">The Road Ahead</p>
+        <div class="vision-number">02</div>
+        <div class="vision-quote-mark">"</div>
+      </div>
+      <div class="vision-text-block reveal reveal-right">
+        <h2 id="vision-heading" class="vision-heading">A Vision of<br /><em>Timeless Elegance</em><br />for Generations</h2>
+        <p class="body-text">
+          Our vision extends far beyond the present collection. We see Tanushree Collection not merely as a brand but as a living legacy — a jewellery house that will be spoken of with pride and recognised with reverence, not just in Malda or Bengal, but across every corner of India where elegance is appreciated.
+        </p>
+        <p class="body-text" style="margin-top:16px;">
+          We envision a future where handcrafted luxury and digital accessibility exist in harmony — where a woman in any city can discover a piece that feels made exclusively for her. We are building a brand built on emotion, sustained by quality, and remembered through beauty.
+        </p>
+        <p class="body-text" style="margin-top:16px;">
+          The jewels of today will become the heirlooms of tomorrow. That is our promise. That is our purpose. That is the Tanushree Collection vision.
+        </p>
+        <div class="ornament" style="justify-content:flex-start;margin-top:26px;">
+          <div class="ornament-line" style="max-width:72px;"></div>
+          <div class="ornament-diamond"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="gold-sep" role="separator" aria-hidden="true"></div>
+
+<!-- ══════════════ CRAFTSMANSHIP ══════════════ -->
+<section id="craft" aria-labelledby="craft-heading">
+  <div class="container">
+    <div class="craft-header reveal">
+      <p class="section-label">The Art of Making</p>
+      <div class="ornament" style="margin:13px 0 18px;">
+        <div class="ornament-line"></div>
+        <div class="ornament-diamond"></div>
+        <div class="ornament-line r"></div>
+      </div>
+      <h2 id="craft-heading" class="section-heading">Craftsmanship Is Our<br /><span>First Language</span></h2>
+      <p class="body-text max-680" style="margin-top:12px;">
+        We do not rush beauty. Each jewel in our collection travels through a deliberate, meticulous process — one that honours both the material and the person who will wear it.
+      </p>
+    </div>
+    <div class="craft-steps">
+      <div class="craft-step reveal">
+        <div class="craft-num" aria-label="Step one">I</div>
+        <div>
+          <h3 class="craft-step-title">Design &amp; Conceptualisation</h3>
+          <p class="craft-step-text">Every piece begins as a feeling — a mood, an occasion, a story. Our creative process draws from Bengal's cultural richness, global fashion trends, and the timeless grammar of fine jewellery design. Each concept is refined until it carries emotional resonance.</p>
+        </div>
+      </div>
+      <div class="craft-step reveal">
+        <div class="craft-num" aria-label="Step two">II</div>
+        <div>
+          <h3 class="craft-step-title">Material Selection</h3>
+          <p class="craft-step-text">We source only premium materials — metals with the right weight, stones with the right clarity, finishes with the right lustre. No compromise is permitted at this stage, because quality begins with the right foundation.</p>
+        </div>
+      </div>
+      <div class="craft-step reveal">
+        <div class="craft-num" aria-label="Step three">III</div>
+        <div>
+          <h3 class="craft-step-title">Artisan Crafting</h3>
+          <p class="craft-step-text">Skilled artisans bring the design to life with precision and patience. We honour the tradition of handcrafted jewellery — the kind that carries the warmth of human touch that machines can never replicate.</p>
+        </div>
+      </div>
+      <div class="craft-step reveal">
+        <div class="craft-num" aria-label="Step four">IV</div>
+        <div>
+          <h3 class="craft-step-title">Quality Review</h3>
+          <p class="craft-step-text">Before any piece bears the Tanushree Collection name, it undergoes a thorough quality inspection. Finishing, symmetry, durability and lustre are assessed with an uncompromising eye. Only pieces that meet our standard are approved.</p>
+        </div>
+      </div>
+      <div class="craft-step reveal">
+        <div class="craft-num" aria-label="Step five">V</div>
+        <div>
+          <h3 class="craft-step-title">Luxurious Presentation</h3>
+          <p class="craft-step-text">The final step is the presentation. Our packaging is designed to reflect the jewel inside — premium, elegant, and gift-ready. Because the experience of receiving a Tanushree Collection piece should be as memorable as wearing it.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="gold-sep" role="separator" aria-hidden="true"></div>
+
+<!-- ══════════════ CUSTOMER EXPERIENCE ══════════════ -->
+<section id="experience" aria-labelledby="experience-heading">
+  <div class="container">
+    <div class="text-center reveal">
+      <p class="section-label">The Tanushree Experience</p>
+      <div class="ornament" style="margin:13px 0 18px;">
+        <div class="ornament-line"></div>
+        <div class="ornament-diamond"></div>
+        <div class="ornament-line r"></div>
+      </div>
+      <h2 id="experience-heading" class="section-heading">We Sell More Than<br /><span>Jewellery</span></h2>
+      <p class="body-text max-680" style="margin-top:12px;">
+        We sell a feeling. An experience. A memory. Every interaction with Tanushree Collection is designed to feel exceptional — because our customers deserve nothing less.
+      </p>
+    </div>
+    <div class="exp-grid">
+      <div class="exp-card reveal delay-1">
+        <div class="exp-card-glow" aria-hidden="true"></div>
+        <div class="exp-card-top">
+          <div class="exp-card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          </div>
+          <h3 class="exp-card-title">Premium Packaging</h3>
+        </div>
+        <p class="exp-card-text">Every order is packaged with the reverence it deserves. Our presentation boxes, tissue wrappings, and custom sealing transform every delivery into an unboxing ritual that our customers treasure as much as the jewel itself.</p>
+      </div>
+      <div class="exp-card reveal delay-2">
+        <div class="exp-card-glow" aria-hidden="true"></div>
+        <div class="exp-card-top">
+          <div class="exp-card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <h3 class="exp-card-title">Dedicated Support</h3>
+        </div>
+        <p class="exp-card-text">Our team is not a chatbot. When you reach out to Tanushree Collection, you are met with warmth, patience, and genuine desire to help. We are always just a message away on WhatsApp, ready to assist with care and promptness.</p>
+      </div>
+      <div class="exp-card reveal delay-3">
+        <div class="exp-card-glow" aria-hidden="true"></div>
+        <div class="exp-card-top">
+          <div class="exp-card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3 class="exp-card-title">Trust &amp; Authenticity</h3>
+        </div>
+        <p class="exp-card-text">Every piece we sell is authentic, accurately described, and representative of the premium standards we uphold. We operate with full transparency because we believe that trust is the most valuable jewel we can offer our customers.</p>
+      </div>
+      <div class="exp-card reveal delay-4">
+        <div class="exp-card-glow" aria-hidden="true"></div>
+        <div class="exp-card-top">
+          <div class="exp-card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <h3 class="exp-card-title">Store Visit Experience</h3>
+        </div>
+        <p class="exp-card-text">Our boutique in Ramkrishna Pally, Malda offers a curated, unhurried shopping experience. Step into a world where each piece is presented thoughtfully, and where you are never just a customer — you are our guest.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="gold-sep" role="separator" aria-hidden="true"></div>
+
+<!-- ══════════════ WHY CUSTOMERS LOVE US ══════════════ -->
+<section id="love" aria-labelledby="love-heading">
+  <div class="container">
+    <div class="love-header reveal">
+      <p class="section-label">The Love We've Earned</p>
+      <div class="ornament" style="margin:13px 0 18px;">
+        <div class="ornament-line"></div>
+        <div class="ornament-diamond"></div>
+        <div class="ornament-line r"></div>
+      </div>
+      <h2 id="love-heading" class="section-heading">Why Our Customers<br /><span>Choose Us, Again &amp; Again</span></h2>
+    </div>
+    <div class="love-grid">
+      <div class="love-card reveal">
+        <span class="love-icon" role="img" aria-label="Diamond">💎</span>
+        <h3 class="love-title">Genuine Quality</h3>
+        <p class="love-text">Every piece exceeds expectation. Our customers tell us the jewellery looks even more stunning in person than in photographs — a standard we are deeply proud of.</p>
+      </div>
+      <div class="love-card reveal">
+        <span class="love-icon" role="img" aria-label="Sparkle">✨</span>
+        <h3 class="love-title">Unique Designs</h3>
+        <p class="love-text">Wearing Tanushree Collection means wearing something that very few others own. Our exclusivity is not manufactured — it is a natural result of thoughtful, limited design.</p>
+      </div>
+      <div class="love-card reveal">
+        <span class="love-icon" role="img" aria-label="Handshake">🤝</span>
+        <h3 class="love-title">Personal Connection</h3>
+        <p class="love-text">We remember our customers. We learn their preferences. We celebrate their milestones. Tanushree Collection is not a transaction — it is a relationship built on respect and care.</p>
+      </div>
+      <div class="love-card reveal">
+        <span class="love-icon" role="img" aria-label="Package">📦</span>
+        <h3 class="love-title">Gift-Ready Always</h3>
+        <p class="love-text">Every order arrives beautifully packaged — ready to be gifted without a single extra step. We remove the effort and preserve the magic of giving.</p>
+      </div>
+      <div class="love-card reveal">
+        <span class="love-icon" role="img" aria-label="Star">🌟</span>
+        <h3 class="love-title">Honest Value</h3>
+        <p class="love-text">Luxury should not mean inaccessible. We price our jewellery with integrity — offering genuine premium quality at prices that honour our customers' trust and intelligence.</p>
+      </div>
+      <div class="love-card reveal">
+        <span class="love-icon" role="img" aria-label="Medal">🏅</span>
+        <h3 class="love-title">Brand Promise</h3>
+        <p class="love-text">When you receive a Tanushree Collection piece, you receive our word. Our brand stands behind every jewel — and our promise is the most enduring accessory you will ever own.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="gold-sep" role="separator" aria-hidden="true"></div>
+
+<!-- ══════════════ QUOTE ══════════════ -->
+<section id="quote-section" aria-label="Founder's Quote">
+  <div style="position:relative;z-index:1;">
+    <span class="big-quote-mark reveal" aria-hidden="true">"</span>
+    <blockquote class="quote-text reveal delay-1">
+      Jewellery is not decoration — it is <em>declaration</em>. A declaration of who you are, what you value, and how deeply you believe in the beauty of <em>this very moment</em>.
+    </blockquote>
+    <div class="ornament reveal delay-2" style="margin:20px 0;">
+      <div class="ornament-line"></div>
+      <div class="ornament-diamond"></div>
+      <div class="ornament-line r"></div>
+    </div>
+    <p class="quote-attr reveal delay-3">— Tanushree Saha Gupta, Founder</p>
+  </div>
+</section>
+
+<div class="gold-sep" role="separator" aria-hidden="true"></div>
+
+<!-- ══════════════ CONTACT / VISIT ══════════════ -->
+<section id="contact" aria-labelledby="contact-heading">
+  <div class="container">
+    <div class="contact-header reveal">
+      <p class="section-label">Reach Us</p>
+      <div class="ornament" style="margin:13px 0 18px;">
+        <div class="ornament-line"></div>
+        <div class="ornament-diamond"></div>
+        <div class="ornament-line r"></div>
+      </div>
+      <h2 id="contact-heading" class="section-heading">Connect With<br /><span>Tanushree Collection</span></h2>
+      <p class="body-text max-680" style="margin-top:12px;">
+        We are always delighted to hear from you — whether you have a question, a special request, or simply wish to explore our world. Reach out. We are closer than you think.
+      </p>
+    </div>
+    <div class="contact-grid">
+      <div class="contact-card reveal delay-1">
+        <div class="contact-card-top" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.37 19a19.45 19.45 0 0 1-6-6 19.79 19.79 0 0 1-2.92-8.72A2 2 0 0 1 4.45 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+        </div>
+        <p class="contact-card-label">WhatsApp</p>
+        <a href="https://wa.me/918145739629" class="contact-card-value" target="_blank" rel="noopener noreferrer">Chat With Us on WhatsApp</a>
+      </div>
+      <div class="contact-card reveal delay-2">
+        <div class="contact-card-top" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        </div>
+        <p class="contact-card-label">Email</p>
+        <a href="mailto:tanushreecollection04@gmail.com" class="contact-card-value">tanushreecollection04@gmail.com</a>
+      </div>
+      <div class="contact-card reveal delay-3">
+        <div class="contact-card-top" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <p class="contact-card-label">Location</p>
+        <span class="contact-card-value" style="cursor:default;">Ramkrishna Pally,<br/>Malda, West Bengal</span>
+      </div>
+    </div>
+
+    <div class="visit-banner reveal">
+      <h3 class="visit-banner-title">You Are Always Welcome</h3>
+      <p class="visit-banner-text">
+        We warmly invite you to visit our boutique in Ramkrishna Pally, Malda — where every jewel awaits you in its finest light, and where our team is ready to guide you through an experience unlike any other.
+      </p>
+      <a href="https://wa.me/918145739629" class="cta-btn" target="_blank" rel="noopener noreferrer">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 11.37 19a19.45 19.45 0 0 1-6-6 19.79 19.79 0 0 1-2.92-8.72A2 2 0 0 1 4.45 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+        </svg>
+        Book a Visit
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════ FOOTER ══════════════ -->
+<footer role="contentinfo">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="reveal">
+        <span class="footer-brand-name">Tanushree Collection</span>
+        <span class="footer-brand-sub">Premium Jewellery &amp; Fashion Accessories</span>
+        <p class="footer-brand-desc">
+          Born in Bengal. Crafted with love. Designed for the woman who knows her worth. Tanushree Collection — where every jewel tells a story worth wearing.
+        </p>
+      </div>
+      <div class="reveal delay-1">
+        <p class="footer-col-title">Explore</p>
+        <ul class="footer-links" role="list">
+          <li><a href="#story">Our Story</a></li>
+          <li><a href="#founders">The Founders</a></li>
+          <li><a href="#difference">Our Difference</a></li>
+          <li><a href="#vision">Our Vision</a></li>
+          <li><a href="#craft">Craftsmanship</a></li>
+          <li><a href="#contact">Contact Us</a></li>
+        </ul>
+      </div>
+      <div class="reveal delay-2">
+        <p class="footer-col-title">Contact</p>
+        <ul class="footer-info" role="list">
+          <li><span aria-hidden="true">📍</span><span>Ramkrishna Pally, Malda, West Bengal, India</span></li>
+          <li><span aria-hidden="true">💬</span><span>WhatsApp: Available on request</span></li>
+          <li><span aria-hidden="true">✉️</span><span>tanushreecollection04@gmail.com</span></li>
+          <li><span aria-hidden="true">⏰</span><span>Mon – Sat, 10 AM – 8 PM</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p class="footer-copy">© 2024 Tanushree Collection. All rights reserved. Malda, West Bengal, India.</p>
+      <p class="footer-love">Crafted with love &amp; elegance ✦</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ══════════════ WHATSAPP FAB ══════════════ -->
+<a href="https://wa.me/918145739629"
+   class="whatsapp-fab"
+   target="_blank"
+   rel="noopener noreferrer"
+   aria-label="Chat with Tanushree Collection on WhatsApp">
+  <div class="fab-ping" aria-hidden="true"></div>
+  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/>
+  </svg>
+</a>
+
+<!-- ══════════════ JAVASCRIPT ══════════════ -->
+<script>
+/* ─── Detect mobile/touch early (runs before DOMContentLoaded) ─── */
+(function detectMobile() {
+  var isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  var isSmallScreen = window.innerWidth <= 860;
+  if (isTouchDevice || isSmallScreen) {
+    document.documentElement.classList.add('is-mobile');
+  }
+})();
+
+/* ─── Loader ─── */
+window.addEventListener('load', function () {
+  var loader = document.getElementById('loader');
+  var isMobile = document.documentElement.classList.contains('is-mobile');
+  var delay = isMobile ? 1000 : 1600; /* Shorter on mobile */
+  setTimeout(function () {
+    if (loader) loader.classList.add('hidden');
+  }, delay);
+});
+
+/* ─── Navbar scroll effect (passive listener for perf) ─── */
+var navbar = document.getElementById('navbar');
+window.addEventListener('scroll', function () {
+  navbar.classList.toggle('scrolled', window.scrollY > 50);
+}, { passive: true });
+
+/* ─── Mobile Nav — Rebuilt for 100% reliability ─── */
+var hamburger = document.getElementById('hamburger');
+var mobileNav = document.getElementById('mobileNav');
+var navClose  = document.getElementById('navClose');
+
+/* FIX: Single source of truth for open/close state */
+var menuIsOpen = false;
+
+function openMobileMenu() {
+  menuIsOpen = true;
+  mobileNav.classList.add('open');
+  hamburger.setAttribute('aria-expanded', 'true');
+  mobileNav.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('menu-open'); /* FIX: lets CSS disable navbar pointer-events */
+  /* Lock body scroll while menu is open */
+  document.body.style.overflow = 'hidden';
+  document.body.style.position = 'relative'; /* Prevent iOS scroll jump */
+}
+
+function closeMobileMenu() {
+  menuIsOpen = false;
+  mobileNav.classList.remove('open');
+  hamburger.setAttribute('aria-expanded', 'false');
+  mobileNav.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('menu-open');
+  /* Restore scroll */
+  document.body.style.overflow = '';
+  document.body.style.position = '';
+}
+
+/* Hamburger click — toggle for reliability */
+hamburger.addEventListener('click', function (e) {
+  e.stopPropagation();
+  if (menuIsOpen) {
+    closeMobileMenu();
+  } else {
+    openMobileMenu();
+  }
+});
+
+/* Close button — FIX: using a clean click handler, no redundant stopPropagation issues */
+if (navClose) {
+  navClose.addEventListener('click', function (e) {
+    e.stopPropagation();
+    closeMobileMenu();
+  });
+}
+
+/* Close on Escape key */
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape' && menuIsOpen) closeMobileMenu();
+});
+
+/* Close on overlay tap (only when tapping the backdrop itself, not links) */
+mobileNav.addEventListener('click', function (e) {
+  if (e.target === mobileNav) closeMobileMenu();
+});
+
+/* FIX: All mobile nav links close the menu AND handle anchor scrolling */
+var mobileLinks = mobileNav.querySelectorAll('a');
+mobileLinks.forEach(function (link) {
+  link.addEventListener('click', function () {
+    closeMobileMenu();
+  });
+});
+
+/* ─── Scroll Reveal — IntersectionObserver ─── */
+var isMobile = document.documentElement.classList.contains('is-mobile');
+
+var revealObserver = new IntersectionObserver(function (entries) {
+  entries.forEach(function (entry) {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      revealObserver.unobserve(entry.target); /* Unobserve after reveal */
+    }
+  });
+}, {
+  threshold: isMobile ? 0.05 : 0.10,
+  rootMargin: isMobile ? '0px 0px -16px 0px' : '0px 0px -36px 0px'
+});
+
+document.querySelectorAll('.reveal, .reveal-left, .reveal-right').forEach(function (el) {
+  revealObserver.observe(el);
+});
+
+/* ─── Particles — desktop only ─── */
+(function spawnParticles() {
+  if (isMobile) return; /* Skip on mobile — GPU perf */
+  var hero = document.getElementById('hero');
+  if (!hero) return;
+  var count = 12; /* Reduced count */
+  for (var i = 0; i < count; i++) {
+    var p = document.createElement('div');
+    p.className = 'particle';
+    p.style.cssText =
+      'left:' + (Math.random() * 100) + '%;' +
+      'width:' + (Math.random() * 1.5 + 1) + 'px;' +
+      'height:' + (Math.random() * 1.5 + 1) + 'px;' +
+      'animation-duration:' + (8 + Math.random() * 8) + 's;' +
+      'animation-delay:' + (Math.random() * 6) + 's;';
+    hero.appendChild(p);
+  }
+})();
+
+/* ─── Smooth anchor scroll ─── */
+document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
+  anchor.addEventListener('click', function (e) {
+    var href = anchor.getAttribute('href');
+    if (!href || href === '#') return;
+    var target = document.querySelector(href);
+    if (target) {
+      e.preventDefault();
+      var navH = navbar ? navbar.offsetHeight : 70;
+      var top = target.getBoundingClientRect().top + window.scrollY - navH - 8;
+      window.scrollTo({ top: top, behavior: 'smooth' });
+    }
+  });
+});
+
+/* ─── Resize: re-detect mobile class on orientation change ─── */
+window.addEventListener('resize', function () {
+  var small = window.innerWidth <= 860;
+  document.documentElement.classList.toggle('is-mobile', small);
+  /* Close menu if resized to desktop */
+  if (!small && menuIsOpen) closeMobileMenu();
+}, { passive: true });
+</script>
+
+</body>
+</html>
