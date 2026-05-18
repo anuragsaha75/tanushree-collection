@@ -22,7 +22,34 @@
 
     .account-field { background: var(--dark-3); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 1rem 1.2rem; margin-bottom: 0.85rem; }
     .account-field .field-label { font-size: 0.7rem; letter-spacing: 0.16em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 0.25rem; }
-    .account-field .field-value { font-size: 0.95rem; color: var(--cream); }
+    .account-field .field-value { font-size: 0.95rem; color: var(--cream); word-break: break-all; overflow-wrap: anywhere; }
+
+    /* Editable field styles */
+    .account-field.editable { position: relative; }
+    .account-field.editable .field-value-display { font-size: 0.95rem; color: var(--cream); }
+    .edit-input {
+      width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--gold);
+      color: var(--cream); font-family: 'Jost', sans-serif; font-size: 0.95rem;
+      padding: 0.1rem 0; outline: none; transition: border-color 0.3s;
+      display: none;
+    }
+    .edit-input:focus { border-bottom-color: var(--gold); }
+    .edit-mode .field-value-display { display: none; }
+    .edit-mode .edit-input { display: block; }
+
+    /* Edit / Save button row */
+    .profile-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; flex-wrap: wrap; }
+    .btn-outline {
+      flex: 1; min-width: 120px; background: transparent;
+      border: 1px solid var(--border); color: var(--cream);
+      border-radius: var(--radius-sm); padding: 0.75rem 1.5rem;
+      font-family: 'Jost', sans-serif; font-size: 0.92rem; cursor: pointer;
+      transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+    .btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+    .btn-save {
+      flex: 1; min-width: 120px;
+    }
 
     .loading-state { text-align: center; padding: 3rem; color: var(--text-muted); }
     .loading-ring { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem; }
@@ -105,11 +132,52 @@
         <div style="font-size:0.78rem;color:var(--text-muted);margin-top:0.25rem;">Member Account</div>
       </div>
       <div class="account-body">
-        <div class="account-field"><div class="field-label">Full Name</div><div class="field-value" id="dispName">—</div></div>
-        <div class="account-field"><div class="field-label">Email Address</div><div class="field-value" id="dispEmail">—</div></div>
-        <div class="account-field"><div class="field-label">Phone Number</div><div class="field-value" id="dispPhone">—</div></div>
-        <div class="account-field"><div class="field-label">Member Since</div><div class="field-value" id="dispDate">—</div></div>
-        <div class="account-field"><div class="field-label">Sign-in Provider</div><div class="field-value" id="dispProvider">—</div></div>
+
+        <!-- Full Name (editable) -->
+        <div class="account-field editable" id="fieldName">
+          <div class="field-label">Full Name</div>
+          <div class="field-value-display" id="dispName">—</div>
+          <input class="edit-input" type="text" id="inputName" placeholder="Enter your name" autocomplete="name">
+        </div>
+
+        <!-- Email (read-only) -->
+        <div class="account-field">
+          <div class="field-label">Email Address</div>
+          <div class="field-value" id="dispEmail">—</div>
+        </div>
+
+        <!-- Phone (editable) -->
+        <div class="account-field editable" id="fieldPhone">
+          <div class="field-label">Phone Number</div>
+          <div class="field-value-display" id="dispPhone">—</div>
+          <input class="edit-input" type="tel" id="inputPhone" placeholder="+91 98765 43210" autocomplete="tel">
+        </div>
+
+        <!-- Member Since (read-only) -->
+        <div class="account-field">
+          <div class="field-label">Member Since</div>
+          <div class="field-value" id="dispDate">—</div>
+        </div>
+
+        <!-- Sign-in Provider (read-only) -->
+        <div class="account-field">
+          <div class="field-label">Sign-in Provider</div>
+          <div class="field-value" id="dispProvider">—</div>
+        </div>
+
+        <!-- Action buttons -->
+        <div class="profile-actions">
+          <!-- Edit mode OFF: show Edit button -->
+          <button class="btn-outline" id="btnEdit" onclick="enterEditMode()">✎ Edit Profile</button>
+
+          <!-- Edit mode ON: show Save + Cancel -->
+          <button class="btn-gold btn-save" id="btnSave" style="display:none;" onclick="saveProfile()">
+            <span class="spinner" id="saveSpinner"></span>
+            <span id="saveBtnText">Save Changes</span>
+          </button>
+          <button class="btn-outline" id="btnCancel" style="display:none;" onclick="cancelEditMode()">Cancel</button>
+        </div>
+
         <div class="gold-line"></div>
         <button class="btn-gold" style="background:linear-gradient(135deg,#c0392b,#922b21);" onclick="doLogout()">Sign Out</button>
         <div style="text-align:center;margin-top:1rem;">
@@ -138,6 +206,9 @@
 
 <script>
 const STATUS_STEPS = ['Pending', 'Accepted', 'Delivered'];
+
+// Keep reference to current Firebase user
+let currentUser = null;
 
 function getTrackingHTML(status) {
   const rejected = status === 'Rejected';
@@ -180,6 +251,100 @@ function waitForFirebase(callback) {
   }
 }
 
+// Format date like "16 May 2026"
+function formatDate(dateInput) {
+  let d;
+  if (!dateInput) return '—';
+  if (dateInput instanceof Date) {
+    d = dateInput;
+  } else if (dateInput.toDate) {
+    d = dateInput.toDate();
+  } else if (dateInput.seconds) {
+    d = new Date(dateInput.seconds * 1000);
+  } else if (typeof dateInput === 'string') {
+    d = new Date(dateInput);
+  } else {
+    return '—';
+  }
+  if (isNaN(d.getTime())) return '—';
+  return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+}
+
+// ── Edit / Save / Cancel ──
+function enterEditMode() {
+  // Populate inputs with current display values
+  document.getElementById('inputName').value  = document.getElementById('dispName').innerText  !== '—' ? document.getElementById('dispName').innerText  : '';
+  document.getElementById('inputPhone').value = document.getElementById('dispPhone').innerText !== '—' ? document.getElementById('dispPhone').innerText : '';
+
+  // Toggle editable fields
+  document.getElementById('fieldName').classList.add('edit-mode');
+  document.getElementById('fieldPhone').classList.add('edit-mode');
+
+  // Toggle buttons
+  document.getElementById('btnEdit').style.display   = 'none';
+  document.getElementById('btnSave').style.display   = '';
+  document.getElementById('btnCancel').style.display = '';
+
+  document.getElementById('inputName').focus();
+}
+
+function cancelEditMode() {
+  document.getElementById('fieldName').classList.remove('edit-mode');
+  document.getElementById('fieldPhone').classList.remove('edit-mode');
+
+  document.getElementById('btnEdit').style.display   = '';
+  document.getElementById('btnSave').style.display   = 'none';
+  document.getElementById('btnCancel').style.display = 'none';
+}
+
+async function saveProfile() {
+  if (!currentUser) return;
+
+  const newName  = document.getElementById('inputName').value.trim();
+  const newPhone = document.getElementById('inputPhone').value.trim();
+
+  if (!newName) {
+    showToast('Name cannot be empty.', 'error');
+    return;
+  }
+
+  // Disable button & show spinner
+  const btnSave = document.getElementById('btnSave');
+  const spinner = document.getElementById('saveSpinner');
+  const btnText = document.getElementById('saveBtnText');
+  btnSave.disabled = true;
+  spinner.classList.add('show');
+  btnText.textContent = 'Saving...';
+
+  try {
+    // Update Firestore
+    await window.db.collection('users').doc(currentUser.uid).set(
+      { name: newName, phone: newPhone },
+      { merge: true }
+    );
+
+    // Update Firebase Auth displayName
+    await currentUser.updateProfile({ displayName: newName });
+
+    // Update UI display values
+    document.getElementById('dispName').innerText  = newName;
+    document.getElementById('dispPhone').innerText = newPhone || '—';
+    document.getElementById('headerName').innerText = newName;
+    document.getElementById('avatarInitial').innerText = newName.charAt(0).toUpperCase();
+
+    showToast('Profile updated successfully!');
+    cancelEditMode();
+
+  } catch (err) {
+    console.error('Save profile error:', err);
+    showToast(err.message || 'Failed to save. Please try again.', 'error');
+  } finally {
+    btnSave.disabled = false;
+    spinner.classList.remove('show');
+    btnText.textContent = 'Save Changes';
+  }
+}
+
 waitForFirebase(() => {
 
   window.auth.onAuthStateChanged(async user => {
@@ -188,6 +353,8 @@ waitForFirebase(() => {
       window.location.href = 'login.html';
       return;
     }
+
+    currentUser = user;
 
     try {
       const doc = await window.db.collection('users').doc(user.uid).get();
@@ -211,18 +378,37 @@ waitForFirebase(() => {
       // ✅ Load orders
       loadOrders(user.uid);
 
-      // ✅ SHOW UI (MAIN FIX)
+      // ✅ SHOW UI
       document.getElementById('loadingState').style.display = 'none';
       document.getElementById('accountContent').style.display = 'block';
 
       // ✅ Fill user data
-      document.getElementById('dispName').innerText = userData.name || '—';
+      document.getElementById('dispName').innerText  = userData.name  || '—';
       document.getElementById('dispEmail').innerText = userData.email || '—';
       document.getElementById('dispPhone').innerText = userData.phone || '—';
-
       document.getElementById('headerName').innerText = userData.name || 'User';
-      document.getElementById('avatarInitial').innerText =
-        (userData.name || 'U').charAt(0).toUpperCase();
+      document.getElementById('avatarInitial').innerText = (userData.name || 'U').charAt(0).toUpperCase();
+
+      // Member Since — prefer Firestore createdAt, fall back to Firebase Auth metadata
+      let memberSince = '—';
+      if (userData.createdAt && userData.createdAt.toDate) {
+        memberSince = formatDate(userData.createdAt.toDate());
+      } else if (userData.createdAt && userData.createdAt.seconds) {
+        memberSince = formatDate(new Date(userData.createdAt.seconds * 1000));
+      } else if (user.metadata && user.metadata.creationTime) {
+        memberSince = formatDate(new Date(user.metadata.creationTime));
+      }
+      document.getElementById('dispDate').innerText = memberSince;
+
+      // Provider
+      const providerId = userData.provider || user.providerData[0]?.providerId || 'unknown';
+      const providerMap = {
+        'google.com': 'Google',
+        'emailLink':  'Magic Link (Email)',
+        'password':   'Email & Password',
+        'unknown':    'Unknown'
+      };
+      document.getElementById('dispProvider').innerText = providerMap[providerId] || providerId;
 
     } catch (err) {
       console.error('Account load error:', err);

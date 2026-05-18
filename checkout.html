@@ -344,20 +344,24 @@ async function placeOrder() {
   const fullAddress = addressParts.join(', ');
 
   try {
+    // ── Save order to Firestore ─────────────────────────────────────
     await window.db.collection('orders').add({
-      userId:   currentUserId || null,
+      userId:      currentUserId || null,
       name,
-      phone:    fullPhone,
-      address:  fullAddress,
+      phone:       fullPhone,
+      address:     fullAddress,
       landmark, city, district, state, country,
       pin,
       payment,
       cart,
-      total:    cart.reduce((s, i) => s + i.price * i.quantity, 0),
-      status:   'Pending',
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      total:       cart.reduce((s, i) => s + i.price * i.quantity, 0),
+      status:      'Pending',
+      invoiceUrl:  '',
+      deliveredAt: null,
+      createdAt:   firebase.firestore.FieldValue.serverTimestamp()
     });
 
+    // Clear cart and redirect
     localStorage.removeItem('cart');
     window.location.href = 'success.html';
 
