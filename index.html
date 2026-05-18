@@ -2,33 +2,23 @@
 <html lang="en">
 <head>
   <meta name="description" content="Tanushree Collection offers premium jewellery designs, earrings, necklaces, bangles and luxury fashion accessories.">
-
   <meta name="keywords" content="jewellery, earrings, necklace, bangles, luxury jewellery, Tanushree Collection, Malda jewellery shop, tanushree collection, তনুশ্রী কালেকশন">
-
   <meta name="author" content="Tanushree Collection">
-
   <meta property="og:title" content="Tanushree Collection">
   <meta property="og:site_name" content="Tanushree Collection">
   <meta property="og:image" content="https://tanushree-collections.web.app/logo.jpg">
   <meta property="og:description" content="Premium Luxury Jewellery Store">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://tanushree-collections.web.app">
-
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon">
   <link rel="apple-touch-icon" href="/favicon.ico">
-
   <meta name="application-name" content="Tanushree Collection">
-
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-
   <title>Tanushree Collection — Premium Jewellery</title>
-
   <link rel="preconnect" href="https://fonts.googleapis.com">
-
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,400;1,600&family=Jost:wght@200;300;400;500;600&display=swap" rel="stylesheet">
-
   <link rel="stylesheet" href="styles.css">
   <style>
     /* ─── FILTERS LAYOUT ─── */
@@ -144,47 +134,39 @@
       border-radius: var(--radius) 0 0 var(--radius);
       overflow: hidden; display: flex; flex-direction: column;
     }
-      .modal-main-media {
-        position: relative;
-        overflow: hidden;
-        cursor: zoom-in;
-        background: var(--dark-3);
-        width: 100%;
-        height: 500px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      }
-
-      .modal-main-img {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        transition: transform 0.45s ease;
-        display: block;
-      }
-
-      .modal-main-img.zoomed {
-        transform: scale(1.95);
-        cursor: zoom-out;
-      }
-
-      .modal-video {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        border: none;
-        background: #000;
-        display: block;
-      }
-      
-      @media (max-width:768px){
-      .modal-main-media{
-        height:300px;
-      }
-
-      }
-
+    .modal-main-media {
+      position: relative;
+      overflow: hidden;
+      cursor: zoom-in;
+      background: var(--dark-3);
+      width: 100%;
+      height: 500px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .modal-main-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      transition: transform 0.45s ease;
+      display: block;
+    }
+    .modal-main-img.zoomed {
+      transform: scale(1.95);
+      cursor: zoom-out;
+    }
+    .modal-video {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border: none;
+      background: #000;
+      display: block;
+    }
+    @media (max-width:768px){
+      .modal-main-media { height:300px; }
+    }
     .modal-thumbs {
       display: flex; gap: 0.5rem; padding: 0.85rem; flex-wrap: wrap;
       background: var(--dark-2); border-top: 1px solid var(--border);
@@ -253,6 +235,66 @@
       transform: scale(1.04);
     }
 
+    /* ─── INVENTORY BADGES ─── */
+    .stock-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.28rem;
+      border-radius: 99px;
+      padding: 0.18rem 0.65rem;
+      font-size: 0.62rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+    .stock-badge::before {
+      content: '';
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .badge-in-stock    { background: rgba(76,175,128,0.1); color: #4caf82; border: 1px solid rgba(76,175,128,0.25); }
+    .badge-in-stock::before { background: #4caf82; }
+    .badge-low-stock   { background: rgba(255,152,0,0.12); color: #ffa726; border: 1px solid rgba(255,152,0,0.28); }
+    .badge-low-stock::before { background: #ffa726; animation: blink-dot 1.4s ease-in-out infinite; }
+    .badge-out-of-stock { background: rgba(224,82,82,0.1); color: #e05252; border: 1px solid rgba(224,82,82,0.25); }
+    .badge-out-of-stock::before { background: #e05252; }
+    @keyframes blink-dot {
+      0%, 100% { opacity: 1; } 50% { opacity: 0.35; }
+    }
+
+    /* Out of Stock button replacement */
+    .card-oos-btn {
+      background: rgba(224,82,82,0.08);
+      border: 1px solid rgba(224,82,82,0.25);
+      color: #e05252;
+      border-radius: var(--radius-xs);
+      padding: 0.35rem 0.85rem;
+      font-size: 0.7rem;
+      font-family: 'Jost', sans-serif;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      cursor: not-allowed;
+      opacity: 0.8;
+    }
+
+    /* Modal OOS button */
+    .modal-oos-btn {
+      width: 100%;
+      padding: 1rem;
+      background: rgba(224,82,82,0.08);
+      border: 1px solid rgba(224,82,82,0.25);
+      border-radius: var(--radius-sm);
+      color: #e05252;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      cursor: not-allowed;
+      text-align: center;
+    }
+
     /* ─── CONTACT MODAL ─── */
     .modal-overlay-contact {
       position: fixed; inset: 0; background: rgba(0,0,0,0.85);
@@ -282,11 +324,9 @@
       .product-card img { height: 180px; }
     }
 
-    /* ════════════════════════════════════════════════════
-       HAMBURGER — visible on ALL screens (desktop + mobile)
-    ════════════════════════════════════════════════════ */
+    /* ════════════════ HAMBURGER ════════════════ */
     .mob-hamburger {
-      display: flex; /* always visible */
+      display: flex;
       flex-direction: column;
       justify-content: center;
       gap: 5px;
@@ -307,367 +347,124 @@
       height: 1.5px;
       background: var(--gold);
       border-radius: 2px;
-      transition: transform 0.35s cubic-bezier(0.23,1,0.32,1),
-                  opacity   0.25s ease,
-                  width     0.3s  ease;
+      transition: transform 0.35s cubic-bezier(0.23,1,0.32,1), opacity 0.25s ease, width 0.3s ease;
       transform-origin: center;
       pointer-events: none;
     }
-    /* Hover state — subtle gold glow on desktop */
-    .mob-hamburger:hover span {
-      background: #e8c97a;
-    }
+    .mob-hamburger:hover span { background: #e8c97a; }
 
-    /* ════════════════════════════════════════════════════
-       MOBILE SIDEBAR OVERLAY
-    ════════════════════════════════════════════════════ */
+    /* ════════════════ MOBILE SIDEBAR ════════════════ */
     .mob-sidebar-overlay {
-      display: none; /* only mobile */
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0);
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0);
       z-index: 500;
       transition: background 0.42s cubic-bezier(0.23,1,0.32,1);
       pointer-events: none;
     }
-    @media (max-width: 768px) {
-      .mob-sidebar-overlay { display: block; }
-    }
+    @media (max-width: 768px) { .mob-sidebar-overlay { display: block; } }
     .mob-sidebar-overlay.open {
-      background: rgba(0, 0, 0, 0.72);
+      background: rgba(0,0,0,0.72);
       pointer-events: all;
       backdrop-filter: blur(3px);
-      -webkit-backdrop-filter: blur(3px);
     }
-
-    /* ════════════════════════════════════════════════════
-       MOBILE SIDEBAR PANEL
-    ════════════════════════════════════════════════════ */
     .mob-sidebar {
-      position: fixed;
-      top: 0;
-      left: -105%; /* start fully off-screen */
+      position: fixed; top: 0; left: -105%;
       width: min(320px, 88vw);
-      height: 100dvh; /* dynamic viewport height — iOS safe */
+      height: 100dvh;
       background: #0a0705;
       border-right: 1px solid rgba(201,168,76,0.18);
       z-index: 501;
-      display: flex;
-      flex-direction: column;
+      display: flex; flex-direction: column;
       overflow: hidden;
-      /* Smooth cubic slide */
       transition: left 0.44s cubic-bezier(0.23,1,0.32,1);
       box-shadow: 12px 0 60px rgba(0,0,0,0.7);
     }
-    .mob-sidebar.open {
-      left: 0;
-    }
-
-    /* Gold shimmer line at top */
+    .mob-sidebar.open { left: 0; }
     .mob-sidebar::before {
       content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
+      position: absolute; top: 0; left: 0; right: 0;
       height: 1px;
       background: linear-gradient(90deg, transparent, rgba(201,168,76,0.6), transparent);
     }
-
-    /* ── Sidebar Header ── */
     .mob-sidebar-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      display: flex; align-items: center; justify-content: space-between;
       padding: 1.35rem 1.4rem 1.2rem;
       border-bottom: 1px solid rgba(201,168,76,0.1);
       flex-shrink: 0;
     }
-    .mob-sidebar-brand {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-    .mob-sidebar-brand-name {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: #f0e8d8;
-      letter-spacing: 0.06em;
-      line-height: 1;
-    }
-    .mob-sidebar-brand-sub {
-      font-family: 'Jost', sans-serif;
-      font-size: 0.55rem;
-      letter-spacing: 0.26em;
-      text-transform: uppercase;
-      color: rgba(201,168,76,0.6);
-      font-weight: 400;
-    }
-
-    /* Close button — SVG only, zero pseudo-element risk */
+    .mob-sidebar-brand { display: flex; flex-direction: column; gap: 2px; }
+    .mob-sidebar-brand-name { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; font-weight: 600; color: #f0e8d8; letter-spacing: 0.06em; line-height: 1; }
+    .mob-sidebar-brand-sub { font-family: 'Jost', sans-serif; font-size: 0.55rem; letter-spacing: 0.26em; text-transform: uppercase; color: rgba(201,168,76,0.6); font-weight: 400; }
     .mob-sidebar-close {
-      width: 40px;
-      height: 40px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: none;
-      border: 1px solid rgba(201,168,76,0.2);
-      border-radius: 50%;
-      cursor: pointer;
-      color: transparent; /* kill any text/emoji bleed */
-      flex-shrink: 0;
+      width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+      background: none; border: 1px solid rgba(201,168,76,0.2); border-radius: 50%;
+      cursor: pointer; color: transparent; flex-shrink: 0;
       transition: border-color 0.25s, background 0.25s, transform 0.3s;
       -webkit-tap-highlight-color: transparent;
     }
-    .mob-sidebar-close::before,
-    .mob-sidebar-close::after { display: none !important; content: none !important; }
-    .mob-sidebar-close:active {
-      border-color: rgba(201,168,76,0.6);
-      background: rgba(201,168,76,0.08);
-      transform: rotate(90deg);
-    }
-    .mob-sidebar-close svg {
-      width: 15px;
-      height: 15px;
-      stroke: rgba(201,168,76,0.85);
-      fill: none;
-      stroke-width: 1.5;
-      stroke-linecap: round;
-      display: block;
-      flex-shrink: 0;
-      pointer-events: none;
-    }
-
-    /* ── Sidebar Nav Links ── */
-    .mob-sidebar-nav {
-      flex: 1;
-      overflow-y: auto;
-      -webkit-overflow-scrolling: touch;
-      padding: 0.6rem 0 1.5rem;
-    }
+    .mob-sidebar-close::before, .mob-sidebar-close::after { display: none !important; content: none !important; }
+    .mob-sidebar-close:active { border-color: rgba(201,168,76,0.6); background: rgba(201,168,76,0.08); transform: rotate(90deg); }
+    .mob-sidebar-close svg { width: 15px; height: 15px; stroke: rgba(201,168,76,0.85); fill: none; stroke-width: 1.5; stroke-linecap: round; display: block; flex-shrink: 0; pointer-events: none; }
+    .mob-sidebar-nav { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0.6rem 0 1.5rem; }
     .mob-sidebar-nav a {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 1rem 1.5rem;
-      text-decoration: none;
-      border-bottom: 1px solid rgba(201,168,76,0.06);
-      position: relative;
-      /* Stagger entrance */
-      opacity: 0;
-      transform: translateX(-18px);
-      transition:
-        color     0.25s ease,
-        background 0.25s ease,
-        opacity   0.38s cubic-bezier(0.23,1,0.32,1),
-        transform 0.38s cubic-bezier(0.23,1,0.32,1);
+      display: flex; align-items: center; gap: 1rem; padding: 1rem 1.5rem;
+      text-decoration: none; border-bottom: 1px solid rgba(201,168,76,0.06);
+      position: relative; opacity: 0; transform: translateX(-18px);
+      transition: color 0.25s ease, background 0.25s ease, opacity 0.38s cubic-bezier(0.23,1,0.32,1), transform 0.38s cubic-bezier(0.23,1,0.32,1);
     }
     .mob-sidebar-nav a:first-child { border-top: 1px solid rgba(201,168,76,0.06); }
-    /* Entrance animation when sidebar opens */
-    .mob-sidebar.open .mob-sidebar-nav a {
-      opacity: 1;
-      transform: translateX(0);
-    }
-    /* Stagger delays */
+    .mob-sidebar.open .mob-sidebar-nav a { opacity: 1; transform: translateX(0); }
     .mob-sidebar.open .mob-sidebar-nav a:nth-child(1) { transition-delay: 0.07s; }
     .mob-sidebar.open .mob-sidebar-nav a:nth-child(2) { transition-delay: 0.12s; }
     .mob-sidebar.open .mob-sidebar-nav a:nth-child(3) { transition-delay: 0.17s; }
     .mob-sidebar.open .mob-sidebar-nav a:nth-child(4) { transition-delay: 0.22s; }
     .mob-sidebar.open .mob-sidebar-nav a:nth-child(5) { transition-delay: 0.27s; }
-
-    .mob-sidebar-nav a:active {
-      background: rgba(201,168,76,0.07);
-    }
-
-    /* Gold left-bar on active tap */
+    .mob-sidebar-nav a:active { background: rgba(201,168,76,0.07); }
     .mob-sidebar-nav a::before {
-      content: '';
-      position: absolute;
-      left: 0; top: 20%; bottom: 20%;
-      width: 2px;
-      background: var(--gold, #c9a84c);
-      border-radius: 0 2px 2px 0;
-      opacity: 0;
-      transition: opacity 0.2s;
+      content: ''; position: absolute; left: 0; top: 20%; bottom: 20%;
+      width: 2px; background: var(--gold, #c9a84c); border-radius: 0 2px 2px 0;
+      opacity: 0; transition: opacity 0.2s;
     }
     .mob-sidebar-nav a:active::before { opacity: 1; }
-
-    /* Icon wrapper */
     .mob-nav-icon {
-      width: 36px;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(201,168,76,0.07);
-      border: 1px solid rgba(201,168,76,0.14);
-      border-radius: 9px;
-      flex-shrink: 0;
-      font-size: 1.05rem;
+      width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;
+      background: rgba(201,168,76,0.07); border: 1px solid rgba(201,168,76,0.14);
+      border-radius: 9px; flex-shrink: 0; font-size: 1.05rem;
       transition: background 0.25s, border-color 0.25s;
     }
-    .mob-sidebar-nav a:active .mob-nav-icon {
-      background: rgba(201,168,76,0.14);
-      border-color: rgba(201,168,76,0.3);
-    }
-
-    /* Text block */
+    .mob-sidebar-nav a:active .mob-nav-icon { background: rgba(201,168,76,0.14); border-color: rgba(201,168,76,0.3); }
     .mob-nav-text { display: flex; flex-direction: column; gap: 1px; }
-    .mob-nav-label {
-      font-family: 'Jost', sans-serif;
-      font-size: 0.88rem;
-      font-weight: 500;
-      color: #e8dfc8;
-      letter-spacing: 0.04em;
-    }
-    .mob-nav-sub {
-      font-family: 'Jost', sans-serif;
-      font-size: 0.62rem;
-      color: rgba(201,168,76,0.55);
-      letter-spacing: 0.1em;
-      font-weight: 300;
-    }
+    .mob-nav-label { font-family: 'Jost', sans-serif; font-size: 0.88rem; font-weight: 500; color: #e8dfc8; letter-spacing: 0.04em; }
+    .mob-nav-sub { font-family: 'Jost', sans-serif; font-size: 0.62rem; color: rgba(201,168,76,0.55); letter-spacing: 0.1em; font-weight: 300; }
+    .mob-nav-chevron { margin-left: auto; color: rgba(201,168,76,0.3); font-size: 0.75rem; transition: color 0.25s, transform 0.25s; flex-shrink: 0; }
+    .mob-sidebar-nav a:active .mob-nav-chevron { color: rgba(201,168,76,0.7); transform: translateX(3px); }
+    .mob-sidebar-footer { padding: 1.1rem 1.5rem; border-top: 1px solid rgba(201,168,76,0.1); flex-shrink: 0; }
+    .mob-sidebar-footer-brand { font-family: 'Cormorant Garamond', serif; font-size: 0.72rem; color: rgba(201,168,76,0.35); letter-spacing: 0.2em; text-transform: uppercase; text-align: center; }
+    .mob-sidebar-footer-line { width: 40px; height: 1px; background: rgba(201,168,76,0.2); margin: 0.6rem auto 0.5rem; }
+    .mob-sidebar-footer-loc { font-family: 'Jost', sans-serif; font-size: 0.6rem; color: rgba(247,242,234,0.25); letter-spacing: 0.12em; text-align: center; font-weight: 300; }
 
-    /* Chevron */
-    .mob-nav-chevron {
-      margin-left: auto;
-      color: rgba(201,168,76,0.3);
-      font-size: 0.75rem;
-      transition: color 0.25s, transform 0.25s;
-      flex-shrink: 0;
-    }
-    .mob-sidebar-nav a:active .mob-nav-chevron {
-      color: rgba(201,168,76,0.7);
-      transform: translateX(3px);
-    }
-
-    /* ── Sidebar Footer ── */
-    .mob-sidebar-footer {
-      padding: 1.1rem 1.5rem;
-      border-top: 1px solid rgba(201,168,76,0.1);
-      flex-shrink: 0;
-    }
-    .mob-sidebar-footer-brand {
-      font-family: 'Cormorant Garamond', serif;
-      font-size: 0.72rem;
-      color: rgba(201,168,76,0.35);
-      letter-spacing: 0.2em;
-      text-transform: uppercase;
-      text-align: center;
-    }
-    .mob-sidebar-footer-line {
-      width: 40px;
-      height: 1px;
-      background: rgba(201,168,76,0.2);
-      margin: 0.6rem auto 0.5rem;
-    }
-    .mob-sidebar-footer-loc {
-      font-family: 'Jost', sans-serif;
-      font-size: 0.6rem;
-      color: rgba(247,242,234,0.25);
-      letter-spacing: 0.12em;
-      text-align: center;
-      font-weight: 300;
-    }
-    /* ════════════════════════════════════════════════════
-       NAVBAR LAYOUT FIX — desktop brand group + mobile account
-    ════════════════════════════════════════════════════ */
-
-    /*
-      tc-nav is already display:flex in styles.css.
-      We restructure the left cluster and push nav-links to the right.
-    */
-
-    /* ── LEFT BRAND CLUSTER: [Hamburger][favicon][Brand Text] tight together ── */
-    .tc-nav {
-      display: flex !important;
-      align-items: center !important;
-      gap: 0 !important;            /* no gap — we control spacing manually */
-    }
-
-    /* The hamburger already has its own padding; give it a tiny right nudge */
-    .mob-hamburger {
-      margin-right: 6px;
-    }
-
-    /* favicon — always visible on all screen sizes */
+    /* ════════════════ NAVBAR ════════════════ */
+    .tc-nav { display: flex !important; align-items: center !important; gap: 0 !important; }
+    .mob-hamburger { margin-right: 6px; }
     .brand-logo-img {
-      display: block;               /* show on ALL screens */
-      width: 32px;
-      height: 32px;
-      object-fit: contain;
-      object-position: center;
-      border-radius: 6px;
-      box-shadow: 0 0 0 1px rgba(201,168,76,0.22), 0 2px 8px rgba(0,0,0,0.4);
-      flex-shrink: 0;
-      image-rendering: -webkit-optimize-contrast;
-      image-rendering: crisp-edges;
-      margin-right: 8px;            /* small gap before brand text */
+      display: block; width: 32px; height: 32px; object-fit: contain; object-position: center;
+      border-radius: 6px; box-shadow: 0 0 0 1px rgba(201,168,76,0.22), 0 2px 8px rgba(0,0,0,0.4);
+      flex-shrink: 0; image-rendering: -webkit-optimize-contrast; image-rendering: crisp-edges; margin-right: 8px;
     }
-
-    /* brand-name wraps both favicon + text in a tight flex row */
-    .brand-name {
-      display: flex !important;
-      align-items: center !important;
-      flex-shrink: 0;
-      min-width: 0;
-      /* flex:1 pushes nav-links to the right */
-      flex: 1;
-    }
-
-    /* brand text — desktop: visible; mobile: hidden (brand shown via favicon) */
-    .brand-text {
-      display: block;             /* visible on desktop */
-      white-space: nowrap;
-    }
-
-    /* nav-links stays at the right edge, never grows */
-    .nav-links {
-      flex-shrink: 0;
-      margin-left: auto;          /* safety: already pushed by brand-name flex:1 */
-    }
-
-    /* ── MOBILE ── */
+    .brand-name { display: flex !important; align-items: center !important; flex-shrink: 0; min-width: 0; flex: 1; }
+    .brand-text { display: block; white-space: nowrap; }
+    .nav-links { flex-shrink: 0; margin-left: auto; }
     @media (max-width: 768px) {
-      /* Hide brand text on mobile — favicon alone represents the brand */
-      .brand-text {
-        display: none;
-      }
-
-      /* Remove the right margin on favicon since text is gone */
-      .brand-logo-img {
-        margin-right: 0;
-      }
-
-      /* Show Account link on mobile navbar */
-      .nav-account-link {
-        display: inline-flex !important;
-        align-items: center;
-        white-space: nowrap;
-      }
-
-      /* Tighten nav-links gap on mobile */
-      .nav-links {
-        gap: 0.4rem !important;
-      }
-
-      /* Hide Contact button on mobile to save space (it's in the sidebar) */
-      .nav-contact-btn {
-        display: none !important;
-      }
+      .brand-text { display: none; }
+      .brand-logo-img { margin-right: 0; }
+      .nav-account-link { display: inline-flex !important; align-items: center; white-space: nowrap; }
+      .nav-links { gap: 0.4rem !important; }
+      .nav-contact-btn { display: none !important; }
     }
-
-    /* Extra-small phones: tighten cart button text so it's never cut off */
     @media (max-width: 380px) {
-      .nav-cart-btn {
-        font-size: 0.72rem !important;
-        padding: 0.35rem 0.6rem !important;
-        letter-spacing: 0 !important;
-      }
-      .nav-account-link {
-        font-size: 0.72rem !important;
-        padding: 0.35rem 0.5rem !important;
-      }
+      .nav-cart-btn { font-size: 0.72rem !important; padding: 0.35rem 0.6rem !important; letter-spacing: 0 !important; }
+      .nav-account-link { font-size: 0.72rem !important; padding: 0.35rem 0.5rem !important; }
     }
   </style>
 </head>
@@ -679,7 +476,6 @@
 
 <!-- ─── MOBILE SIDEBAR PANEL ─── -->
 <div class="mob-sidebar" id="mobSidebar" role="dialog" aria-modal="true" aria-label="Navigation menu">
-
   <div class="mob-sidebar-header">
     <div class="mob-sidebar-brand">
       <div class="mob-sidebar-brand-name">Tanushree Collection</div>
@@ -687,87 +483,51 @@
     </div>
     <button class="mob-sidebar-close" id="mobSidebarClose" aria-label="Close menu" type="button"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
   </div>
-
   <nav class="mob-sidebar-nav" aria-label="Mobile navigation">
-
     <a href="orders.html">
       <span class="mob-nav-icon" aria-hidden="true">📦</span>
-      <span class="mob-nav-text">
-        <span class="mob-nav-label">Orders &amp; History</span>
-        <span class="mob-nav-sub">Track your purchases</span>
-      </span>
+      <span class="mob-nav-text"><span class="mob-nav-label">Orders &amp; History</span><span class="mob-nav-sub">Track your purchases</span></span>
       <span class="mob-nav-chevron" aria-hidden="true">›</span>
     </a>
-
     <a href="javascript:void(0)" onclick="closeMobSidebar();openCart();">
       <span class="mob-nav-icon" aria-hidden="true">🛍</span>
-      <span class="mob-nav-text">
-        <span class="mob-nav-label">Cart</span>
-        <span class="mob-nav-sub">View your bag</span>
-      </span>
+      <span class="mob-nav-text"><span class="mob-nav-label">Cart</span><span class="mob-nav-sub">View your bag</span></span>
       <span class="mob-nav-chevron" aria-hidden="true">›</span>
     </a>
-
     <a href="tanushree-collection-about.html">
       <span class="mob-nav-icon" aria-hidden="true">✦</span>
-      <span class="mob-nav-text">
-        <span class="mob-nav-label">About Us</span>
-        <span class="mob-nav-sub">Our story &amp; vision</span>
-      </span>
+      <span class="mob-nav-text"><span class="mob-nav-label">About Us</span><span class="mob-nav-sub">Our story &amp; vision</span></span>
       <span class="mob-nav-chevron" aria-hidden="true">›</span>
     </a>
-
     <a href="refund-policy.html">
       <span class="mob-nav-icon" aria-hidden="true">↩</span>
-      <span class="mob-nav-text">
-        <span class="mob-nav-label">Refund Policy</span>
-        <span class="mob-nav-sub">Easy hassle-free refunds</span>
-      </span>
+      <span class="mob-nav-text"><span class="mob-nav-label">Refund Policy</span><span class="mob-nav-sub">Easy hassle-free refunds</span></span>
       <span class="mob-nav-chevron" aria-hidden="true">›</span>
     </a>
-
     <a href="return-policy.html">
       <span class="mob-nav-icon" aria-hidden="true">🔄</span>
-      <span class="mob-nav-text">
-        <span class="mob-nav-label">Return Policy</span>
-        <span class="mob-nav-sub">Simple return process</span>
-      </span>
+      <span class="mob-nav-text"><span class="mob-nav-label">Return Policy</span><span class="mob-nav-sub">Simple return process</span></span>
       <span class="mob-nav-chevron" aria-hidden="true">›</span>
     </a>
-
   </nav>
-
   <div class="mob-sidebar-footer">
     <div class="mob-sidebar-footer-line"></div>
     <div class="mob-sidebar-footer-brand">Tanushree Collection</div>
     <div class="mob-sidebar-footer-loc">Ramkrishna Pally · Malda · West Bengal</div>
   </div>
-
 </div>
 
 <!-- ─── NAVBAR ─── -->
 <nav class="tc-nav">
-  <!-- Hamburger: mobile only, top-left -->
   <button class="mob-hamburger" id="mobHamburger" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobSidebar" type="button">
     <span aria-hidden="true"></span>
     <span aria-hidden="true"></span>
     <span aria-hidden="true"></span>
   </button>
-
-  <!-- Desktop: text logo | Mobile: favicon image logo -->
   <div class="brand-name" aria-label="Tanushree Collection">
-    <!-- Text logo — desktop only -->
     <span class="brand-text">Tanushree Collection</span>
-    <!-- Image logo — mobile only -->
-    <img
-      class="brand-logo-img"
-      src="favicon.ico"
-      alt="Tanushree Collection"
-      width="36"
-      height="36"
-    />
+    <img class="brand-logo-img" src="favicon.ico" alt="Tanushree Collection" width="36" height="36" />
   </div>
-
   <div class="nav-links">
     <a href="account.html" class="nav-account-link">Account</a>
     <button class="nav-contact-btn" onclick="openContactModal()">📞 Contact</button>
@@ -794,21 +554,13 @@
 <!-- ─── FILTERS ─── -->
 <div class="filters-wrap" id="filterBar">
   <button class="filter-btn active" onclick="filterCategory('all',this)">All</button>
-
   <button class="filter-btn" onclick="filterCategory('BRIDAL JEWELLERY',this)">Bridal</button>
-
   <button class="filter-btn" onclick="filterCategory('KUNDAN JEWELLERY',this)">Kundan</button>
-
   <button class="filter-btn" onclick="filterCategory('SILVER REPLICA',this)">Silver Replica</button>
-
   <button class="filter-btn" onclick="filterCategory('BLACK POLISH',this)">Black Polish</button>
-
   <button class="filter-btn" onclick="filterCategory('GOLD PLATED',this)">Gold Plated</button>
-
   <button class="filter-btn" onclick="filterCategory('SOUTH INDIAN',this)">South Indian</button>
-
   <button class="filter-btn" onclick="filterCategory('AD JEWELLERY',this)">AD Jewellery</button>
-
   <button class="filter-btn" onclick="filterCategory('LADIES BAGS',this)">Ladies Bags</button>
 </div>
 
@@ -832,11 +584,7 @@
     </div>
     <div>
       <div class="footer-heading">Visit Us</div>
-      <div class="footer-text">
-        Ramkrishna Pally,<br>
-        Near Durga Mandap,<br>
-        Malda, West Bengal
-      </div>
+      <div class="footer-text">Ramkrishna Pally,<br>Near Durga Mandap,<br>Malda, West Bengal</div>
       <div style="margin-top:0.9rem;font-size:0.88rem;color:var(--gold);font-weight:400;">📞 8145739629</div>
     </div>
     <div>
@@ -872,9 +620,7 @@
     <div style="font-family:'Cormorant Garamond',serif;font-size:1.6rem;margin-bottom:0.5rem;">Contact Us</div>
     <div class="gold-line" style="margin:0.75rem 0;"></div>
     <div style="font-size:1.4rem;font-weight:600;color:var(--gold);margin-bottom:0.25rem;">+91 8145739629</div>
-    <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:1.5rem;font-weight:300;">
-      Ramkrishna Pally, Near Durga Mandap, Malda
-    </div>
+    <div style="font-size:0.82rem;color:var(--text-muted);margin-bottom:1.5rem;font-weight:300;">Ramkrishna Pally, Near Durga Mandap, Malda</div>
     <a href="tel:+918145739629" class="btn-gold" style="text-decoration:none;display:inline-flex;width:auto;padding:0.7rem 2rem;margin-bottom:0.75rem;">Call Now</a>
     <div>
       <button onclick="closeContactModal()" style="background:none;border:none;color:var(--text-muted);cursor:pointer;font-size:0.85rem;margin-top:0.5rem;font-family:'Jost',sans-serif;">Close</button>
@@ -903,7 +649,6 @@
 <div class="modal-overlay" id="modalOverlay" onclick="if(event.target===this)closeModal()">
   <div class="modal-box" id="modalBox" style="position:relative;">
     <button class="modal-close" onclick="closeModal()">✕</button>
-
     <!-- Gallery -->
     <div class="modal-gallery" id="modalGallery">
       <div class="modal-main-media" id="modalMainMedia">
@@ -914,15 +659,17 @@
       </div>
       <div class="modal-thumbs" id="modalThumbs"></div>
     </div>
-
     <!-- Info -->
     <div class="modal-info" id="modalInfo">
       <div class="modal-category" id="modalCategory"></div>
       <div class="modal-name" id="modalName"></div>
       <div class="modal-price" id="modalPrice"></div>
+      <div id="modalStockBadge" style="margin-bottom:0.75rem;"></div>
       <div class="gold-line" style="margin:0 0 1.1rem;"></div>
       <div class="modal-desc" id="modalDesc"></div>
-      <button class="btn-gold" onclick="addToCartModal()">Add to Cart</button>
+      <div id="modalActionArea">
+        <button class="btn-gold" onclick="addToCartModal()">Add to Cart</button>
+      </div>
     </div>
   </div>
 </div>
@@ -940,6 +687,23 @@ let currentFilter = 'all';
 let activeProduct = null;
 let activeMediaIndex = 0;
 let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+
+// ── STOCK HELPERS ──
+function isOutOfStock(p) {
+  if (p.outOfStock === true) return true;
+  if (p.stock != null && p.stock === 0) return true;
+  return false;
+}
+function isLowStock(p) {
+  if (isOutOfStock(p)) return false;
+  if (p.stock != null && p.stock <= 2) return true;
+  return false;
+}
+function getStockBadge(p) {
+  if (isOutOfStock(p)) return `<span class="stock-badge badge-out-of-stock">Out of Stock</span>`;
+  if (isLowStock(p))   return `<span class="stock-badge badge-low-stock">Low Stock</span>`;
+  return                      `<span class="stock-badge badge-in-stock">In Stock</span>`;
+}
 
 // ── CART HELPERS ──
 function saveCart() {
@@ -1008,6 +772,10 @@ function removeItem(idx) {
 }
 
 function addToCart(product) {
+  if (isOutOfStock(product)) {
+    showToast('This item is out of stock', 'error');
+    return;
+  }
   const existing = cart.find(i => i.id === product.id);
   if (existing) { existing.quantity++; }
   else { cart.push({ ...product, quantity: 1 }); }
@@ -1016,6 +784,10 @@ function addToCart(product) {
 }
 function addToCartModal() {
   if (!activeProduct) return;
+  if (isOutOfStock(activeProduct)) {
+    showToast('This item is out of stock', 'error');
+    return;
+  }
   addToCart(activeProduct);
 }
 
@@ -1030,11 +802,23 @@ function openModal(product) {
 
   const allMedia = [...(product.images || [])];
   const hasVideo = !!product.videoUrl;
+  const oos = isOutOfStock(product);
 
   document.getElementById('modalCategory').textContent = product.category || '';
   document.getElementById('modalName').textContent = product.name;
   document.getElementById('modalPrice').textContent = '₹' + product.price;
   document.getElementById('modalDesc').textContent = product.desc || 'A beautifully crafted piece from Tanushree Collections.';
+
+  // Stock badge
+  document.getElementById('modalStockBadge').innerHTML = getStockBadge(product);
+
+  // Action area: Add to Cart or Out of Stock
+  const actionArea = document.getElementById('modalActionArea');
+  if (oos) {
+    actionArea.innerHTML = `<div class="modal-oos-btn">⊘ Out of Stock</div>`;
+  } else {
+    actionArea.innerHTML = `<button class="btn-gold" onclick="addToCartModal()">Add to Cart</button>`;
+  }
 
   renderModalMedia(allMedia, hasVideo, product.videoUrl, 0);
   document.getElementById('modalOverlay').classList.add('open');
@@ -1134,21 +918,33 @@ function renderProducts() {
     return;
   }
 
-  grid.innerHTML = items.map(p => `
-    <div class="product-card" onclick='openModal(${JSON.stringify(p).replace(/'/g,"&#39;")})'>
-      <img src="${p.images?.[0] || 'no-image.png'}" alt="${p.name}" loading="lazy">
+  grid.innerHTML = items.map(p => {
+    const oos = isOutOfStock(p);
+    const low = isLowStock(p);
+    const safePData = JSON.stringify(p).replace(/'/g,"&#39;");
+
+    const actionBtn = oos
+      ? `<span class="card-oos-btn">⊘ Out of Stock</span>`
+      : `<button class="card-add-btn" onclick="event.stopPropagation();addToCart(${safePData})">+ Add</button>`;
+
+    const stockBadgeHtml = oos
+      ? `<div style="position:absolute;top:0.6rem;left:0.6rem;z-index:2;">${getStockBadge(p)}</div>`
+      : (low ? `<div style="position:absolute;top:0.6rem;left:0.6rem;z-index:2;">${getStockBadge(p)}</div>` : '');
+
+    return `
+    <div class="product-card" onclick='openModal(${safePData})' style="position:relative;${oos ? 'opacity:0.8;' : ''}">
+      ${stockBadgeHtml}
+      <img src="${p.images?.[0] || 'no-image.png'}" alt="${p.name}" loading="lazy" style="${oos ? 'filter:grayscale(30%);' : ''}">
       <div class="product-info">
         <div class="product-category">${p.category || ''}</div>
         <div class="product-name">${p.name}</div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.65rem;">
           <div class="product-price">₹${p.price}</div>
-          <button class="card-add-btn" onclick="event.stopPropagation();addToCart(${JSON.stringify(p).replace(/'/g,"&#39;")})">
-            + Add
-          </button>
+          ${actionBtn}
         </div>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 async function loadProducts() {
@@ -1168,7 +964,9 @@ async function loadProducts() {
         category: d.category,
         desc: d.desc,
         images: d.imageUrls || [],
-        videoUrl: d.videoUrl || null
+        videoUrl: d.videoUrl || null,
+        stock: d.stock != null ? d.stock : null,
+        outOfStock: d.outOfStock === true
       };
     });
     renderProducts();

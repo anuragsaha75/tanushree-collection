@@ -42,6 +42,27 @@
 
     .guest-notice { background: rgba(201,168,76,0.08); border: 1px solid rgba(201,168,76,0.2); border-radius: var(--radius-sm); padding: 0.75rem 1rem; font-size: 0.82rem; color: var(--gold); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
 
+    .stock-error-banner {
+      background: rgba(224,82,82,0.08);
+      border: 1px solid rgba(224,82,82,0.3);
+      border-radius: var(--radius-sm);
+      padding: 0.85rem 1rem;
+      margin-bottom: 1rem;
+      display: none;
+    }
+    .stock-error-banner.show { display: block; }
+    .stock-error-banner ul {
+      margin: 0; padding: 0 0 0 1.1rem;
+      list-style: disc;
+    }
+    .stock-error-banner ul li {
+      font-size: 0.85rem;
+      color: #e05252;
+      margin-bottom: 0.2rem;
+      line-height: 1.5;
+    }
+    .stock-error-banner ul li:last-child { margin-bottom: 0; }
+
     @media (max-width: 768px) {
       .checkout-layout { grid-template-columns: 1fr; }
       .form-row { grid-template-columns: 1fr; }
@@ -65,6 +86,11 @@
   <div>
     <div id="guestNotice" class="guest-notice" style="display:none;">
       ℹ️ You're checking out as a guest. <a href="login.html" style="color:var(--gold);font-weight:600;margin-left:0.25rem;">Sign in</a> to track your orders.
+    </div>
+
+    <!-- Stock error banner -->
+    <div class="stock-error-banner" id="stockErrorBanner">
+      <ul id="stockErrorList"></ul>
     </div>
 
     <div class="tc-card" style="margin-bottom:1.2rem;">
@@ -210,7 +236,7 @@ waitForFirebase(() => {
 
           const data = doc.data();
 
-          const nameInput = document.getElementById('cName');
+          const nameInput  = document.getElementById('cName');
           const phoneInput = document.getElementById('cPhone');
 
           if (data.name && nameInput && !nameInput.value) {
@@ -278,12 +304,110 @@ function setErr(id, msg) {
 
 function clearErrors() {
   ['nameErr','phoneErr','addrErr'].forEach(id => setErr(id, ''));
+  const banner = document.getElementById('stockErrorBanner');
+  banner.classList.remove('show');
+  document.getElementById('stockErrorList').innerHTML = '';
 }
 
 function setLoading(on) {
   document.getElementById('placeBtn').disabled = on;
   document.getElementById('orderSpinner').classList.toggle('show', on);
   document.getElementById('placeBtnText').textContent = on ? 'Placing Order...' : 'Place Order';
+}
+
+function showStockErrors(errors) {
+  const banner = document.getElementById('stockErrorBanner');
+  const list   = document.getElementById('stockErrorList');
+  list.innerHTML = errors.map(e => `<li>${e}</li>`).join('');
+  banner.classList.add('show');
+  banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// ── STOCK VALIDATION ──────────────────────────────────────────────
+// Fetch latest stock for all cart items from Firestore.
+// Returns an array of error strings (empty = all good).
+async function validateStock() {
+  const errors = [];
+
+  // cart items must have an `id` field (productId) stored at add-to-cart time.
+  // We fetch each product doc in parallel for speed.
+  const fetchPromises = cart.map(async item => {
+    // If the item has no product id we cannot check — skip (backward compat)
+    if (!item.id) return null;
+    try {
+      const doc = await window.db.collection('products').doc(item.id).get();
+      if (!doc.exists) return null;
+      return { item, data: doc.data() };
+    } catch (e) {
+      console.warn('Stock fetch failed for', item.id, e);
+      return null;
+    }
+  });
+
+  const results = await Promise.all(fetchPromises);
+
+  for (const result of results) {
+    if (!result) continue;
+    const { item, data } = result;
+
+    // Backward compatibility: old products without stock field → default 1
+    const stock = (typeof data.stock === 'number') ? data.stock : 1;
+    const isOOS = data.outOfStock === true || stock === 0;
+
+    if (isOOS || stock === 0) {
+      errors.push(`"${item.name}" is out of stock.`);
+    } else if (item.quantity > stock) {
+      errors.push(`"${item.name}" — only ${stock} piece${stock > 1 ? 's' : ''} available (you ordered ${item.quantity}).`);
+    }
+  }
+
+  return errors;
+}
+
+// ── DEDUCT STOCK after successful order ──────────────────────────
+// Runs as a best-effort batch write; does not block the success redirect.
+async function deductStock() {
+  const batch = window.db.batch();
+  let hasBatchOp = false;
+
+  const fetchPromises = cart.map(async item => {
+    if (!item.id) return null;
+    try {
+      const doc = await window.db.collection('products').doc(item.id).get();
+      if (!doc.exists) return null;
+      return { item, docRef: doc.ref, data: doc.data() };
+    } catch (e) {
+      console.warn('Stock deduct fetch failed for', item.id, e);
+      return null;
+    }
+  });
+
+  const results = await Promise.all(fetchPromises);
+
+  for (const result of results) {
+    if (!result) continue;
+    const { item, docRef, data } = result;
+
+    const currentStock = (typeof data.stock === 'number') ? data.stock : 1;
+    const newStock     = Math.max(0, currentStock - item.quantity);
+    const isNowOOS     = newStock === 0;
+
+    batch.update(docRef, {
+      stock:      newStock,
+      outOfStock: isNowOOS,
+      updatedAt:  firebase.firestore.FieldValue.serverTimestamp()
+    });
+    hasBatchOp = true;
+  }
+
+  if (hasBatchOp) {
+    try {
+      await batch.commit();
+    } catch (e) {
+      // Non-critical — order is already placed; log silently
+      console.warn('Stock deduction batch failed:', e);
+    }
+  }
 }
 
 async function placeOrder() {
@@ -309,7 +433,7 @@ async function placeOrder() {
     valid = false;
   }
 
-  // ✅ PHONE FIX (IMPORTANT)
+  // ✅ Phone validation
   if (!/^[0-9]{10}$/.test(phone)) {
     setErr('phoneErr', 'Enter valid 10-digit phone number');
     valid = false;
@@ -331,6 +455,19 @@ async function placeOrder() {
 
   setLoading(true);
 
+  // ── STOCK CHECK ───────────────────────────────────────────────────
+  try {
+    const stockErrors = await validateStock();
+    if (stockErrors.length > 0) {
+      showStockErrors(stockErrors);
+      setLoading(false);
+      return;
+    }
+  } catch (e) {
+    // If stock check itself fails (network issue etc.) allow order to proceed
+    console.warn('Stock validation error — proceeding without check:', e);
+  }
+
   const fullPhone = countryCode + ' ' + phone;
 
   const addressParts = [address];
@@ -344,7 +481,7 @@ async function placeOrder() {
   const fullAddress = addressParts.join(', ');
 
   try {
-    // ── Save order to Firestore ─────────────────────────────────────
+    // ── Save order to Firestore ───────────────────────────────────
     await window.db.collection('orders').add({
       userId:      currentUserId || null,
       name,
@@ -360,6 +497,9 @@ async function placeOrder() {
       deliveredAt: null,
       createdAt:   firebase.firestore.FieldValue.serverTimestamp()
     });
+
+    // ── Deduct stock (best-effort, non-blocking) ──────────────────
+    deductStock().catch(e => console.warn('deductStock error:', e));
 
     // Clear cart and redirect
     localStorage.removeItem('cart');
