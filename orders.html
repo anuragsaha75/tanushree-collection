@@ -1287,6 +1287,47 @@ function closeConfirm() {
   document.body.style.overflow = '';
 }
 
+// ── STOCK RESTORE ─────────────────────────────────────────────────
+// Restores stock for all items in an order (used on cancel/reject/refund).
+async function restoreStock(cartItems) {
+  if (!cartItems || !cartItems.length) return;
+  try {
+    const batch = window.db.batch();
+    let hasBatchOp = false;
+
+    const fetchPromises = cartItems.map(async item => {
+      if (!item.id) return null;
+      try {
+        const doc = await window.db.collection('products').doc(item.id).get();
+        if (!doc.exists) return null;
+        return { item, docRef: doc.ref, data: doc.data() };
+      } catch (e) {
+        console.warn('restoreStock fetch failed for', item.id, e);
+        return null;
+      }
+    });
+
+    const results = await Promise.all(fetchPromises);
+
+    for (const result of results) {
+      if (!result) continue;
+      const { item, docRef, data } = result;
+      const currentStock = (typeof data.stock === 'number') ? data.stock : 0;
+      const newStock     = currentStock + (item.quantity || 1);
+      batch.update(docRef, {
+        stock:      newStock,
+        outOfStock: false,
+        updatedAt:  firebase.firestore.FieldValue.serverTimestamp()
+      });
+      hasBatchOp = true;
+    }
+
+    if (hasBatchOp) await batch.commit();
+  } catch (e) {
+    console.warn('restoreStock batch failed:', e);
+  }
+}
+
 document.getElementById('confirmCancelBtn').addEventListener('click', async () => {
   if (!pendingCancelId) return;
   const btn = document.getElementById('confirmCancelBtn');
@@ -1294,7 +1335,16 @@ document.getElementById('confirmCancelBtn').addEventListener('click', async () =
   btn.textContent = 'Cancelling...';
 
   try {
+    // Fetch order cart before cancelling to restore stock
+    const orderDoc = await window.db.collection('orders').doc(pendingCancelId).get();
+    const orderData = orderDoc.exists ? orderDoc.data() : null;
+
     await window.db.collection('orders').doc(pendingCancelId).update({ status: 'Cancelled' });
+
+    // Restore stock for all ordered items
+    if (orderData && orderData.cart) {
+      restoreStock(orderData.cart).catch(e => console.warn('restoreStock error on cancel:', e));
+    }
 
     // Update local state instantly
     const idx = allOrders.findIndex(o => o.id === pendingCancelId);

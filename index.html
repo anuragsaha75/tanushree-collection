@@ -797,6 +797,9 @@ function closeContactModal() { document.getElementById('contactModal').classList
 
 // ── PRODUCT MODAL ──
 function openModal(product) {
+  // Always use the latest data from allProducts to avoid stale card snapshots
+  const latest = allProducts.find(p => p.id === product.id);
+  if (latest) product = latest;
   activeProduct = product;
   activeMediaIndex = 0;
 
@@ -925,14 +928,14 @@ function renderProducts() {
 
     const actionBtn = oos
       ? `<span class="card-oos-btn">⊘ Out of Stock</span>`
-      : `<button class="card-add-btn" onclick="event.stopPropagation();addToCart(${safePData})">+ Add</button>`;
+      : `<button class="card-add-btn" onclick="event.stopPropagation();addToCart(allProducts.find(p=>p.id==='${p.id}'))">+ Add</button>`;
 
     const stockBadgeHtml = oos
       ? `<div style="position:absolute;top:0.6rem;left:0.6rem;z-index:2;">${getStockBadge(p)}</div>`
       : (low ? `<div style="position:absolute;top:0.6rem;left:0.6rem;z-index:2;">${getStockBadge(p)}</div>` : '');
 
     return `
-    <div class="product-card" onclick='openModal(${safePData})' style="position:relative;${oos ? 'opacity:0.8;' : ''}">
+    <div class="product-card" onclick='openModal(allProducts.find(p=>p.id==="${p.id}"))' style="position:relative;${oos ? 'opacity:0.8;' : ''}">
       ${stockBadgeHtml}
       <img src="${p.images?.[0] || 'no-image.png'}" alt="${p.name}" loading="lazy" style="${oos ? 'filter:grayscale(30%);' : ''}">
       <div class="product-info">
@@ -947,33 +950,61 @@ function renderProducts() {
   }).join('');
 }
 
-async function loadProducts() {
+// ── REALTIME PRODUCTS LISTENER ──
+// Uses onSnapshot so the homepage reacts instantly when stock changes
+// in Firestore (e.g. after another user places an order).
+let _productsUnsubscribe = null;
+
+function loadProducts() {
+  // Tear down any existing listener before starting a new one
+  if (_productsUnsubscribe) { _productsUnsubscribe(); _productsUnsubscribe = null; }
+
+  let query;
   try {
-    let snap;
-    try {
-      snap = await window.db.collection('products').orderBy('createdAt', 'desc').get();
-    } catch (e) {
-      snap = await window.db.collection('products').get();
-    }
+    query = window.db.collection('products').orderBy('createdAt', 'desc');
+  } catch (e) {
+    query = window.db.collection('products');
+  }
+
+  _productsUnsubscribe = query.onSnapshot(snap => {
     allProducts = snap.docs.map(doc => {
       const d = doc.data();
       return {
-        id: doc.id,
-        name: d.name,
-        price: d.price,
-        category: d.category,
-        desc: d.desc,
-        images: d.imageUrls || [],
-        videoUrl: d.videoUrl || null,
-        stock: d.stock != null ? d.stock : null,
+        id:         doc.id,
+        name:       d.name,
+        price:      d.price,
+        category:   d.category,
+        desc:       d.desc,
+        images:     d.imageUrls || [],
+        videoUrl:   d.videoUrl || null,
+        stock:      d.stock != null ? d.stock : null,
         outOfStock: d.outOfStock === true
       };
     });
     renderProducts();
-  } catch (err) {
-    console.error('loadProducts error:', err);
-    document.getElementById('productsGrid').innerHTML = `<div class="empty-state"><p>Could not load products. Please try again.</p></div>`;
-  }
+
+    // If the product modal is open for a product whose stock just changed,
+    // refresh its action area so Add to Cart ↔ Out of Stock stays in sync.
+    if (activeProduct) {
+      const updated = allProducts.find(p => p.id === activeProduct.id);
+      if (updated) {
+        activeProduct = updated;
+        const oos = isOutOfStock(updated);
+        const actionArea = document.getElementById('modalActionArea');
+        if (actionArea) {
+          actionArea.innerHTML = oos
+            ? `<div class="modal-oos-btn">⊘ Out of Stock</div>`
+            : `<button class="btn-gold" onclick="addToCartModal()">Add to Cart</button>`;
+        }
+        const stockBadgeEl = document.getElementById('modalStockBadge');
+        if (stockBadgeEl) stockBadgeEl.innerHTML = getStockBadge(updated);
+      }
+    }
+  }, err => {
+    console.error('Products listener error:', err);
+    document.getElementById('productsGrid').innerHTML =
+      `<div class="empty-state"><p>Could not load products. Please try again.</p></div>`;
+  });
 }
 
 function showToast(msg, type = 'success') {
