@@ -690,9 +690,8 @@ let cart = JSON.parse(localStorage.getItem('cart') || '[]');
 
 // ── STOCK HELPERS ──
 function isOutOfStock(p) {
-  // Out of stock if the flag is set OR stock is exactly 0
   if (p.outOfStock === true) return true;
-  if (typeof p.stock === 'number' && p.stock === 0) return true;
+  if (p.stock != null && p.stock === 0) return true;
   return false;
 }
 function isLowStock(p) {
@@ -968,12 +967,8 @@ function loadProducts() {
   }
 
   _productsUnsubscribe = query.onSnapshot(snap => {
-    // ── Map Firestore docs to local product objects ──
-    // stock field: use numeric value if present, fall back to 0
-    // outOfStock field: true if admin set it OR if stock === 0
     allProducts = snap.docs.map(doc => {
       const d = doc.data();
-      const stockVal = (typeof d.stock === 'number') ? d.stock : (d.stock != null ? Number(d.stock) : null);
       return {
         id:         doc.id,
         name:       d.name,
@@ -982,17 +977,14 @@ function loadProducts() {
         desc:       d.desc,
         images:     d.imageUrls || [],
         videoUrl:   d.videoUrl || null,
-        stock:      stockVal,
-        // Treat as out of stock if the flag is set OR stock is exactly 0
-        outOfStock: d.outOfStock === true || stockVal === 0
+        stock:      d.stock != null ? d.stock : null,
+        outOfStock: d.outOfStock === true
       };
     });
-
-    // Re-render the product grid with latest stock data
     renderProducts();
 
     // If the product modal is open for a product whose stock just changed,
-    // refresh its action area so Add to Cart ↔ Out of Stock stays in sync live.
+    // refresh its action area so Add to Cart ↔ Out of Stock stays in sync.
     if (activeProduct) {
       const updated = allProducts.find(p => p.id === activeProduct.id);
       if (updated) {

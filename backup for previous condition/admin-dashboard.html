@@ -765,9 +765,9 @@ function renderProducts(products) {
     return;
   }
   list.innerHTML = products.map(p => {
-    const stock = typeof p.stock === 'number' ? p.stock : 0;
+    const stock = Number(p.stock) || 0;
     const badgeClass = stock === 0 ? 'stock-out' : stock <= 2 ? 'stock-low' : 'stock-ok';
-    const badgeLabel = stock === 0 ? 'Out of Stock' : stock <= 2 ? `Low: ${stock}` : `In Stock: ${stock}`;
+    const badgeLabel = stock === 0 ? 'Out of Stock' : stock <= 2 ? `Low Stock (${stock})` : `In Stock (${stock})`;
     return `
     <div class="product-admin-card">
       <img src="${p.imageUrls?.[0] || 'no-image.png'}" alt="${p.name}" onerror="this.src='no-image.png'">
@@ -776,55 +776,13 @@ function renderProducts(products) {
         <div class="product-admin-name">${p.name}</div>
         <div class="product-admin-price">₹${p.price}</div>
         <span class="product-stock-badge ${badgeClass}">${badgeLabel}</span>
-        ${p.imageUrls?.length > 1 ? `<div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:0.4rem;">${p.imageUrls.length} images${p.videoUrl ? ' · video' : ''}</div>` : ''}
-        <!-- ── Admin Manual Stock Adjust ── -->
-        <div style="display:flex;align-items:center;gap:0.4rem;margin:0.5rem 0;flex-wrap:wrap;">
-          <button onclick="adjustStock('${p.id}', -1)" style="background:rgba(224,82,82,0.1);border:1px solid rgba(224,82,82,0.3);color:#e05252;border-radius:6px;width:28px;height:28px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Decrease stock">−</button>
-          <input type="number" id="adj-stock-${p.id}" value="${stock}" min="0" style="width:52px;background:var(--dark-3);border:1px solid var(--border);border-radius:6px;color:var(--cream);padding:0.25rem 0.4rem;font-family:'Jost',sans-serif;font-size:0.82rem;text-align:center;outline:none;" oninput="this.style.borderColor='var(--gold)'" onblur="this.style.borderColor='var(--border)'">
-          <button onclick="adjustStock('${p.id}', 1)" style="background:rgba(76,175,128,0.1);border:1px solid rgba(76,175,128,0.3);color:#4caf82;border-radius:6px;width:28px;height:28px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Increase stock">+</button>
-          <button onclick="setStockManual('${p.id}')" style="background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);color:var(--gold);border-radius:6px;padding:0.25rem 0.65rem;font-family:'Jost',sans-serif;font-size:0.75rem;cursor:pointer;" title="Set stock to typed value">Set</button>
-        </div>
+        ${p.imageUrls?.length > 1 ? `<div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:0.5rem;">${p.imageUrls.length} images${p.videoUrl ? ' · 1 video' : ''}</div>` : ''}
         <div class="product-admin-btns">
           <button class="btn-delete" onclick="deleteProduct('${p.id}')">🗑 Delete</button>
         </div>
       </div>
     </div>`;
   }).join('');
-}
-
-// ── ADMIN MANUAL STOCK ADJUSTMENT ──────────────────────────────
-// Directly set a product's stock from the admin panel.
-// Works independently of orders — admin can always freely adjust.
-async function adjustStock(productId, delta) {
-  const input = document.getElementById(`adj-stock-${productId}`);
-  if (!input) return;
-  const currentVal = parseInt(input.value) || 0;
-  const newVal = Math.max(0, currentVal + delta);
-  input.value = newVal;
-  await applyStockUpdate(productId, newVal);
-}
-
-async function setStockManual(productId) {
-  const input = document.getElementById(`adj-stock-${productId}`);
-  if (!input) return;
-  const newVal = Math.max(0, parseInt(input.value) || 0);
-  input.value = newVal;
-  await applyStockUpdate(productId, newVal);
-}
-
-async function applyStockUpdate(productId, newStock) {
-  try {
-    await window.db.collection('products').doc(productId).update({
-      stock:      newStock,
-      outOfStock: newStock === 0,
-      updatedAt:  firebase.firestore.FieldValue.serverTimestamp()
-    });
-    showToast(`Stock updated to ${newStock}`);
-    // onSnapshot listener will refresh the UI automatically
-  } catch (err) {
-    console.error('applyStockUpdate error:', err);
-    showToast('Failed to update stock', 'error');
-  }
 }
 
 function filterProductSearch() {
@@ -1026,88 +984,8 @@ async function loadOrders() {
   }
 }
 
-// ── ATOMIC DEDUCT STOCK on Accept ──────────────────────────────────────
-// Stock is ONLY deducted here — when admin explicitly Accepts the order.
-// Customer ordering does NOT reduce stock. This prevents fake reservations.
-async function deductStockOnAccept(cartItems) {
-  const stockErrors = [];
-  if (!cartItems || !cartItems.length) return stockErrors;
-
-  const deductPromises = cartItems.map(async item => {
-    if (!item.id) return;
-    try {
-      await window.db.runTransaction(async transaction => {
-        const productRef = window.db.collection('products').doc(item.id);
-        const productDoc = await transaction.get(productRef);
-        if (!productDoc.exists) return;
-        const data         = productDoc.data();
-        const currentStock = (typeof data.stock === 'number') ? data.stock : 0;
-        const needed       = item.quantity || 1;
-        const isOOS        = data.outOfStock === true || currentStock === 0;
-
-        if (isOOS || currentStock < needed) {
-          throw Object.assign(
-            new Error('STOCK_FAIL'),
-            { stockFail: true, itemName: item.name, available: currentStock }
-          );
-        }
-
-        const newStock = currentStock - needed;
-        transaction.update(productRef, {
-          stock:      newStock,
-          outOfStock: newStock === 0,
-          updatedAt:  firebase.firestore.FieldValue.serverTimestamp()
-        });
-      });
-    } catch (e) {
-      if (e.stockFail) {
-        if (e.available === 0) {
-          stockErrors.push(`"${e.itemName}" is out of stock.`);
-        } else {
-          stockErrors.push(`"${e.itemName}" — only ${e.available} available, order needs ${item.quantity}.`);
-        }
-        // Force-sync outOfStock flag so index.html updates immediately via onSnapshot
-        if (e.available === 0) {
-          window.db.collection('products').doc(item.id).update({
-            stock: 0, outOfStock: true,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-          }).catch(() => {});
-        }
-      } else {
-        console.warn('deductStockOnAccept error for', item.id, e);
-      }
-    }
-  });
-
-  await Promise.all(deductPromises);
-  return stockErrors;
-}
-
 async function updateStatus(id, status) {
   try {
-    const orderDoc = await window.db.collection('orders').doc(id).get();
-    if (!orderDoc.exists) { showToast('Order not found', 'error'); return; }
-    const orderData  = orderDoc.data();
-    const prevStatus = orderData.status || 'Pending';
-
-    // ── DEDUCT STOCK only when Pending → Accepted ──────────────────
-    // This is the ONLY place stock is deducted in the entire system.
-    if (status === 'Accepted' && prevStatus === 'Pending') {
-      if (orderData.cart && orderData.cart.length) {
-        const stockErrors = await deductStockOnAccept(orderData.cart);
-        if (stockErrors.length > 0) {
-          showToast('⚠️ Stock issue: ' + stockErrors.join(' | '), 'error');
-          // Admin is warned but accept still proceeds — admin can fix stock manually
-        }
-      }
-    }
-
-    // ── RE-DEDUCT if Rejected order is Restored to Accepted ─────────
-    // Rejected → stock was restored. Restore → must re-deduct.
-    if (status === 'Accepted' && prevStatus === 'Rejected' && orderData.cart) {
-      reDeductStock(orderData.cart).catch(e => console.warn('reDeductStock on restore:', e));
-    }
-
     const updateData = { status };
     if (status === 'Delivered') {
       updateData.deliveredAt = firebase.firestore.FieldValue.serverTimestamp();
@@ -1115,19 +993,12 @@ async function updateStatus(id, status) {
     await window.db.collection('orders').doc(id).update(updateData);
     showToast(`Order marked as ${status}`);
 
-    // ── RESTORE STOCK when order is Rejected ───────────────────────
-    // Only restore if the order was in an active (post-accept) state.
-    // Rejecting a Pending order = no stock was ever deducted, nothing to restore.
-    if (status === 'Rejected') {
-      const wasActive = ['Accepted','Dispatched','Shipped','Out for Delivery','Delivered'].includes(prevStatus);
-      if (wasActive && orderData.cart) {
-        restoreStock(orderData.cart).catch(e => console.warn('restoreStock on reject:', e));
-      }
-    }
-
-    // ── Generate invoice on Delivered ──
     if (status === 'Delivered') {
-      generateAndUploadInvoice(id, orderData);
+      // Fetch order data and generate invoice
+      const orderDoc = await window.db.collection('orders').doc(id).get();
+      if (orderDoc.exists) {
+        generateAndUploadInvoice(id, orderDoc.data());
+      }
     }
 
     loadOrders();
@@ -1832,17 +1703,12 @@ async function restockProduct(id) {
   const qty = parseInt(qtyEl?.value) || 1;
   if (qty < 1) { showToast('Enter a valid quantity', 'error'); return; }
   try {
-    // Must set BOTH stock AND outOfStock:false — without outOfStock:false,
-    // index.html onSnapshot still treats the product as out of stock.
-    await window.db.collection('products').doc(id).update({
-      stock:      qty,
-      outOfStock: false,
-      updatedAt:  firebase.firestore.FieldValue.serverTimestamp()
-    });
-    showToast(`Restocked! New stock: ${qty}`);
+    await window.db.collection('products').doc(id).update({ stock: qty });
+    showToast(`Restocked with ${qty} unit(s)!`);
     allOosData = allOosData.filter(p => p.id !== id);
     document.getElementById('oosCountLabel').textContent = allOosData.length > 0 ? `(${allOosData.length})` : '';
     renderOosProducts(allOosData);
+    // Refresh main product list if visible
     loadProducts();
   } catch (err) {
     console.error('restockProduct error:', err);

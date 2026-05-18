@@ -323,9 +323,9 @@ function showStockErrors(errors) {
   banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
-// ── STOCK PRE-CHECK (display-only, for user feedback before placing order) ──
-// Checks if items are currently out of stock so we can warn the user.
-// Stock is NOT deducted here — deduction happens when admin Accepts the order.
+// ── STOCK PRE-CHECK (non-atomic, for fast UX feedback only) ──────
+// Reads current stock and returns human-readable errors.
+// This is NOT the oversell guard — deductStock() is the real atomic guard.
 async function validateStock() {
   const errors = [];
   const fetchPromises = cart.map(async item => {
@@ -346,10 +346,95 @@ async function validateStock() {
     const stock = (typeof data.stock === 'number') ? data.stock : 1;
     const isOOS = data.outOfStock === true || stock === 0;
     if (isOOS) {
-      errors.push(`"${item.name}" is currently out of stock.`);
+      errors.push(`"${item.name}" is out of stock.`);
+
+      // ── CRITICAL FIX: if stock is 0 but outOfStock flag is false, sync it now ──
+      if (stock === 0 && data.outOfStock !== true && item.id) {
+        window.db.collection('products').doc(item.id).update({
+          outOfStock: true,
+          updatedAt:  firebase.firestore.FieldValue.serverTimestamp()
+        }).catch(e => console.warn('validateStock outOfStock sync failed:', item.id, e));
+      }
+
+    } else if (item.quantity > stock) {
+      errors.push(`"${item.name}" — only ${stock} piece${stock > 1 ? 's' : ''} available (you ordered ${item.quantity}).`);
     }
   }
   return errors;
+}
+
+// ── ATOMIC VALIDATE + DEDUCT (single Firestore transaction per product) ─
+// Validates AND deducts inside one transaction — prevents concurrent oversell.
+// Returns an array of stock-error strings (empty = all deductions succeeded).
+async function deductStock() {
+  const stockErrors = [];
+
+  const deductPromises = cart.map(async item => {
+    if (!item.id) return; // no product id — skip (backward compat)
+    try {
+      await window.db.runTransaction(async transaction => {
+        const productRef = window.db.collection('products').doc(item.id);
+        const productDoc = await transaction.get(productRef);
+        if (!productDoc.exists) return; // product removed — skip silently
+        const data         = productDoc.data();
+        const currentStock = (typeof data.stock === 'number') ? data.stock : 0;
+        const isOOS        = data.outOfStock === true || currentStock === 0;
+        const needed       = item.quantity || 1;
+
+        // ── Re-validate INSIDE the transaction (atomic check-and-deduct) ──
+        if (isOOS || currentStock < needed) {
+          // Throw a typed error — caught below, NOT retried by Firestore
+          throw Object.assign(
+            new Error('STOCK_FAIL'),
+            { stockFail: true, itemName: item.name, available: currentStock }
+          );
+        }
+
+        const newStock = currentStock - needed;
+        transaction.update(productRef, {
+          stock:      newStock,
+          outOfStock: newStock === 0,
+          updatedAt:  firebase.firestore.FieldValue.serverTimestamp()
+        });
+      });
+    } catch (e) {
+      if (e.stockFail) {
+        // Stock validation failed inside the transaction
+        if (e.available === 0) {
+          stockErrors.push(`"${e.itemName}" is now out of stock.`);
+        } else {
+          stockErrors.push(`"${e.itemName}" — only ${e.available} piece${e.available > 1 ? 's' : ''} available (you ordered ${item.quantity}).`);
+        }
+
+        // ── CRITICAL FIX: force-sync outOfStock flag in Firestore ──
+        // The transaction threw before writing anything, so Firestore still
+        // has the stale outOfStock:false value. Fix it now so the admin panel
+        // and index.html immediately show the correct out-of-stock status.
+        try {
+          const productRef = window.db.collection('products').doc(item.id);
+          const updateData = { updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+          if (e.available === 0) {
+            // Definitively out of stock
+            updateData.stock      = 0;
+            updateData.outOfStock = true;
+          }
+          // Only write if we're sure it's 0 — don't overwrite a legitimate stock value
+          if (updateData.outOfStock !== undefined) {
+            await productRef.update(updateData);
+          }
+        } catch (syncErr) {
+          console.warn('outOfStock sync write failed for', item.id, syncErr);
+        }
+
+      } else {
+        // Genuine Firestore/network error — log but don't block (order already saved)
+        console.warn('deductStock transaction error for', item.id, e);
+      }
+    }
+  });
+
+  await Promise.all(deductPromises);
+  return stockErrors;
 }
 
 async function placeOrder() {
@@ -397,8 +482,10 @@ async function placeOrder() {
 
   setLoading(true);
 
-  // ── PRE-CHECK: Warn user if any item is already out of stock ─────
-  // Stock is NOT deducted here. Deduction happens only when admin Accepts.
+  // ── PHASE 1: Non-atomic pre-check for fast UX feedback ───────────
+  // This does NOT prevent race conditions — it only shows a friendly
+  // error to the user before attempting the order write.
+  // The real oversell guard is the atomic deductStock() in Phase 3.
   try {
     const preErrors = await validateStock();
     if (preErrors.length > 0) {
@@ -407,8 +494,8 @@ async function placeOrder() {
       return;
     }
   } catch (e) {
-    // Network failure on pre-check — still allow order to proceed
-    console.warn('Stock pre-check failed — proceeding:', e);
+    // Pre-check network failure — proceed; Phase 3 is the hard guard
+    console.warn('Stock pre-check failed — proceeding to atomic phase:', e);
   }
 
   const fullPhone = countryCode + ' ' + phone;
@@ -423,10 +510,10 @@ async function placeOrder() {
 
   const fullAddress = addressParts.join(', ');
 
+  let orderRef = null;
   try {
-    // ── Write the order to Firestore — status is always 'Pending' ──
-    // Stock will only be deducted when the admin marks the order as Accepted.
-    await window.db.collection('orders').add({
+    // ── PHASE 2: Write the order to Firestore ─────────────────────
+    orderRef = await window.db.collection('orders').add({
       userId:      currentUserId || null,
       name,
       phone:       fullPhone,
@@ -442,12 +529,34 @@ async function placeOrder() {
       createdAt:   firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    // ── SUCCESS ──────────────────────────────────────────────────
+    // ── PHASE 3: Atomic validate + deduct (one transaction per product) ──
+    // If another user grabbed the last stock between Phase 1 and now,
+    // this transaction will detect it and return errors.
+    const stockErrors = await deductStock();
+
+    if (stockErrors.length > 0) {
+      // Atomic check failed — roll back the order we just created
+      try {
+        await window.db.collection('orders').doc(orderRef.id).delete();
+      } catch (deleteErr) {
+        console.warn('Rollback failed — order may need manual cleanup:', orderRef.id, deleteErr);
+      }
+      showStockErrors(stockErrors);
+      setLoading(false);
+      return;
+    }
+
+    // ── SUCCESS ───────────────────────────────────────────────────
     localStorage.removeItem('cart');
     window.location.href = 'success.html';
 
   } catch (err) {
     console.error('placeOrder error:', err);
+    // Attempt to clean up the order if it was written before the error
+    if (orderRef) {
+      window.db.collection('orders').doc(orderRef.id).delete()
+        .catch(e => console.warn('Cleanup of failed order failed:', orderRef.id, e));
+    }
     showToast('Order failed. Please try again.', 'error');
     setLoading(false);
   }
