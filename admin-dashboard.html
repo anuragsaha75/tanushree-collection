@@ -1278,7 +1278,7 @@ async function loadOrders() {
 
       let paidBadgeHTML;
       if (resolvedPaymentStatus === 'Prepaid') {
-        paidBadgeHTML = `<span class="payment-status-badge payment-status-prepaid">✅ PREPAID</span>`;
+        paidBadgeHTML = `<span class="payment-status-badge payment-status-prepaid">💵 PREPAID</span>`;
       } else if (resolvedPaymentStatus === 'Paid After Delivery') {
         paidBadgeHTML = `<span class="payment-status-badge payment-status-paid-after-delivery">💵 PAID AFTER DELIVERY</span>`;
       } else {
@@ -3055,7 +3055,7 @@ async function openOrderDetailsModal(orderId) {
             const PREPAID_M = ['UPI', 'Razorpay', 'Online Payment', 'Prepaid'];
             const rawPs = o.paymentStatus || (PREPAID_M.includes(o.payment) ? 'Prepaid' : 'Pending Payment');
             const ps = rawPs === 'Paid' ? 'Prepaid' : rawPs === 'Pending' ? 'Pending Payment' : rawPs;
-            if (ps === 'Prepaid')             return '<span style="color:#4caf82;font-weight:600;">✅ PREPAID</span>';
+            if (ps === 'Prepaid')             return '<span style="color:#4caf82;font-weight:600;">💵 PREPAID</span>';
             if (ps === 'Paid After Delivery') return '<span style="color:#42a5f5;font-weight:600;">💵 PAID AFTER DELIVERY</span>';
             return '<span style="color:#ffc107;font-weight:600;">⏳ PENDING PAYMENT</span>';
           })()
