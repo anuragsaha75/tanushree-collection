@@ -261,6 +261,37 @@
     .days-ok      { background: rgba(76,175,128,0.15); color: #4caf82; border: 1px solid rgba(76,175,128,0.3); }
     .days-expired { background: rgba(120,120,120,0.15); color: #888; border: 1px solid rgba(120,120,120,0.3); }
 
+    /* ─── UNDO / REDO BUTTONS ─── */
+    .undo-redo-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.35rem;
+      margin-top: 0.6rem;
+    }
+    .btn-undo-redo {
+      background: rgba(201,168,76,0.06);
+      border: 1px solid rgba(201,168,76,0.18);
+      color: var(--text-muted);
+      border-radius: var(--radius-sm);
+      padding: 0.25rem 0.6rem;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.04em;
+      cursor: pointer;
+      transition: all 0.2s;
+      line-height: 1.4;
+    }
+    .btn-undo-redo:hover {
+      background: rgba(201,168,76,0.14);
+      border-color: rgba(201,168,76,0.4);
+      color: var(--gold);
+    }
+    .btn-undo-redo:disabled {
+      opacity: 0.28;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+
     @media (max-width: 900px) {
       .stats-row { grid-template-columns: repeat(2, 1fr); }
     }
@@ -1382,6 +1413,13 @@ async function loadOrders() {
           <button class="btn-sm btn-del" onclick="confirmDelete('${doc.id}')">🗑 Delete</button>`;
       }
 
+      const statusHistory_o     = Array.isArray(o.statusHistory) ? o.statusHistory : [statusRaw];
+      const statusHistoryIdx_o  = typeof o.statusHistoryIndex === 'number' ? o.statusHistoryIndex : statusHistory_o.length - 1;
+      const canUndo_o = statusHistoryIdx_o > 0;
+      const canRedo_o = statusHistoryIdx_o < statusHistory_o.length - 1;
+      const undoLabel_o = canUndo_o ? statusHistory_o[statusHistoryIdx_o - 1] : '';
+      const redoLabel_o = canRedo_o ? statusHistory_o[statusHistoryIdx_o + 1] : '';
+
       html += `<div class="order-card">
         <div class="order-header">
           <div>
@@ -1411,6 +1449,10 @@ async function loadOrders() {
         <div class="order-total">Total: ₹${o.total || 0}</div>
         ${statusRaw === 'Delivered' && o.deliveredAt ? `<div class="order-field" style="font-size:0.74rem;color:var(--text-muted);">✅ Delivered: ${(o.deliveredAt.toDate ? o.deliveredAt.toDate() : new Date(o.deliveredAt.seconds * 1000)).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'})}</div>` : ''}
         <div class="order-actions">${actionBtns}</div>
+        <div class="undo-redo-row">
+          <button class="btn-undo-redo" onclick="undoOrderStatus('${doc.id}')" title="Undo to: ${undoLabel_o}" ${canUndo_o ? '' : 'disabled'}>↶ Undo${canUndo_o ? ` → ${undoLabel_o}` : ''}</button>
+          <button class="btn-undo-redo" onclick="redoOrderStatus('${doc.id}')" title="Redo to: ${redoLabel_o}" ${canRedo_o ? '' : 'disabled'}>↷ Redo${canRedo_o ? ` → ${redoLabel_o}` : ''}</button>
+        </div>
       </div>`;
     });
 
@@ -1539,6 +1581,154 @@ async function reDeductStock(cartItems) {
   await Promise.all(reDeductPromises);
 }
 
+// ══════════════════════════════════════════════════════════════════
+//  UNDO / REDO STATUS SYSTEM
+//  Uses statusHistory[] + statusHistoryIndex stored in Firestore.
+//  Safe fallback for older orders that lack these fields.
+// ══════════════════════════════════════════════════════════════════
+
+// Build the initial history array for orders that predate this system.
+function _initHistory(orderData) {
+  const current = orderData.status || 'Pending';
+  if (Array.isArray(orderData.statusHistory) && orderData.statusHistory.length > 0) {
+    return {
+      history: orderData.statusHistory,
+      index:   typeof orderData.statusHistoryIndex === 'number'
+                 ? orderData.statusHistoryIndex
+                 : orderData.statusHistory.length - 1
+    };
+  }
+  // Old order — seed history with just the current status
+  return { history: [current], index: 0 };
+}
+
+// Called by updateStatus() to append a new status to history,
+// truncating any redo-future after an undo.
+function _appendHistory(orderData, newStatus) {
+  const { history, index } = _initHistory(orderData);
+  // Truncate everything after current index (kills redo future)
+  const trimmed = history.slice(0, index + 1);
+  trimmed.push(newStatus);
+  return { statusHistory: trimmed, statusHistoryIndex: trimmed.length - 1 };
+}
+
+async function undoOrderStatus(id) {
+  try {
+    const snap = await window.db.collection('orders').doc(id).get();
+    if (!snap.exists) { showToast('Order not found', 'error'); return; }
+    const data = snap.data();
+    const { history, index } = _initHistory(data);
+    if (index <= 0) { showToast('Nothing to undo', 'error'); return; }
+    const newIndex  = index - 1;
+    const newStatus = history[newIndex];
+    // Safety: never undo into or out of a Refunded state via undo/redo
+    if (data.refundStatus === 'Refunded') {
+      showToast('⛔ Cannot undo — refund already processed', 'error'); return;
+    }
+    await window.db.collection('orders').doc(id).update({
+      status: newStatus,
+      statusHistoryIndex: newIndex
+    });
+    showToast(`↶ Undone → ${newStatus}`);
+    loadOrders();
+  } catch (err) {
+    console.error('undoOrderStatus error:', err);
+    showToast('Undo failed', 'error');
+  }
+}
+
+async function redoOrderStatus(id) {
+  try {
+    const snap = await window.db.collection('orders').doc(id).get();
+    if (!snap.exists) { showToast('Order not found', 'error'); return; }
+    const data = snap.data();
+    const { history, index } = _initHistory(data);
+    if (index >= history.length - 1) { showToast('Nothing to redo', 'error'); return; }
+    if (data.refundStatus === 'Refunded') {
+      showToast('⛔ Cannot redo — refund already processed', 'error'); return;
+    }
+    const newIndex  = index + 1;
+    const newStatus = history[newIndex];
+    await window.db.collection('orders').doc(id).update({
+      status: newStatus,
+      statusHistoryIndex: newIndex
+    });
+    showToast(`↷ Redone → ${newStatus}`);
+    loadOrders();
+  } catch (err) {
+    console.error('redoOrderStatus error:', err);
+    showToast('Redo failed', 'error');
+  }
+}
+
+// Return-status undo/redo
+async function undoReturnStatus(id) {
+  try {
+    const snap = await window.db.collection('returns').doc(id).get();
+    if (!snap.exists) { showToast('Return not found', 'error'); return; }
+    const data = snap.data();
+    const { history, index } = _initReturnHistory(data);
+    if (index <= 0) { showToast('Nothing to undo', 'error'); return; }
+    if (data.status === 'Refunded' || history[index] === 'Refunded') {
+      showToast('⛔ Cannot undo — refund already processed', 'error'); return;
+    }
+    const newIndex  = index - 1;
+    const newStatus = history[newIndex];
+    await window.db.collection('returns').doc(id).update({
+      status: newStatus,
+      statusHistoryIndex: newIndex
+    });
+    showToast(`↶ Undone → ${newStatus}`);
+    const i = allReturnsData.findIndex(r => r.id === id);
+    if (i !== -1) { allReturnsData[i].status = newStatus; allReturnsData[i].statusHistoryIndex = newIndex; }
+    renderReturns();
+  } catch (err) {
+    console.error('undoReturnStatus error:', err);
+    showToast('Undo failed', 'error');
+  }
+}
+
+async function redoReturnStatus(id) {
+  try {
+    const snap = await window.db.collection('returns').doc(id).get();
+    if (!snap.exists) { showToast('Return not found', 'error'); return; }
+    const data = snap.data();
+    const { history, index } = _initReturnHistory(data);
+    if (index >= history.length - 1) { showToast('Nothing to redo', 'error'); return; }
+    if (data.refundStatus === 'Refunded') {
+      showToast('⛔ Cannot redo — refund already processed', 'error'); return;
+    }
+    const newIndex  = index + 1;
+    const newStatus = history[newIndex];
+    await window.db.collection('returns').doc(id).update({
+      status: newStatus,
+      statusHistoryIndex: newIndex
+    });
+    showToast(`↷ Redone → ${newStatus}`);
+    const i = allReturnsData.findIndex(r => r.id === id);
+    if (i !== -1) { allReturnsData[i].status = newStatus; allReturnsData[i].statusHistoryIndex = newIndex; }
+    renderReturns();
+  } catch (err) {
+    console.error('redoReturnStatus error:', err);
+    showToast('Redo failed', 'error');
+  }
+}
+
+function _initReturnHistory(data) {
+  const current = data.status || 'Requested';
+  if (Array.isArray(data.statusHistory) && data.statusHistory.length > 0) {
+    return {
+      history: data.statusHistory,
+      index:   typeof data.statusHistoryIndex === 'number'
+                 ? data.statusHistoryIndex
+                 : data.statusHistory.length - 1
+    };
+  }
+  return { history: [current], index: 0 };
+}
+
+// ══════════════════════════════════════════════════════════════════
+
 async function updateStatus(id, status) {
   try {
     const orderDoc = await window.db.collection('orders').doc(id).get();
@@ -1583,7 +1773,9 @@ async function updateStatus(id, status) {
       reDeductStock(orderData.cart).catch(e => console.warn('reDeductStock on restore:', e));
     }
 
-    const updateData = { status };
+    // ── Append new status to history (truncates redo future) ──────
+    const historyFields = _appendHistory(orderData, status);
+    const updateData = { status, ...historyFields };
     if (status === 'Delivered') {
       updateData.deliveredAt = firebase.firestore.FieldValue.serverTimestamp();
       // ── AUTO-SET paymentStatus for COD orders on Delivered ──────
@@ -2197,6 +2389,16 @@ function buildReturnCard(r) {
     ${r.description ? `<div class="return-field" style="font-size:0.78rem;line-height:1.5;">💬 ${r.description.slice(0,120)}${r.description.length > 120 ? '…' : ''}</div>` : ''}
     ${r.imageUrls?.length ? `<div class="return-field">🖼 ${r.imageUrls.length} proof image(s) attached</div>` : ''}
     <div class="return-actions">${actions}</div>
+    <div class="undo-redo-row">${(() => {
+      const rHistory = Array.isArray(r.statusHistory) ? r.statusHistory : [status];
+      const rIdx = typeof r.statusHistoryIndex === 'number' ? r.statusHistoryIndex : rHistory.length - 1;
+      const canUndoR = rIdx > 0;
+      const canRedoR = rIdx < rHistory.length - 1;
+      const undoLabelR = canUndoR ? rHistory[rIdx - 1] : '';
+      const redoLabelR = canRedoR ? rHistory[rIdx + 1] : '';
+      return `<button class="btn-undo-redo" onclick="undoReturnStatus('${r.id}')" title="Undo to: ${undoLabelR}" ${canUndoR ? '' : 'disabled'}>↶ Undo${canUndoR ? ` → ${undoLabelR}` : ''}</button>
+              <button class="btn-undo-redo" onclick="redoReturnStatus('${r.id}')" title="Redo to: ${redoLabelR}" ${canRedoR ? '' : 'disabled'}>↷ Redo${canRedoR ? ` → ${redoLabelR}` : ''}</button>`;
+    })()}</div>
   </div>`;
 }
 
@@ -2336,12 +2538,30 @@ async function updateReturnStatus(returnId, newStatus) {
         return;
       }
       // timing.onTime === true → request was valid when submitted → proceed
+      // Reuse this snap's data for history (avoid a second fetch below)
+      window._cachedReturnSnap = { id: returnId, data: returnData };
     }
     // ── END APPROVAL GUARD ────────────────────────────────────────
 
+    let returnDocDataFull;
+    if (window._cachedReturnSnap && window._cachedReturnSnap.id === returnId) {
+      returnDocDataFull = window._cachedReturnSnap.data;
+      window._cachedReturnSnap = null;
+    } else {
+      const returnSnap = await window.db.collection('returns').doc(returnId).get();
+      returnDocDataFull = returnSnap.exists ? returnSnap.data() : {};
+    }
+    const returnHistoryFields = (() => {
+      const { history, index } = _initReturnHistory(returnDocDataFull);
+      const trimmed = history.slice(0, index + 1);
+      trimmed.push(newStatus);
+      return { statusHistory: trimmed, statusHistoryIndex: trimmed.length - 1 };
+    })();
+
     const updateData = {
       status: newStatus,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+      ...returnHistoryFields
     };
 
     const tsField = {
@@ -2359,7 +2579,11 @@ async function updateReturnStatus(returnId, newStatus) {
 
     // Update local data instantly
     const idx = allReturnsData.findIndex(r => r.id === returnId);
-    if (idx !== -1) allReturnsData[idx].status = newStatus;
+    if (idx !== -1) {
+      allReturnsData[idx].status = newStatus;
+      allReturnsData[idx].statusHistory = returnHistoryFields.statusHistory;
+      allReturnsData[idx].statusHistoryIndex = returnHistoryFields.statusHistoryIndex;
+    }
     renderReturns();
   } catch(err) {
     console.error('updateReturnStatus error:', err);
