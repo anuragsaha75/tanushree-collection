@@ -785,6 +785,7 @@ function renderProducts(products) {
           <button onclick="setStockManual('${p.id}')" style="background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);color:var(--gold);border-radius:6px;padding:0.25rem 0.65rem;font-family:'Jost',sans-serif;font-size:0.75rem;cursor:pointer;" title="Set stock to typed value">Set</button>
         </div>
         <div class="product-admin-btns">
+          <button class="btn-edit" onclick="openEditModal('${p.id}')">✏ Edit</button>
           <button class="btn-delete" onclick="deleteProduct('${p.id}')">🗑 Delete</button>
         </div>
       </div>
@@ -1878,5 +1879,323 @@ function filterOosSearch() {
   renderOosProducts(base);
 }
 </script>
+<!-- ─── PRODUCT EDIT MODAL ─── -->
+<div class="edit-modal-overlay" id="editModalOverlay" onclick="closeEditModalOnBg(event)">
+  <div class="edit-modal-box" id="editModalBox">
+
+    <div class="edit-modal-header">
+      <div class="edit-modal-title">✏ Edit Product</div>
+      <button class="edit-modal-close" onclick="closeEditModal()" title="Close">✕</button>
+    </div>
+
+    <div class="edit-modal-body">
+      <input type="hidden" id="editProductId">
+
+      <!-- Name & Price -->
+      <div class="form-grid" style="margin-bottom:1rem;">
+        <div class="form-group">
+          <label class="tc-label">Product Name *</label>
+          <input class="tc-input" id="editName" placeholder="Product name">
+        </div>
+        <div class="form-group">
+          <label class="tc-label">Price (₹) *</label>
+          <input class="tc-input" id="editPrice" type="number" min="0" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label class="tc-label">Category *</label>
+          <select class="tc-select" id="editCategory">
+            <option value="">Select Category</option>
+            <option>BRIDAL JEWELLERY</option>
+            <option>KUNDAN JEWELLERY</option>
+            <option>SILVER REPLICA</option>
+            <option>BLACK POLISH</option>
+            <option>GOLD PLATED</option>
+            <option>SOUTH INDIAN</option>
+            <option>AD JEWELLERY</option>
+            <option>LADIES BAGS</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="tc-label">Stock Quantity *</label>
+          <input class="tc-input" id="editStock" type="number" min="0" placeholder="0">
+        </div>
+        <div class="form-group full">
+          <label class="tc-label">Description</label>
+          <textarea class="tc-textarea" id="editDesc" placeholder="Product description..." style="min-height:80px;"></textarea>
+        </div>
+      </div>
+
+      <!-- Images -->
+      <div style="margin-bottom:1.25rem;">
+        <label class="tc-label" style="margin-bottom:0.5rem;display:block;">
+          Product Images
+          <span style="color:var(--text-muted);font-size:0.68rem;letter-spacing:0.06em;text-transform:none;margin-left:0.5rem;">First image = cover · Click ✕ to remove</span>
+        </label>
+        <div class="edit-img-grid" id="editImgGrid"></div>
+        <div class="edit-upload-progress" id="editUploadProgress">⏳ Uploading image(s)…</div>
+      </div>
+
+      <!-- Video URLs -->
+      <div>
+        <label class="tc-label" style="margin-bottom:0.5rem;display:block;">
+          Video URLs
+          <span style="color:var(--text-muted);font-size:0.68rem;text-transform:none;margin-left:0.5rem;">MP4 or YouTube links</span>
+        </label>
+        <div class="edit-video-list" id="editVideoList"></div>
+        <button class="edit-add-video-btn" onclick="addEditVideoRow('')">＋ Add Video URL</button>
+      </div>
+    </div>
+
+    <div class="edit-modal-footer">
+      <button class="btn-cancel-edit" onclick="closeEditModal()">Cancel</button>
+      <button class="btn-save-edit" id="editSaveBtn" onclick="saveProductEdit()">
+        <span class="spinner" id="editSpinner"></span>
+        <span id="editSaveBtnText">Save Changes</span>
+      </button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+//  PRODUCT EDIT SYSTEM — Tanushree Collection Admin
+//  • openEditModal(productId)  — loads product data into modal
+//  • saveProductEdit()         — Firestore update + image/video mgmt
+//  • Cloudinary upload for new images (same preset as add-product)
+//  Does NOT touch: stock system, delete system, order flow
+// ══════════════════════════════════════════════════════════════════
+
+let editImageUrls  = [];   // current image list (may include new uploads)
+let editVideoUrls  = [];   // current video URL list
+
+// ── Open modal ──────────────────────────────────────────────────
+async function openEditModal(productId) {
+  // Find product in already-loaded allProductsData first (fast path)
+  let product = allProductsData.find(p => p.id === productId);
+
+  // Fallback: fetch directly from Firestore if not cached
+  if (!product) {
+    try {
+      const doc = await window.db.collection('products').doc(productId).get();
+      if (!doc.exists) { showToast('Product not found', 'error'); return; }
+      product = { id: doc.id, ...doc.data() };
+    } catch (err) {
+      showToast('Could not load product: ' + err.message, 'error');
+      return;
+    }
+  }
+
+  // Populate fields
+  document.getElementById('editProductId').value = product.id;
+  document.getElementById('editName').value       = product.name    || '';
+  document.getElementById('editPrice').value      = product.price   || '';
+  document.getElementById('editDesc').value       = product.desc    || '';
+  document.getElementById('editStock').value      = typeof product.stock === 'number' ? product.stock : 0;
+
+  const catSel = document.getElementById('editCategory');
+  catSel.value = product.category || '';
+
+  // Images
+  editImageUrls = Array.isArray(product.imageUrls) ? [...product.imageUrls] : [];
+  renderEditImages();
+
+  // Video URLs — support legacy single videoUrl OR array videoUrls
+  if (Array.isArray(product.videoUrls) && product.videoUrls.length) {
+    editVideoUrls = [...product.videoUrls];
+  } else if (product.videoUrl) {
+    editVideoUrls = [product.videoUrl];
+  } else {
+    editVideoUrls = [];
+  }
+  renderEditVideos();
+
+  // Reset upload progress
+  const prog = document.getElementById('editUploadProgress');
+  prog.textContent = '';
+  prog.classList.remove('show');
+
+  // Open overlay
+  document.getElementById('editModalOverlay').classList.add('open');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('editName').focus();
+}
+
+function closeEditModal() {
+  document.getElementById('editModalOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+  editImageUrls = [];
+  editVideoUrls = [];
+}
+
+function closeEditModalOnBg(e) {
+  if (e.target === document.getElementById('editModalOverlay')) closeEditModal();
+}
+
+// ── Render images inside modal ───────────────────────────────────
+function renderEditImages() {
+  const grid = document.getElementById('editImgGrid');
+  const items = editImageUrls.map((url, i) => `
+    <div class="edit-img-item">
+      <img src="${url}" alt="img ${i+1}" onerror="this.src='no-image.png'">
+      ${i === 0 ? '<span class="primary-badge">Cover</span>' : ''}
+      <button class="edit-img-remove" onclick="removeEditImage(${i})" title="Remove">✕</button>
+    </div>
+  `).join('');
+
+  // "Add more" tile
+  const addTile = `
+    <label class="edit-img-add" title="Upload more images">
+      <span class="edit-img-add-icon">+</span>
+      <span>Add</span>
+      <input type="file" accept="image/*" multiple onchange="handleEditImageUpload(event)">
+    </label>
+  `;
+
+  grid.innerHTML = items + addTile;
+}
+
+function removeEditImage(index) {
+  editImageUrls.splice(index, 1);
+  renderEditImages();
+}
+
+// ── Upload new images via Cloudinary ────────────────────────────
+async function handleEditImageUpload(event) {
+  const files = Array.from(event.target.files);
+  if (!files.length) return;
+  event.target.value = '';   // reset so same file can be re-added
+
+  if (!CLOUDINARY_CLOUD_NAME || CLOUDINARY_CLOUD_NAME === 'YOUR_CLOUD_NAME') {
+    showToast('⚠️ Cloudinary not configured', 'error');
+    return;
+  }
+
+  const prog = document.getElementById('editUploadProgress');
+  prog.textContent = `⏳ Uploading ${files.length} image(s)…`;
+  prog.style.color = 'var(--gold)';
+  prog.classList.add('show');
+
+  try {
+    const uploads = files.map(file => {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+      fd.append('folder', 'tanushree_products');
+      return fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+        method: 'POST', body: fd
+      }).then(r => r.json()).then(d => d.secure_url);
+    });
+
+    const urls = await Promise.all(uploads);
+    editImageUrls = [...editImageUrls, ...urls];
+    renderEditImages();
+
+    prog.textContent = `✓ ${urls.length} image(s) uploaded successfully`;
+    setTimeout(() => prog.classList.remove('show'), 2500);
+    showToast(`${urls.length} image(s) added!`);
+  } catch (err) {
+    prog.textContent = '✕ Upload failed — check Cloudinary config';
+    prog.style.color = '#e05252';
+    setTimeout(() => { prog.classList.remove('show'); prog.style.color = ''; }, 3000);
+    showToast('Image upload failed', 'error');
+  }
+}
+
+// ── Video URL rows ───────────────────────────────────────────────
+function renderEditVideos() {
+  const list = document.getElementById('editVideoList');
+  if (!editVideoUrls.length) { list.innerHTML = ''; return; }
+  list.innerHTML = editVideoUrls.map((url, i) => `
+    <div class="edit-video-row" id="editVideoRow-${i}">
+      <input type="url" value="${escapeHtml(url)}"
+        placeholder="https://…mp4 or YouTube URL"
+        oninput="editVideoUrls[${i}] = this.value"
+        onfocus="this.style.borderColor='var(--gold)'"
+        onblur="this.style.borderColor='var(--border)'">
+      <button class="edit-video-remove" onclick="removeEditVideo(${i})" title="Remove">✕</button>
+    </div>
+  `).join('');
+}
+
+function addEditVideoRow(url) {
+  editVideoUrls.push(url || '');
+  renderEditVideos();
+}
+
+function removeEditVideo(index) {
+  editVideoUrls.splice(index, 1);
+  renderEditVideos();
+}
+
+// Tiny HTML-escape helper to prevent XSS in value attributes
+function escapeHtml(str) {
+  return String(str || '')
+    .replace(/&/g,'&amp;').replace(/"/g,'&quot;')
+    .replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── Save changes to Firestore ────────────────────────────────────
+async function saveProductEdit() {
+  const productId = document.getElementById('editProductId').value;
+  const name      = document.getElementById('editName').value.trim();
+  const price     = document.getElementById('editPrice').value.trim();
+  const category  = document.getElementById('editCategory').value;
+  const desc      = document.getElementById('editDesc').value.trim();
+  const stockVal  = document.getElementById('editStock').value.trim();
+
+  if (!name || !price || !category) {
+    showToast('Name, price and category are required', 'error');
+    return;
+  }
+  if (!productId) { showToast('No product selected', 'error'); return; }
+
+  const saveBtn = document.getElementById('editSaveBtn');
+  const spinner = document.getElementById('editSpinner');
+  const btnText = document.getElementById('editSaveBtnText');
+  saveBtn.disabled = true;
+  spinner.classList.add('show');
+  btnText.textContent = 'Saving…';
+
+  // Sync any manually-typed video URL inputs before saving
+  document.querySelectorAll('#editVideoList .edit-video-row input').forEach((inp, i) => {
+    editVideoUrls[i] = inp.value.trim();
+  });
+  const cleanVideos = editVideoUrls.filter(v => v.trim() !== '');
+
+  const stockNum = Math.max(0, parseInt(stockVal) || 0);
+
+  try {
+    const updatePayload = {
+      name,
+      price:      Number(price),
+      category,
+      desc,
+      imageUrls:  editImageUrls,
+      // Store all video URLs as an array; keep legacy videoUrl as first entry
+      videoUrls:  cleanVideos,
+      videoUrl:   cleanVideos[0] || null,
+      stock:      stockNum,
+      outOfStock: stockNum === 0,
+      updatedAt:  firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    await window.db.collection('products').doc(productId).update(updatePayload);
+
+    showToast('✓ Product updated successfully!');
+    closeEditModal();
+
+    // Refresh product list & stats without touching order/stock logic
+    await loadProducts();
+    loadStatsQuick();
+  } catch (err) {
+    console.error('saveProductEdit error:', err);
+    showToast('Save failed: ' + err.message, 'error');
+  } finally {
+    saveBtn.disabled = false;
+    spinner.classList.remove('show');
+    btnText.textContent = 'Save Changes';
+  }
+}
+</script>
 </body>
-</html>

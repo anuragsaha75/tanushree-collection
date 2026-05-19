@@ -137,7 +137,7 @@
     .modal-main-media {
       position: relative;
       overflow: hidden;
-      cursor: zoom-in;
+      cursor: crosshair;
       background: var(--dark-3);
       width: 100%;
       height: 500px;
@@ -149,12 +149,69 @@
       width: 100%;
       height: 100%;
       object-fit: contain;
-      transition: transform 0.45s ease;
       display: block;
+      user-select: none;
+      -webkit-user-drag: none;
     }
-    .modal-main-img.zoomed {
-      transform: scale(1.95);
-      cursor: zoom-out;
+
+    /* ─── ZOOM LENS (follows cursor on desktop) ─── */
+    .zoom-lens {
+      position: absolute;
+      border: 2px solid rgba(201,168,76,0.7);
+      border-radius: 4px;
+      background: rgba(201,168,76,0.08);
+      pointer-events: none;
+      display: none;
+      z-index: 6;
+      box-shadow: 0 0 0 1px rgba(201,168,76,0.2), inset 0 0 12px rgba(201,168,76,0.04);
+    }
+
+    /* ─── ZOOM RESULT PANEL (appears to the right of gallery) ─── */
+    .zoom-result {
+      position: fixed;
+      width: 380px;
+      height: 420px;
+      border: 1px solid rgba(201,168,76,0.35);
+      border-radius: 12px;
+      background: var(--dark-3);
+      background-repeat: no-repeat;
+      display: none;
+      z-index: 9999;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.85), 0 0 0 1px rgba(201,168,76,0.12);
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    /* ─── MOBILE: tap to open fullscreen lightbox ─── */
+    .zoom-lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.96);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .zoom-lightbox.open { display: flex; }
+    .zoom-lightbox img {
+      max-width: 100vw;
+      max-height: 100vh;
+      object-fit: contain;
+      touch-action: pinch-zoom;
+      user-select: none;
+    }
+    .zoom-lightbox-close {
+      position: absolute;
+      top: 1.2rem; right: 1.2rem;
+      width: 38px; height: 38px;
+      background: rgba(10,7,5,0.8);
+      border: 1px solid rgba(201,168,76,0.3);
+      color: var(--cream);
+      border-radius: 50%;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 10;
     }
     .modal-video {
       width: 100%;
@@ -652,8 +709,10 @@
     <!-- Gallery -->
     <div class="modal-gallery" id="modalGallery">
       <div class="modal-main-media" id="modalMainMedia">
-        <img class="modal-main-img" id="modalMainImg" src="" alt="" onclick="toggleZoom(this)">
-        <span class="zoom-hint">Click to zoom</span>
+        <img class="modal-main-img" id="modalMainImg" src="" alt="">
+        <div class="zoom-lens" id="zoomLens"></div>
+        <div class="zoom-result" id="zoomResult"></div>
+        <span class="zoom-hint" id="zoomHint">🔍 Hover to zoom</span>
         <button class="img-nav-btn img-nav-prev" onclick="navImage(-1)">‹</button>
         <button class="img-nav-btn img-nav-next" onclick="navImage(1)">›</button>
       </div>
@@ -672,6 +731,12 @@
       </div>
     </div>
   </div>
+</div>
+
+<!-- ─── ZOOM LIGHTBOX (mobile fullscreen) ─── -->
+<div class="zoom-lightbox" id="zoomLightbox">
+  <button class="zoom-lightbox-close" id="zoomLightboxClose">✕</button>
+  <img id="zoomLightboxImg" src="" alt="" draggable="false">
 </div>
 
 <!-- ─── FIREBASE SDKs ─── -->
@@ -851,16 +916,44 @@ function setMainMedia(images, hasVideo, videoUrl, idx) {
   imgEl.classList.remove('zoomed');
 
   const isVideo = hasVideo && idx >= images.length;
+  // Hide/show zoom elements based on media type
+  const zoomLens   = document.getElementById('zoomLens');
+  const zoomResult = document.getElementById('zoomResult');
+  const zoomHint   = document.getElementById('zoomHint');
+
   if (isVideo) {
     imgEl.style.display = 'none';
-    const v = document.createElement('video');
-    v.className = 'modal-video';
-    v.controls = true;
-    v.autoplay = false;
-    v.src = videoUrl;
-    container.insertBefore(v, container.querySelector('.zoom-hint'));
+    if (zoomLens)   zoomLens.style.display   = 'none';
+    if (zoomResult) zoomResult.style.display  = 'none';
+    if (zoomHint)   zoomHint.style.display    = 'none';
+
+    // Detect YouTube and convert to embed URL
+    const ytMatch = videoUrl.match(
+      /(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/
+    );
+
+    if (ytMatch) {
+      // YouTube → iframe embed
+      const iframe = document.createElement('iframe');
+      iframe.className = 'modal-video';
+      iframe.src = 'https://www.youtube.com/embed/' + ytMatch[1] + '?autoplay=0&rel=0';
+      iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+      iframe.allowFullscreen = true;
+      iframe.style.border = 'none';
+      container.insertBefore(iframe, container.querySelector('.zoom-hint'));
+    } else {
+      // Direct video file (mp4, webm, etc.)
+      const v = document.createElement('video');
+      v.className = 'modal-video';
+      v.controls = true;
+      v.autoplay = false;
+      v.src = videoUrl;
+      container.insertBefore(v, container.querySelector('.zoom-hint'));
+    }
   } else {
     imgEl.src = images[idx] || 'no-image.png';
+    if (zoomHint)   zoomHint.style.display = 'block';
+    if (typeof window._refreshZoomSrc === 'function') window._refreshZoomSrc(imgEl.src);
   }
 }
 
@@ -885,15 +978,163 @@ function navImage(dir) {
   switchMedia(activeMediaIndex);
 }
 
-function toggleZoom(img) {
-  img.classList.toggle('zoomed');
-}
+// ══════════════════════════════════════════════════════════════════
+//  PRODUCTION ZOOM ENGINE — Tanushree Collection
+//  Desktop : hover lens + magnified panel (like Flipkart / Myntra)
+//  Mobile  : tap → fullscreen lightbox with native pinch-zoom
+// ══════════════════════════════════════════════════════════════════
+
+(function initZoom() {
+  const ZOOM_FACTOR = 3.0;   // magnification level
+  const LENS_W      = 130;   // lens box width  (px)
+  const LENS_H      = 130;   // lens box height (px)
+  const RESULT_W    = 380;   // zoom panel width  (must match CSS)
+  const RESULT_H    = 420;   // zoom panel height (must match CSS)
+  const PANEL_OFFSET = 18;   // gap between image edge and zoom panel
+
+  const media    = document.getElementById('modalMainMedia');
+  const imgEl    = document.getElementById('modalMainImg');
+  const lens     = document.getElementById('zoomLens');
+  const result   = document.getElementById('zoomResult');
+  const hint     = document.getElementById('zoomHint');
+
+  // ── Lightbox elements (mobile tap) ──────────────────────────────
+  const lb       = document.getElementById('zoomLightbox');
+  const lbImg    = document.getElementById('zoomLightboxImg');
+  const lbClose  = document.getElementById('zoomLightboxClose');
+
+  let zoomActive = false;
+
+  // ── Detect touch device ─────────────────────────────────────────
+  function isTouchDevice() {
+    return window.matchMedia('(hover: none)').matches;
+  }
+
+  // ── Desktop: mousemove zoom ─────────────────────────────────────
+  function startZoom() {
+    if (isTouchDevice()) return;
+    const src = imgEl.src;
+    if (!src || src.endsWith('no-image.png') || imgEl.style.display === 'none') return;
+
+    lens.style.width  = LENS_W + 'px';
+    lens.style.height = LENS_H + 'px';
+    lens.style.display   = 'block';
+    result.style.display = 'block';
+    if (hint) hint.style.display = 'none';
+    zoomActive = true;
+  }
+
+  function moveZoom(e) {
+    if (!zoomActive) return;
+    const src = imgEl.src;
+    if (!src || src.endsWith('no-image.png') || imgEl.style.display === 'none') return;
+
+    const rect          = imgEl.getBoundingClientRect();
+    const containerRect = media.getBoundingClientRect();
+
+    // ── Update background image & size on every move (safe & cheap) ──
+    const bgW = imgEl.naturalWidth  > 0 ? (rect.width  * ZOOM_FACTOR) : (rect.width  * ZOOM_FACTOR);
+    const bgH = imgEl.naturalHeight > 0 ? (rect.height * ZOOM_FACTOR) : (rect.height * ZOOM_FACTOR);
+    result.style.backgroundImage = 'url("' + src + '")';
+    result.style.backgroundSize  = bgW + 'px ' + bgH + 'px';
+
+    // ── Mouse position relative to image ──
+    let x = e.clientX - rect.left;
+    let y = e.clientY - rect.top;
+
+    // Clamp so lens never hangs outside image
+    x = Math.max(LENS_W / 2, Math.min(rect.width  - LENS_W / 2, x));
+    y = Math.max(LENS_H / 2, Math.min(rect.height - LENS_H / 2, y));
+
+    // ── Position lens (inside media container, absolute) ──
+    const lensLeft = (e.clientX - containerRect.left) - LENS_W / 2;
+    const lensTop  = (e.clientY - containerRect.top)  - LENS_H / 2;
+    lens.style.left = lensLeft + 'px';
+    lens.style.top  = lensTop  + 'px';
+
+    // ── background-position: maps lens centre → zoomed region ──
+    // ratioX/Y in [0,1] across the clamped image area
+    const ratioX = (x - LENS_W / 2) / Math.max(1, rect.width  - LENS_W);
+    const ratioY = (y - LENS_H / 2) / Math.max(1, rect.height - LENS_H);
+
+    const bgX = -(ratioX * (bgW - RESULT_W));
+    const bgY = -(ratioY * (bgH - RESULT_H));
+    result.style.backgroundPosition = bgX + 'px ' + bgY + 'px';
+
+    // ── Position result panel using fixed coords (avoids overflow:hidden clip) ──
+    const vpW = window.innerWidth;
+    let panelLeft = rect.right + PANEL_OFFSET;                 // try right side first
+    if (panelLeft + RESULT_W > vpW - 8) {                      // doesn't fit → go left
+      panelLeft = rect.left - RESULT_W - PANEL_OFFSET;
+    }
+    if (panelLeft < 8) panelLeft = 8;                          // last-resort clamp
+
+    let panelTop = rect.top + (rect.height - RESULT_H) / 2;   // vertically centered on image
+    const vpH = window.innerHeight;
+    if (panelTop + RESULT_H > vpH - 8) panelTop = vpH - RESULT_H - 8;
+    if (panelTop < 8) panelTop = 8;
+
+    result.style.left = panelLeft + 'px';
+    result.style.top  = panelTop  + 'px';
+  }
+
+  function stopZoom() {
+    if (!zoomActive) return;
+    lens.style.display   = 'none';
+    result.style.display = 'none';
+    if (hint) hint.style.display = 'block';
+    zoomActive = false;
+  }
+
+  // ── Mobile: tap → fullscreen lightbox ───────────────────────────
+  function openLightbox() {
+    if (!isTouchDevice()) return;
+    const src = imgEl.src;
+    if (!src || src.endsWith('no-image.png')) return;
+    lbImg.src = src;
+    lb.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  // ── Bind events ─────────────────────────────────────────────────
+  media.addEventListener('mouseenter', startZoom);
+  media.addEventListener('mousemove',  moveZoom);
+  media.addEventListener('mouseleave', stopZoom);
+
+  imgEl.addEventListener('click', function() {
+    if (isTouchDevice()) openLightbox();
+  });
+
+  lbClose.addEventListener('click', function() {
+    lb.classList.remove('open');
+    document.body.style.overflow = '';
+  });
+  lb.addEventListener('click', function(e) {
+    if (e.target === lb) {
+      lb.classList.remove('open');
+      document.body.style.overflow = '';
+    }
+  });
+
+  // Re-init zoom whenever image changes (called by setMainMedia)
+  window._refreshZoomSrc = function() {
+    stopZoom();
+    result.style.backgroundImage = '';
+  };
+})();
 
 function closeModal() {
   document.getElementById('modalOverlay').classList.remove('open');
   document.body.style.overflow = '';
   const v = document.querySelector('#modalMainMedia .modal-video');
-  if (v) v.pause();
+  if (v) {
+    if (v.tagName === 'IFRAME') {
+      // Stop YouTube playback by resetting src
+      v.src = v.src;
+    } else {
+      v.pause();
+    }
+  }
 }
 
 document.addEventListener('keydown', e => {

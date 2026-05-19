@@ -928,4 +928,235 @@ h1, h2, h3, h4, h5 {
 
 /* -------------------------------------------------------------- */
 
+/* ─── PRODUCT EDIT MODAL ─── */
+.edit-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.88);
+  z-index: 1000;
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  backdrop-filter: blur(10px);
+  padding: 2rem 1rem;
+  overflow-y: auto;
+}
+.edit-modal-overlay.open { display: flex; }
+
+.edit-modal-box {
+  background: var(--dark-2);
+  border: 1px solid rgba(201,168,76,0.3);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 780px;
+  box-shadow: 0 40px 100px rgba(0,0,0,0.7), 0 0 0 1px rgba(201,168,76,0.08);
+  animation: editModalIn 0.32s cubic-bezier(0.34,1.15,0.64,1);
+  overflow: hidden;
+  margin: auto;
+}
+@keyframes editModalIn {
+  from { opacity: 0; transform: scale(0.94) translateY(16px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.edit-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 2rem;
+  background: linear-gradient(135deg, rgba(201,168,76,0.12) 0%, rgba(160,124,48,0.06) 100%);
+  border-bottom: 1px solid var(--border);
+}
+.edit-modal-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  color: var(--gold);
+}
+.edit-modal-close {
+  width: 32px; height: 32px;
+  background: rgba(224,82,82,0.1);
+  border: 1px solid rgba(224,82,82,0.25);
+  border-radius: 50%;
+  color: #e05252;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s;
+  line-height: 1;
+}
+.edit-modal-close:hover { background: rgba(224,82,82,0.22); transform: scale(1.08); }
+
+.edit-modal-body { padding: 2rem; }
+
+/* Edit image management */
+.edit-img-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+}
+.edit-img-item {
+  position: relative;
+  width: 80px; height: 80px;
+  border-radius: 8px;
+  overflow: visible;
+}
+.edit-img-item img {
+  width: 80px; height: 80px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  display: block;
+}
+.edit-img-item .primary-badge {
+  position: absolute;
+  bottom: -6px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--gold);
+  color: var(--dark);
+  font-size: 0.52rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 1px 5px;
+  border-radius: 3px;
+  white-space: nowrap;
+}
+.edit-img-remove {
+  position: absolute;
+  top: -7px; right: -7px;
+  width: 20px; height: 20px;
+  background: #e05252;
+  border: 2px solid var(--dark-2);
+  border-radius: 50%;
+  color: #fff;
+  font-size: 0.62rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  line-height: 1;
+  transition: transform 0.15s;
+  z-index: 2;
+}
+.edit-img-remove:hover { transform: scale(1.15); }
+.edit-img-add {
+  width: 80px; height: 80px;
+  border: 2px dashed var(--border);
+  border-radius: 8px;
+  background: var(--dark-3);
+  cursor: pointer;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 3px;
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  transition: border-color 0.2s, background 0.2s;
+  position: relative;
+}
+.edit-img-add:hover { border-color: var(--gold); color: var(--gold); background: rgba(201,168,76,0.05); }
+.edit-img-add input[type="file"] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer;
+}
+.edit-img-add-icon { font-size: 1.4rem; }
+
+.edit-upload-progress {
+  margin-top: 0.6rem;
+  font-size: 0.8rem;
+  color: var(--gold);
+  display: none;
+}
+.edit-upload-progress.show { display: block; }
+
+.edit-video-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  margin-top: 0.5rem;
+}
+.edit-video-row {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+.edit-video-row input {
+  flex: 1;
+  background: var(--dark-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--cream);
+  padding: 0.55rem 0.85rem;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.86rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+.edit-video-row input:focus { border-color: var(--gold); }
+.edit-video-remove {
+  background: rgba(224,82,82,0.1);
+  border: 1px solid rgba(224,82,82,0.3);
+  color: #e05252;
+  border-radius: 6px;
+  width: 30px; height: 30px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.75rem;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.edit-video-remove:hover { background: rgba(224,82,82,0.22); }
+.edit-add-video-btn {
+  background: rgba(201,168,76,0.08);
+  border: 1px solid rgba(201,168,76,0.25);
+  color: var(--gold);
+  border-radius: var(--radius-sm);
+  padding: 0.4rem 0.85rem;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.78rem;
+  cursor: pointer;
+  margin-top: 0.4rem;
+  transition: all 0.2s;
+  display: inline-flex; align-items: center; gap: 0.3rem;
+}
+.edit-add-video-btn:hover { background: rgba(201,168,76,0.16); }
+
+.edit-modal-footer {
+  padding: 1.25rem 2rem;
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  background: rgba(0,0,0,0.15);
+}
+.btn-save-edit {
+  background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dark) 100%);
+  color: var(--dark);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 2rem;
+  font-family: 'Jost', sans-serif;
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.25s;
+  display: inline-flex; align-items: center; gap: 0.45rem;
+}
+.btn-save-edit:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 24px rgba(201,168,76,0.35);
+}
+.btn-save-edit:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-cancel-edit {
+  background: rgba(120,100,60,0.1);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  padding: 0.7rem 1.4rem;
+  font-family: 'Jost', sans-serif;
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-cancel-edit:hover { color: var(--cream); border-color: rgba(201,168,76,0.3); }
+
 
