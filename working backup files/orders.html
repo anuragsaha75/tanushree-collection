@@ -55,10 +55,6 @@
     }
     .payment-status-paid    { background: rgba(76,175,128,0.12); color: #4caf82; border: 1px solid rgba(76,175,128,0.3); }
     .payment-status-pending { background: rgba(255,193,7,0.10);  color: #ffc107; border: 1px solid rgba(255,193,7,0.25); }
-    /* ─── NEW PAYMENT STATUS VARIANTS ─── */
-    .payment-status-prepaid             { background: rgba(76,175,128,0.12); color: #4caf82; border: 1px solid rgba(76,175,128,0.3); }
-    .payment-status-pending-payment     { background: rgba(255,193,7,0.10);  color: #ffc107; border: 1px solid rgba(255,193,7,0.25); }
-    .payment-status-paid-after-delivery { background: rgba(33,150,243,0.12); color: #42a5f5; border: 1px solid rgba(33,150,243,0.3); }
 
     /* ─── STATUS BADGES ─── */
     .status-badge {
@@ -1048,31 +1044,19 @@ function buildOrderCard(order, idx) {
 
   // ── PHASE 1: Payment status badge ──────────────────────────────
   // Safe fallback for older orders that don't have paymentStatus field.
-  // Old "Paid" → "Prepaid", old "Pending" → "Pending Payment"
   const PREPAID_METHODS_LIST = ['UPI', 'Razorpay', 'Online Payment', 'Prepaid'];
-  const rawPS2 = order.paymentStatus ||
-    (PREPAID_METHODS_LIST.includes(payment) ? 'Prepaid' : 'Pending Payment');
-  const resolvedPaymentStatus =
-    rawPS2 === 'Paid'    ? 'Prepaid'         :
-    rawPS2 === 'Pending' ? 'Pending Payment'  :
-    rawPS2;
+  const resolvedPaymentStatus = order.paymentStatus ||
+    (PREPAID_METHODS_LIST.includes(payment) ? 'Paid' : 'Pending');
+  const paymentBadgeHTML = resolvedPaymentStatus === 'Paid'
+    ? `<div class="payment-status-badge payment-status-paid">✅ Paid</div>`
+    : `<div class="payment-status-badge payment-status-pending">⏳ Pending Payment</div>`;
 
-  let paymentBadgeHTML;
-  if (resolvedPaymentStatus === 'Prepaid') {
-    paymentBadgeHTML = `<div class="payment-status-badge payment-status-prepaid">✅ PREPAID</div>`;
-  } else if (resolvedPaymentStatus === 'Paid After Delivery') {
-    paymentBadgeHTML = `<div class="payment-status-badge payment-status-paid-after-delivery">💵 PAID AFTER DELIVERY</div>`;
-  } else {
-    paymentBadgeHTML = `<div class="payment-status-badge payment-status-pending-payment">⏳ PENDING PAYMENT</div>`;
-  }
-
-  // ── PHASE 2: Direct refund badge for Deleted OR Rejected + paid orders ─────
-  // Shows the refund status to the customer when their paid order was deleted or rejected.
+  // ── PHASE 2: Direct refund badge for Deleted + Paid orders ─────
+  // Shows the refund status to the customer when their paid order was deleted.
   // COD orders: no refund badge (no online payment was made).
   // Safe fallback: older orders without refundStatus field show nothing.
   let directRefundBadgeHTML = '';
-  const isRefundablePay = resolvedPaymentStatus === 'Prepaid' || resolvedPaymentStatus === 'Paid After Delivery' || resolvedPaymentStatus === 'Paid';
-  if ((status === 'Deleted' || status === 'Rejected') && isRefundablePay) {
+  if (status === 'Deleted' && resolvedPaymentStatus === 'Paid') {
     const refundStatus = order.refundStatus || null;
     if (refundStatus === 'Refunded') {
       directRefundBadgeHTML = `<div class="direct-refund-badge direct-refund-refunded">✅ Refunded</div>`;
@@ -1297,11 +1281,10 @@ function openDetailModal(orderId) {
       <div class="detail-row"><span class="dl">Payment Status</span><span>${
         (() => {
           const PREPAID_M2 = ['UPI', 'Razorpay', 'Online Payment', 'Prepaid'];
-          const rawPs2 = order.paymentStatus || (PREPAID_M2.includes(payment) ? 'Prepaid' : 'Pending Payment');
-          const ps2 = rawPs2 === 'Paid' ? 'Prepaid' : rawPs2 === 'Pending' ? 'Pending Payment' : rawPs2;
-          if (ps2 === 'Prepaid')             return '<span style="color:#4caf82;font-weight:600;">✅ PREPAID</span>';
-          if (ps2 === 'Paid After Delivery') return '<span style="color:#42a5f5;font-weight:600;">💵 PAID AFTER DELIVERY</span>';
-          return '<span style="color:#ffc107;font-weight:600;">⏳ PENDING PAYMENT</span>';
+          const ps2 = order.paymentStatus || (PREPAID_M2.includes(payment) ? 'Paid' : 'Pending');
+          return ps2 === 'Paid'
+            ? '<span style="color:#4caf82;font-weight:600;">✅ Paid</span>'
+            : '<span style="color:#ffc107;font-weight:600;">⏳ Pending</span>';
         })()
       }</span></div>
     </div>

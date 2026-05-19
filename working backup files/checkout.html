@@ -427,8 +427,8 @@ async function placeOrder() {
   // Prepaid methods are auto-accepted. COD stays Pending.
   const PREPAID_METHODS = ['UPI', 'Razorpay', 'Online Payment', 'Prepaid'];
   const isPrepaid       = PREPAID_METHODS.includes(payment);
-  const orderStatus     = isPrepaid ? 'Accepted'        : 'Pending';
-  const paymentStatus   = isPrepaid ? 'Prepaid'         : 'Pending Payment';
+  const orderStatus     = isPrepaid ? 'Accepted' : 'Pending';
+  const paymentStatus   = isPrepaid ? 'Paid'     : 'Pending';
 
   try {
     // ── Write the order to Firestore ────────────────────────────────

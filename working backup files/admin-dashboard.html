@@ -198,10 +198,6 @@
     }
     .payment-status-paid    { background: rgba(76,175,128,0.15); color: #4caf82; border: 1px solid rgba(76,175,128,0.35); }
     .payment-status-pending { background: rgba(255,193,7,0.12);  color: #ffc107; border: 1px solid rgba(255,193,7,0.3); }
-    /* ─── NEW PAYMENT STATUS VARIANTS ─── */
-    .payment-status-prepaid           { background: rgba(76,175,128,0.15); color: #4caf82; border: 1px solid rgba(76,175,128,0.35); }
-    .payment-status-pending-payment   { background: rgba(255,193,7,0.12);  color: #ffc107; border: 1px solid rgba(255,193,7,0.3); }
-    .payment-status-paid-after-delivery { background: rgba(33,150,243,0.13); color: #42a5f5; border: 1px solid rgba(33,150,243,0.35); }
 
     /* Status badges */
     .status-badge { border-radius: 99px; padding: 0.25rem 0.85rem; font-size: 0.72rem; letter-spacing: 0.08em; font-weight: 600; display: inline-block; }
@@ -1266,32 +1262,18 @@ async function loadOrders() {
 
       // ── PHASE 1: Payment status badge ──────────────────────────────
       // Safe fallback for older orders that don't have paymentStatus field.
-      // Old "Paid" → "Prepaid", old "Pending" → "Pending Payment"
       const PREPAID_METHODS_SET = ['UPI', 'Razorpay', 'Online Payment', 'Prepaid'];
-      const rawPS = o.paymentStatus ||
-        (PREPAID_METHODS_SET.includes(o.payment) ? 'Prepaid' : 'Pending Payment');
-      // Backwards-compat: old orders stored 'Paid' or 'Pending'
-      const resolvedPaymentStatus =
-        rawPS === 'Paid'    ? 'Prepaid'         :
-        rawPS === 'Pending' ? 'Pending Payment'  :
-        rawPS; // 'Prepaid' | 'Pending Payment' | 'Paid After Delivery'
+      const resolvedPaymentStatus = o.paymentStatus ||
+        (PREPAID_METHODS_SET.includes(o.payment) ? 'Paid' : 'Pending');
+      const paidBadgeHTML = resolvedPaymentStatus === 'Paid'
+        ? `<span class="payment-status-badge payment-status-paid">✅ Paid</span>`
+        : `<span class="payment-status-badge payment-status-pending">⏳ Pending Payment</span>`;
 
-      let paidBadgeHTML;
-      if (resolvedPaymentStatus === 'Prepaid') {
-        paidBadgeHTML = `<span class="payment-status-badge payment-status-prepaid">✅ PREPAID</span>`;
-      } else if (resolvedPaymentStatus === 'Paid After Delivery') {
-        paidBadgeHTML = `<span class="payment-status-badge payment-status-paid-after-delivery">💵 PAID AFTER DELIVERY</span>`;
-      } else {
-        paidBadgeHTML = `<span class="payment-status-badge payment-status-pending-payment">⏳ PENDING PAYMENT</span>`;
-      }
-
-      // ── PHASE 2: Refund status badge (Deleted OR Rejected + paid orders) ──
+      // ── PHASE 2: Refund status badge (Deleted + Paid orders only) ──
       // Safe fallback: old orders won't have refundStatus, show nothing.
       const refundStatus = o.refundStatus || null;
       let refundBadgeHTML = '';
-      const isPaymentRefundable = resolvedPaymentStatus === 'Prepaid' || resolvedPaymentStatus === 'Paid After Delivery' || resolvedPaymentStatus === 'Paid';
-      const isRefundTriggerStatus = statusRaw === 'Deleted' || statusRaw === 'Rejected';
-      if (isRefundTriggerStatus && isPaymentRefundable && refundStatus) {
+      if (statusRaw === 'Deleted' && resolvedPaymentStatus === 'Paid' && refundStatus) {
         if (refundStatus === 'Refunded') {
           refundBadgeHTML = `<span class="refund-status-badge refund-status-refunded">✅ Refunded</span>`;
         } else {
@@ -1330,28 +1312,10 @@ async function loadOrders() {
           ${adminInvoicePreviewBtn}
           <button class="btn-sm btn-del" onclick="confirmDelete('${doc.id}')">🗑 Delete</button>`;
       } else if (statusRaw === 'Rejected') {
-        // ── Refund workflow for Rejected + paid orders ─────────────────
-        // If the order was prepaid or paid-after-delivery, show refund action
-        // and SUPPRESS the Restore button (cannot restore a refunded order).
-        if (isPaymentRefundable && refundStatus) {
-          // Paid order — show refund action instead of Restore
-          let rejectedRefundBtn = '';
-          if (refundStatus === 'Refunded') {
-            rejectedRefundBtn = `<button class="btn-sm btn-mark-refunded" disabled title="Refund already processed" style="opacity:0.6;cursor:default;">✅ Refunded</button>`;
-          } else {
-            rejectedRefundBtn = `<button class="btn-sm btn-mark-refunded" onclick="markRefunded('${doc.id}')">💸 Mark Refunded</button>`;
-          }
-          actionBtns = `
-            ${rejectedRefundBtn}
-            ${adminInvoicePreviewBtn}
-            <button class="btn-sm btn-del" onclick="confirmDelete('${doc.id}')">🗑 Delete</button>`;
-        } else {
-          // COD (unpaid) order — normal Restore button is fine
-          actionBtns = `
-            <button class="btn-sm btn-accept" onclick="updateStatus('${doc.id}','Accepted')">↩ Restore</button>
-            ${adminInvoicePreviewBtn}
-            <button class="btn-sm btn-del"    onclick="confirmDelete('${doc.id}')">🗑 Delete</button>`;
-        }
+        actionBtns = `
+          <button class="btn-sm btn-accept" onclick="updateStatus('${doc.id}','Accepted')">↩ Restore</button>
+          ${adminInvoicePreviewBtn}
+          <button class="btn-sm btn-del"    onclick="confirmDelete('${doc.id}')">🗑 Delete</button>`;
       } else if (statusRaw === 'Delivered') {
         const invoiceBtn = o.invoiceUrl
           ? `<a href="${o.invoiceUrl}" target="_blank" class="btn-sm" style="background:rgba(201,168,76,0.12);border-color:rgba(201,168,76,0.4);color:var(--gold);text-decoration:none;">🧾 Invoice</a>`
@@ -1361,12 +1325,12 @@ async function loadOrders() {
           ${adminInvoicePreviewBtn}
           <button class="btn-sm btn-del" onclick="confirmDelete('${doc.id}')">🗑 Delete</button>`;
       } else if (statusRaw === 'Deleted') {
-        // ── Refund action for Deleted + paid orders ──────────────────────
+        // ── PHASE 2: Refund action for Deleted + Paid orders ──────────
         // COD orders: no refund button (no money was taken online).
         // Paid orders: show "Mark Refunded" if refund not yet done,
         //              or a disabled "Refunded" badge if already done.
         let refundActionBtn = '';
-        if (isPaymentRefundable) {
+        if (resolvedPaymentStatus === 'Paid') {
           if (refundStatus === 'Refunded') {
             refundActionBtn = `<button class="btn-sm btn-mark-refunded" disabled title="Refund already processed" style="opacity:0.6;cursor:default;">✅ Refunded</button>`;
           } else {
@@ -1586,14 +1550,6 @@ async function updateStatus(id, status) {
     const updateData = { status };
     if (status === 'Delivered') {
       updateData.deliveredAt = firebase.firestore.FieldValue.serverTimestamp();
-      // ── AUTO-SET paymentStatus for COD orders on Delivered ──────
-      // If paymentStatus is still 'Pending Payment' (or old 'Pending'), mark as 'Paid After Delivery'
-      const PREPAID_M = ['UPI', 'Razorpay', 'Online Payment', 'Prepaid'];
-      const currentPS = orderData.paymentStatus || (PREPAID_M.includes(orderData.payment || '') ? 'Prepaid' : 'Pending Payment');
-      const isCOD = currentPS === 'Pending Payment' || currentPS === 'Pending';
-      if (isCOD) {
-        updateData.paymentStatus = 'Paid After Delivery';
-      }
     }
     // ── Mark stockDeducted for prepaid Accepted→Dispatched stock deduction ──
     if (
@@ -1614,14 +1570,6 @@ async function updateStatus(id, status) {
       const wasActive = ['Accepted','Dispatched','Shipped','Out for Delivery','Delivered'].includes(prevStatus);
       if (wasActive && orderData.cart) {
         restoreStock(orderData.cart).catch(e => console.warn('restoreStock on reject:', e));
-      }
-      // ── Auto-set refundStatus for paid/prepaid orders on Reject ──
-      // If money was collected (Prepaid or Paid After Delivery), trigger refund workflow.
-      const PREPAID_M_REJ = ['UPI', 'Razorpay', 'Online Payment', 'Prepaid'];
-      const psForReject = orderData.paymentStatus || (PREPAID_M_REJ.includes(orderData.payment || '') ? 'Prepaid' : 'Pending Payment');
-      const isRefundableReject = psForReject === 'Prepaid' || psForReject === 'Paid After Delivery' || psForReject === 'Paid';
-      if (isRefundableReject && !orderData.refundStatus) {
-        window.db.collection('orders').doc(id).update({ refundStatus: 'Pending' }).catch(e => console.warn('refundStatus set on reject:', e));
       }
     }
 
@@ -2379,11 +2327,9 @@ async function confirmDelete(id) {
       const data = orderDoc.data();
       const PREPAID_M = ['UPI', 'Razorpay', 'Online Payment', 'Prepaid'];
       const resolvedPS = data.paymentStatus ||
-        (PREPAID_M.includes(data.payment || '') ? 'Prepaid' : 'Pending Payment');
-      // Backwards-compat: old orders stored 'Paid'
-      const isPrepaidOrder = resolvedPS === 'Prepaid' || resolvedPS === 'Paid After Delivery' || resolvedPS === 'Paid';
-      // Only set refundStatus if payment was collected and not already set
-      if (isPrepaidOrder && !data.refundStatus) {
+        (PREPAID_M.includes(data.payment || '') ? 'Paid' : 'Pending');
+      // Only set refundStatus if paid and not already set
+      if (resolvedPS === 'Paid' && !data.refundStatus) {
         updatePayload.refundStatus = 'Pending';
       }
     }
@@ -3053,11 +2999,10 @@ async function openOrderDetailsModal(orderId) {
         <div class="details-field"><div class="df-label">Payment Status</div><div class="df-value">${
           (() => {
             const PREPAID_M = ['UPI', 'Razorpay', 'Online Payment', 'Prepaid'];
-            const rawPs = o.paymentStatus || (PREPAID_M.includes(o.payment) ? 'Prepaid' : 'Pending Payment');
-            const ps = rawPs === 'Paid' ? 'Prepaid' : rawPs === 'Pending' ? 'Pending Payment' : rawPs;
-            if (ps === 'Prepaid')             return '<span style="color:#4caf82;font-weight:600;">✅ PREPAID</span>';
-            if (ps === 'Paid After Delivery') return '<span style="color:#42a5f5;font-weight:600;">💵 PAID AFTER DELIVERY</span>';
-            return '<span style="color:#ffc107;font-weight:600;">⏳ PENDING PAYMENT</span>';
+            const ps = o.paymentStatus || (PREPAID_M.includes(o.payment) ? 'Paid' : 'Pending');
+            return ps === 'Paid'
+              ? '<span style="color:#4caf82;font-weight:600;">✅ Paid</span>'
+              : '<span style="color:#ffc107;font-weight:600;">⏳ Pending</span>';
           })()
         }</div></div>
         <div class="details-field"><div class="df-label">Total Amount</div><div class="df-value" style="color:var(--gold);font-weight:600;">₹${o.total || 0}</div></div>
