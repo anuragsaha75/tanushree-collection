@@ -990,7 +990,9 @@ async function loadExistingReturns(uid) {
 function renderOrders() {
   const filtered = currentFilter === 'all'
     ? allOrders
-    : allOrders.filter(o => (o.status || 'Pending') === currentFilter);
+    : currentFilter === 'Cancelled'
+      ? allOrders.filter(o => (o.status || 'Pending') === 'Cancelled' || (o.status || 'Pending') === 'Deleted')
+      : allOrders.filter(o => (o.status || 'Pending') === currentFilter);
 
   // Update count chip
   const chip = document.getElementById('orderCountChip');
