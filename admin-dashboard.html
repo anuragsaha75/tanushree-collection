@@ -2005,6 +2005,22 @@ async function buildPremiumInvoice(orderId, order, showStatus) {
   const col2 = ML + colW;
   const col3 = ML + colW * 2;
 
+  // ── RESOLVE BILL TO NAME ──────────────────────────────────────────────────
+  // Use the logged-in user's account name from the users collection.
+  // Fallback: checkout form name (order.name) if account name is unavailable.
+  let billToName = String(order.name || '-');   // safe default
+  try {
+    if (order.userId && window.db) {
+      const userDoc = await window.db.collection('users').doc(order.userId).get();
+      if (userDoc.exists) {
+        const accountName = (userDoc.data() || {}).name;
+        if (accountName && accountName.trim()) {
+          billToName = accountName.trim();
+        }
+      }
+    }
+  } catch (_e) { /* silent — fallback already set */ }
+
   // Resolve dates
   let orderDateStr = '-';
   if (order.createdAt?.toDate) orderDateStr = order.createdAt.toDate().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -2029,10 +2045,10 @@ async function buildPremiumInvoice(orderId, order, showStatus) {
   _tcGoldLine(doc, col3, y, MR, 0.4);
   y += 10;
 
-  // Customer name
+  // Customer name — BILL TO uses account name; SHIP TO uses checkout form name
   _tcSetFont(doc, 'bold', 9, BLACK);
-  doc.text(String(order.name || '-'), ML, y);
-  doc.text(String(order.name || '-'), col2, y);
+  doc.text(String(billToName), ML, y);                       // BILL TO: account name
+  doc.text(String(order.name || '-'), col2, y);              // SHIP TO: checkout form name
 
   // Address — wrapped
   _tcSetFont(doc, 'normal', 8, GRAY);

@@ -481,6 +481,49 @@
       .modal-gallery { border-radius: var(--radius) var(--radius) 0 0; }
       .modal-info { padding: 1.75rem 1.25rem; }
     }
+
+    /* ─── DEEP-LINK SKELETON ─── */
+    @keyframes skeletonShimmer {
+      0%   { background-position: -600px 0; }
+      100% { background-position:  600px 0; }
+    }
+    .skeleton-block {
+      border-radius: 6px;
+      background: linear-gradient(90deg, var(--dark-3) 25%, rgba(255,255,255,0.04) 50%, var(--dark-3) 75%);
+      background-size: 600px 100%;
+      animation: skeletonShimmer 1.4s ease-in-out infinite;
+    }
+    .modal-skeleton-gallery {
+      background: var(--dark-3);
+      border-radius: var(--radius) 0 0 var(--radius);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 0.75rem; padding: 1.5rem;
+    }
+    @media (max-width: 700px) {
+      .modal-skeleton-gallery { border-radius: var(--radius) var(--radius) 0 0; }
+    }
+    .modal-skeleton-img {
+      width: 100%; height: 420px; border-radius: 8px;
+    }
+    @media (max-width: 768px) { .modal-skeleton-img { height: 260px; } }
+    .modal-skeleton-thumbs {
+      display: flex; gap: 0.5rem; width: 100%; padding: 0 0.25rem;
+    }
+    .modal-skeleton-thumb {
+      width: 56px; height: 56px; border-radius: 7px; flex-shrink: 0;
+    }
+    .modal-skeleton-info {
+      padding: 2.25rem 2rem; display: flex; flex-direction: column; gap: 1rem;
+    }
+    .modal-skeleton-cat  { height: 10px; width: 80px;  border-radius: 4px; }
+    .modal-skeleton-name { height: 28px; width: 70%;   border-radius: 6px; }
+    .modal-skeleton-price{ height: 22px; width: 90px;  border-radius: 6px; }
+    .modal-skeleton-line { height: 1px;  width: 100%;  background: var(--border); margin: 0.25rem 0; }
+    .modal-skeleton-desc1{ height: 13px; width: 100%;  border-radius: 4px; }
+    .modal-skeleton-desc2{ height: 13px; width: 85%;   border-radius: 4px; }
+    .modal-skeleton-desc3{ height: 13px; width: 60%;   border-radius: 4px; }
+    .modal-skeleton-btn  { height: 48px; width: 100%;  border-radius: var(--radius-sm); margin-top: 0.5rem; }
     @media (max-width: 576px) {
       .products-grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; padding: 0.5rem 1rem 4rem; }
       .product-card img { height: 180px; }
@@ -858,6 +901,52 @@ let activeProduct = null;
 let activeMediaIndex = 0;
 let cart = JSON.parse(localStorage.getItem('cart') || '[]');
 
+// ── DEEP-LINK SKELETON ──
+// If ?product= is in the URL, show a shimmer skeleton modal instantly
+// so the user sees something while Firebase loads. Real data replaces it.
+(function _maybeShowSkeletonFromUrl() {
+  try {
+    const id = new URLSearchParams(window.location.search).get('product');
+    if (!id) return;
+
+    // Build skeleton HTML that mirrors the real modal layout
+    const skeletonGallery = `
+      <div class="modal-skeleton-gallery" id="skeletonGallery">
+        <div class="skeleton-block modal-skeleton-img"></div>
+        <div class="modal-skeleton-thumbs">
+          <div class="skeleton-block modal-skeleton-thumb"></div>
+          <div class="skeleton-block modal-skeleton-thumb"></div>
+          <div class="skeleton-block modal-skeleton-thumb"></div>
+        </div>
+      </div>`;
+
+    const skeletonInfo = `
+      <div class="modal-skeleton-info" id="skeletonInfo">
+        <div class="skeleton-block modal-skeleton-cat"></div>
+        <div class="skeleton-block modal-skeleton-name"></div>
+        <div class="skeleton-block modal-skeleton-price"></div>
+        <div class="modal-skeleton-line"></div>
+        <div class="skeleton-block modal-skeleton-desc1"></div>
+        <div class="skeleton-block modal-skeleton-desc2"></div>
+        <div class="skeleton-block modal-skeleton-desc3"></div>
+        <div class="skeleton-block modal-skeleton-btn"></div>
+      </div>`;
+
+    const modalBox = document.getElementById('modalBox');
+    const modalOverlay = document.getElementById('modalOverlay');
+    if (!modalBox || !modalOverlay) return;
+
+    // Hide real content panels, inject skeleton siblings
+    document.getElementById('modalGallery').style.display = 'none';
+    document.getElementById('modalInfo').style.display = 'none';
+    modalBox.insertAdjacentHTML('afterbegin', skeletonGallery + skeletonInfo);
+
+    // Open the overlay immediately — no data needed
+    modalOverlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  } catch(e) { /* safety net */ }
+})();
+
 // ── STOCK HELPERS ──
 function isOutOfStock(p) {
   // Out of stock if the flag is set OR stock is exactly 0
@@ -995,6 +1084,15 @@ function openModal(product) {
   }
 
   renderModalMedia(allMedia, videoUrls, 0);
+
+  // ── Remove skeleton if present (deep-link pre-open) ──
+  const skG = document.getElementById('skeletonGallery');
+  const skI = document.getElementById('skeletonInfo');
+  if (skG) skG.remove();
+  if (skI) skI.remove();
+  document.getElementById('modalGallery').style.display = '';
+  document.getElementById('modalInfo').style.display = '';
+
   document.getElementById('modalOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
 
@@ -1351,6 +1449,13 @@ function closeModal() {
   activeProduct = null;
   // Remove ?product= from URL without page reload
   history.replaceState(null, '', window.location.pathname);
+  // Clean up skeleton panels if still present
+  const skG = document.getElementById('skeletonGallery');
+  const skI = document.getElementById('skeletonInfo');
+  if (skG) skG.remove();
+  if (skI) skI.remove();
+  document.getElementById('modalGallery').style.display = '';
+  document.getElementById('modalInfo').style.display = '';
   // Stop all videos / iframes in the modal
   document.querySelectorAll('#modalMainMedia .modal-video').forEach(v => {
     if (v.tagName === 'IFRAME') {
