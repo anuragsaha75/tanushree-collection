@@ -1468,28 +1468,37 @@ async function loadOrders() {
 }
 
 // ── ATOMIC DEDUCT STOCK on Accept ──────────────────────────────────────
-// Stock is ONLY deducted here — when admin explicitly Accepts the order.
-// Customer ordering does NOT reduce stock. This prevents fake reservations.
+// Stock is ONLY deducted here — when admin explicitly Accepts a COD order,
+// or when admin dispatches a prepaid order that hasn't had stock deducted yet.
+//
+// SEQUENTIAL EXECUTION: Items are processed one at a time (not in parallel)
+// to prevent Firestore contention. Two admins acting simultaneously on the
+// same order will queue transactions safely instead of racing.
+//
+// Returns: string[] of error messages (empty = all succeeded).
 async function deductStockOnAccept(cartItems) {
   const stockErrors = [];
   if (!cartItems || !cartItems.length) return stockErrors;
 
-  const deductPromises = cartItems.map(async item => {
-    if (!item.id) return;
+  // ── Process items sequentially to prevent concurrent transaction conflicts ──
+  for (const item of cartItems) {
+    if (!item.id) continue;
+    const needed = item.quantity || 1;
+    if (needed <= 0) continue;
+
     try {
       await window.db.runTransaction(async transaction => {
         const productRef = window.db.collection('products').doc(item.id);
         const productDoc = await transaction.get(productRef);
-        if (!productDoc.exists) return;
+        if (!productDoc.exists) return; // Product deleted — skip silently
         const data         = productDoc.data();
         const currentStock = (typeof data.stock === 'number') ? data.stock : 0;
-        const needed       = item.quantity || 1;
-        const isOOS        = data.outOfStock === true || currentStock === 0;
+        const isOOS        = data.outOfStock === true || currentStock <= 0;
 
         if (isOOS || currentStock < needed) {
           throw Object.assign(
             new Error('STOCK_FAIL'),
-            { stockFail: true, itemName: item.name, available: currentStock }
+            { stockFail: true, itemName: item.name || data.name || item.id, available: currentStock }
           );
         }
 
@@ -1502,13 +1511,13 @@ async function deductStockOnAccept(cartItems) {
       });
     } catch (e) {
       if (e.stockFail) {
-        if (e.available === 0) {
+        if ((e.available || 0) <= 0) {
           stockErrors.push(`"${e.itemName}" is out of stock.`);
         } else {
-          stockErrors.push(`"${e.itemName}" — only ${e.available} available, order needs ${item.quantity}.`);
+          stockErrors.push(`"${e.itemName}" — only ${e.available} available, order needs ${needed}.`);
         }
-        // Force-sync outOfStock flag so index.html updates immediately via onSnapshot
-        if (e.available === 0) {
+        // Force-sync outOfStock flag so storefront updates immediately via onSnapshot
+        if ((e.available || 0) <= 0) {
           window.db.collection('products').doc(item.id).update({
             stock: 0, outOfStock: true,
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -1516,21 +1525,22 @@ async function deductStockOnAccept(cartItems) {
         }
       } else {
         console.warn('deductStockOnAccept error for', item.id, e);
+        stockErrors.push(`"${item.name || item.id}" — stock update failed. Check manually.`);
       }
     }
-  });
+  }
 
-  await Promise.all(deductPromises);
   return stockErrors;
 }
 
 // ── RESTORE STOCK when an active order is Rejected ──────────────────────
 // Called when admin rejects an order that was already Accepted/Dispatched/etc.
 // Increments stock back by the ordered quantities.
+// Sequential processing prevents contention on shared product documents.
 async function restoreStock(cartItems) {
   if (!cartItems || !cartItems.length) return;
-  const restorePromises = cartItems.map(async item => {
-    if (!item.id) return;
+  for (const item of cartItems) {
+    if (!item.id) continue;
     try {
       await window.db.runTransaction(async transaction => {
         const productRef = window.db.collection('products').doc(item.id);
@@ -1549,16 +1559,16 @@ async function restoreStock(cartItems) {
     } catch (e) {
       console.warn('restoreStock error for', item.id, e);
     }
-  });
-  await Promise.all(restorePromises);
+  }
 }
 
 // ── RE-DEDUCT STOCK when a Rejected order is Restored to Accepted ────────
 // Stock was previously restored on Reject; now we need to deduct it again.
+// Sequential processing prevents contention on shared product documents.
 async function reDeductStock(cartItems) {
   if (!cartItems || !cartItems.length) return;
-  const reDeductPromises = cartItems.map(async item => {
-    if (!item.id) return;
+  for (const item of cartItems) {
+    if (!item.id) continue;
     try {
       await window.db.runTransaction(async transaction => {
         const productRef = window.db.collection('products').doc(item.id);
@@ -1577,8 +1587,7 @@ async function reDeductStock(cartItems) {
     } catch (e) {
       console.warn('reDeductStock error for', item.id, e);
     }
-  });
-  await Promise.all(reDeductPromises);
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════

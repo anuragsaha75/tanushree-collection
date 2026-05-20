@@ -323,30 +323,141 @@ function showStockErrors(errors) {
   banner.scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
-// ── STOCK PRE-CHECK (display-only, for user feedback before placing order) ──
-// Checks if items are currently out of stock so we can warn the user.
-// Stock is NOT deducted here — deduction happens when admin Accepts the order.
-async function validateStock() {
-  const errors = [];
-  const fetchPromises = cart.map(async item => {
-    if (!item.id) return null;
+// ══════════════════════════════════════════════════════════════════════
+//  TRANSACTIONAL STOCK VALIDATION + DEDUCTION
+//  Runs each cart item through a Firestore transaction sequentially.
+//  Sequential (not parallel) to avoid Firestore contention on the same
+//  product documents when multiple users order simultaneously.
+//
+//  Returns { errors: string[] } where errors lists any stock failures.
+//  On success, stock has been atomically deducted for every item.
+//  On any failure, successfully deducted items are rolled back via
+//  a compensation pass so stock is never partially deducted.
+// ══════════════════════════════════════════════════════════════════════
+async function _transactionalDeductStock(cartItems) {
+  const errors       = [];
+  const deducted     = []; // track items successfully deducted for rollback
+
+  for (const item of cartItems) {
+    if (!item.id) continue;
+    const needed = item.quantity || 1;
+    if (needed <= 0) continue;
+
     try {
-      const doc = await window.db.collection('products').doc(item.id).get();
-      if (!doc.exists) return null;
-      return { item, data: doc.data() };
+      await window.db.runTransaction(async transaction => {
+        const productRef = window.db.collection('products').doc(item.id);
+        const productDoc = await transaction.get(productRef);
+
+        // Missing product — treat as no stock (safe, non-blocking)
+        if (!productDoc.exists) {
+          throw Object.assign(
+            new Error('STOCK_FAIL'),
+            { stockFail: true, itemName: item.name || item.id, available: 0 }
+          );
+        }
+
+        const data         = productDoc.data();
+        const currentStock = (typeof data.stock === 'number') ? data.stock : 0;
+        const isOOS        = data.outOfStock === true || currentStock <= 0;
+
+        if (isOOS || currentStock < needed) {
+          throw Object.assign(
+            new Error('STOCK_FAIL'),
+            { stockFail: true, itemName: item.name || data.name || item.id, available: currentStock }
+          );
+        }
+
+        const newStock = currentStock - needed;
+        transaction.update(productRef, {
+          stock:      newStock,
+          outOfStock: newStock === 0,
+          updatedAt:  firebase.firestore.FieldValue.serverTimestamp()
+        });
+      });
+
+      // Track for potential rollback
+      deducted.push(item);
+
     } catch (e) {
-      console.warn('Stock pre-check fetch failed for', item.id, e);
-      return null;
+      if (e.stockFail) {
+        if ((e.available || 0) <= 0) {
+          errors.push(`"${e.itemName}" is out of stock.`);
+        } else {
+          errors.push(`"${e.itemName}" — only ${e.available} available, you need ${needed}.`);
+        }
+      } else {
+        console.warn('_transactionalDeductStock error for', item.id, e);
+        errors.push(`"${item.name || item.id}" — stock check failed. Please try again.`);
+      }
+      break; // stop processing further items on first failure
     }
-  });
-  const results = await Promise.all(fetchPromises);
-  for (const result of results) {
-    if (!result) continue;
-    const { item, data } = result;
-    const stock = (typeof data.stock === 'number') ? data.stock : 1;
-    const isOOS = data.outOfStock === true || stock === 0;
-    if (isOOS) {
-      errors.push(`"${item.name}" is currently out of stock.`);
+  }
+
+  // ── COMPENSATION ROLLBACK ─────────────────────────────────────────
+  // If any item failed, restore stock for items already deducted.
+  if (errors.length > 0 && deducted.length > 0) {
+    const rollbackPromises = deducted.map(async item => {
+      try {
+        await window.db.runTransaction(async transaction => {
+          const productRef = window.db.collection('products').doc(item.id);
+          const productDoc = await transaction.get(productRef);
+          if (!productDoc.exists) return;
+          const data         = productDoc.data();
+          const currentStock = (typeof data.stock === 'number') ? data.stock : 0;
+          const qty          = item.quantity || 1;
+          const restoredStock = currentStock + qty;
+          transaction.update(productRef, {
+            stock:      restoredStock,
+            outOfStock: false,
+            updatedAt:  firebase.firestore.FieldValue.serverTimestamp()
+          });
+        });
+      } catch (re) {
+        console.warn('Stock rollback failed for', item.id, re);
+      }
+    });
+    await Promise.all(rollbackPromises);
+  }
+
+  return { errors, deducted };
+}
+
+// ── NON-DEDUCTING STOCK PRE-CHECK for COD orders ──────────────────
+// Reads stock transactionally for each item (no writes).
+// Provides accurate user feedback before placing a COD order.
+// Stock is NOT deducted — admin deducts on Accept for COD.
+async function _validateStockCOD(cartItems) {
+  const errors = [];
+  for (const item of cartItems) {
+    if (!item.id) continue;
+    const needed = item.quantity || 1;
+    try {
+      // Use a transaction read for a consistent snapshot
+      await window.db.runTransaction(async transaction => {
+        const productRef = window.db.collection('products').doc(item.id);
+        const productDoc = await transaction.get(productRef);
+        if (!productDoc.exists) return; // Missing product — allow COD, admin handles it
+        const data         = productDoc.data();
+        const currentStock = (typeof data.stock === 'number') ? data.stock : 1;
+        const isOOS        = data.outOfStock === true || currentStock <= 0;
+        if (isOOS || currentStock < needed) {
+          throw Object.assign(
+            new Error('STOCK_FAIL'),
+            { stockFail: true, itemName: item.name || data.name || item.id, available: currentStock }
+          );
+        }
+      });
+    } catch (e) {
+      if (e.stockFail) {
+        if ((e.available || 0) <= 0) {
+          errors.push(`"${e.itemName}" is currently out of stock.`);
+        } else {
+          errors.push(`"${e.itemName}" — only ${e.available} available, you need ${needed}.`);
+        }
+      } else {
+        console.warn('_validateStockCOD error for', item.id, e);
+        // Network failure — still allow COD order to proceed; admin validates on Accept
+      }
     }
   }
   return errors;
@@ -397,20 +508,6 @@ async function placeOrder() {
 
   setLoading(true);
 
-  // ── PRE-CHECK: Warn user if any item is already out of stock ─────
-  // Stock is NOT deducted here. Deduction happens only when admin Accepts.
-  try {
-    const preErrors = await validateStock();
-    if (preErrors.length > 0) {
-      showStockErrors(preErrors);
-      setLoading(false);
-      return;
-    }
-  } catch (e) {
-    // Network failure on pre-check — still allow order to proceed
-    console.warn('Stock pre-check failed — proceeding:', e);
-  }
-
   const fullPhone = countryCode + ' ' + phone;
 
   const addressParts = [address];
@@ -423,63 +520,118 @@ async function placeOrder() {
 
   const fullAddress = addressParts.join(', ');
 
-  // ── PHASE 1: Auto-accept + paid status for prepaid methods ────────
-  // Prepaid methods are auto-accepted. COD stays Pending.
+  // ── PHASE 1: Determine prepaid vs COD ────────────────────────────
   const PREPAID_METHODS = ['UPI', 'Razorpay', 'Online Payment', 'Prepaid'];
   const isPrepaid       = PREPAID_METHODS.includes(payment);
   const orderStatus     = isPrepaid ? 'Accepted'        : 'Pending';
   const paymentStatus   = isPrepaid ? 'Prepaid'         : 'Pending Payment';
 
   try {
-    // ── Write the order to Firestore ────────────────────────────────
-    // Prepaid orders: status = Accepted, paymentStatus = Paid (auto-accepted, no admin click needed)
-    // COD orders:     status = Pending,  paymentStatus = Pending (normal flow unchanged)
-    await window.db.collection('orders').add({
-      userId:        currentUserId || null,
-      name,
-      phone:         fullPhone,
-      address:       fullAddress,
-      landmark, city, district, state, country,
-      pin,
-      payment,
-      paymentStatus,
-      cart,
-      total:         cart.reduce((s, i) => s + i.price * i.quantity, 0),
-      status:        orderStatus,
-      // Mark stockDeducted=true for prepaid so admin dashboard won't double-deduct on Dispatch
-      stockDeducted: isPrepaid ? true : false,
-      invoiceUrl:    '',
-      deliveredAt:   null,
-      createdAt:     firebase.firestore.FieldValue.serverTimestamp()
-    });
 
-    // ── DEDUCT STOCK immediately for prepaid (UPI) orders ────────────
-    // Prepaid orders are auto-accepted, so we deduct stock right here at
-    // order placement time. COD stock is deducted by admin on Accept.
-    if (isPrepaid && cart.length) {
-      const stockDeductPromises = cart.map(async item => {
-        if (!item.id) return;
-        try {
-          await window.db.runTransaction(async transaction => {
-            const productRef = window.db.collection('products').doc(item.id);
-            const productDoc = await transaction.get(productRef);
-            if (!productDoc.exists) return;
-            const data         = productDoc.data();
-            const currentStock = (typeof data.stock === 'number') ? data.stock : 0;
-            const needed       = item.quantity || 1;
-            const newStock     = Math.max(0, currentStock - needed);
-            transaction.update(productRef, {
-              stock:      newStock,
-              outOfStock: newStock === 0,
-              updatedAt:  firebase.firestore.FieldValue.serverTimestamp()
+    if (isPrepaid) {
+      // ════════════════════════════════════════════════════════════
+      //  PREPAID PATH
+      //  1. Atomically validate + deduct stock (FIRST — before order)
+      //  2. Only if stock OK → create order document
+      //  Prevents overselling: order is never created if stock fails.
+      // ════════════════════════════════════════════════════════════
+
+      const { errors: stockErrors } = await _transactionalDeductStock(cart);
+
+      if (stockErrors.length > 0) {
+        // Stock failed — no order created, stock unchanged (rolled back)
+        showStockErrors(stockErrors);
+        setLoading(false);
+        return;
+      }
+
+      // Stock successfully deducted — now create the order
+      try {
+        await window.db.collection('orders').add({
+          userId:        currentUserId || null,
+          name,
+          phone:         fullPhone,
+          address:       fullAddress,
+          landmark, city, district, state, country,
+          pin,
+          payment,
+          paymentStatus,
+          cart,
+          total:         cart.reduce((s, i) => s + i.price * i.quantity, 0),
+          status:        orderStatus,
+          // stockDeducted=true → admin dashboard will NOT deduct again on Dispatch
+          stockDeducted: true,
+          invoiceUrl:    '',
+          deliveredAt:   null,
+          createdAt:     firebase.firestore.FieldValue.serverTimestamp()
+        });
+      } catch (orderErr) {
+        // Order write failed after stock was deducted — restore stock
+        console.error('Order write failed after stock deduction; restoring stock:', orderErr);
+        const rollbackPromises = cart.map(async item => {
+          if (!item.id) return;
+          try {
+            await window.db.runTransaction(async transaction => {
+              const productRef = window.db.collection('products').doc(item.id);
+              const productDoc = await transaction.get(productRef);
+              if (!productDoc.exists) return;
+              const data         = productDoc.data();
+              const currentStock = (typeof data.stock === 'number') ? data.stock : 0;
+              const qty          = item.quantity || 1;
+              transaction.update(productRef, {
+                stock:      currentStock + qty,
+                outOfStock: false,
+                updatedAt:  firebase.firestore.FieldValue.serverTimestamp()
+              });
             });
-          });
-        } catch (e) {
-          // Non-fatal: order is already placed; admin can fix stock manually
-          console.warn('Stock deduction failed for', item.id, e);
+          } catch (re) {
+            console.warn('Emergency stock rollback failed for', item.id, re);
+          }
+        });
+        await Promise.all(rollbackPromises);
+        throw orderErr; // re-throw so outer catch shows user error
+      }
+
+    } else {
+      // ════════════════════════════════════════════════════════════
+      //  COD PATH
+      //  1. Transactional read-only stock validation (user feedback)
+      //  2. If stock looks insufficient → warn user, block order
+      //  3. Admin performs the real atomic deduction on Accept
+      //  This prevents obviously impossible orders while allowing
+      //  admin control over the actual stock deduction.
+      // ════════════════════════════════════════════════════════════
+
+      try {
+        const preErrors = await _validateStockCOD(cart);
+        if (preErrors.length > 0) {
+          showStockErrors(preErrors);
+          setLoading(false);
+          return;
         }
+      } catch (e) {
+        // Network failure on pre-check — allow order to proceed; admin validates on Accept
+        console.warn('COD stock pre-check failed — proceeding:', e);
+      }
+
+      await window.db.collection('orders').add({
+        userId:        currentUserId || null,
+        name,
+        phone:         fullPhone,
+        address:       fullAddress,
+        landmark, city, district, state, country,
+        pin,
+        payment,
+        paymentStatus,
+        cart,
+        total:         cart.reduce((s, i) => s + i.price * i.quantity, 0),
+        status:        orderStatus,
+        // stockDeducted=false → admin will deduct on Accept
+        stockDeducted: false,
+        invoiceUrl:    '',
+        deliveredAt:   null,
+        createdAt:     firebase.firestore.FieldValue.serverTimestamp()
       });
-      await Promise.all(stockDeductPromises);
     }
 
     // ── SUCCESS ──────────────────────────────────────────────────
