@@ -632,9 +632,12 @@
             <label class="tc-label">Stock Quantity *</label>
             <input class="tc-input" id="pStock" type="number" placeholder="e.g. 5" min="0" value="1">
           </div>
-          <div class="form-group">
-            <label class="tc-label">Video URL (optional)</label>
-            <input class="tc-input" id="pVideo" placeholder="https://...mp4 or YouTube link">
+          <div class="form-group full">
+            <label class="tc-label" style="margin-bottom:0.5rem;display:block;">
+              Video URLs <span style="color:var(--text-muted);font-size:0.68rem;text-transform:none;margin-left:0.5rem;">MP4 or YouTube links · Add multiple</span>
+            </label>
+            <div id="pVideoList"></div>
+            <button type="button" onclick="addUploadVideoRow()" style="margin-top:0.4rem;background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.25);color:var(--gold);border-radius:var(--radius-sm);padding:0.4rem 1rem;font-family:'Jost',sans-serif;font-size:0.8rem;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background='rgba(201,168,76,0.14)'" onmouseout="this.style.background='rgba(201,168,76,0.07)'">＋ Add Video URL</button>
           </div>
           <div class="form-group full">
             <label class="tc-label">Product Images *</label>
@@ -1036,18 +1039,59 @@ function removePreviewImage(index) {
 }
 
 // ── PRODUCTS ──
+
+// ── Upload-form video URL helpers ────────────────────────────────
+let uploadVideoUrls = [];   // video URLs for the Add Product form
+
+function addUploadVideoRow(url) {
+  uploadVideoUrls.push(url || '');
+  renderUploadVideoList();
+}
+
+function removeUploadVideoRow(index) {
+  uploadVideoUrls.splice(index, 1);
+  renderUploadVideoList();
+}
+
+function renderUploadVideoList() {
+  const list = document.getElementById('pVideoList');
+  if (!list) return;
+  if (!uploadVideoUrls.length) { list.innerHTML = ''; return; }
+  list.innerHTML = uploadVideoUrls.map((url, i) => `
+    <div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.5rem;">
+      <input type="url" class="tc-input" value="${escapeHtmlUpload(url)}"
+        placeholder="https://…mp4 or YouTube URL"
+        oninput="uploadVideoUrls[${i}] = this.value"
+        style="flex:1;">
+      <button type="button" onclick="removeUploadVideoRow(${i})"
+        style="background:rgba(224,82,82,0.1);border:1px solid rgba(224,82,82,0.3);color:#e05252;border-radius:var(--radius-sm);padding:0.35rem 0.65rem;font-size:0.8rem;cursor:pointer;flex-shrink:0;">✕</button>
+    </div>
+  `).join('');
+}
+
+function escapeHtmlUpload(str) {
+  return String(str || '')
+    .replace(/&/g,'&amp;').replace(/"/g,'&quot;')
+    .replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
 async function addProduct() {
   const name     = document.getElementById('pName').value.trim();
   const price    = document.getElementById('pPrice').value.trim();
   const category = document.getElementById('pCategory').value;
   const desc     = document.getElementById('pDesc').value.trim();
-  const videoUrl = document.getElementById('pVideo').value.trim();
   const stock    = document.getElementById('pStock').value.trim();
 
   if (!name || !price || !category) {
     showToast('Name, price and category are required', 'error');
     return;
   }
+
+  // Sync any manually-typed upload video inputs before saving
+  document.querySelectorAll('#pVideoList input[type="url"]').forEach((inp, i) => {
+    uploadVideoUrls[i] = inp.value.trim();
+  });
+  const cleanUploadVideos = uploadVideoUrls.filter(v => v.trim() !== '');
 
   const btn = document.getElementById('addProductBtn');
   btn.disabled = true;
@@ -1061,17 +1105,20 @@ async function addProduct() {
       category,
       desc,
       stock: Number(stock) || 0,
-      imageUrls: pendingImageUrls,
-      videoUrl: videoUrl || null,
+      imageUrls:  pendingImageUrls,
+      videoUrls:  cleanUploadVideos,
+      videoUrl:   cleanUploadVideos[0] || null,   // backward-compat legacy field
       createdAt: firebase.firestore.FieldValue.serverTimestamp()
     });
 
     showToast('Product added successfully!');
-    ['pName','pPrice','pDesc','pVideo'].forEach(id => document.getElementById(id).value = '');
+    ['pName','pPrice','pDesc'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('pCategory').value = '';
     document.getElementById('pStock').value = '1';
     pendingImageUrls = [];
+    uploadVideoUrls = [];
     renderImagePreviews();
+    renderUploadVideoList();
     loadProducts();
     loadStatsQuick();
   } catch (err) {
@@ -1122,7 +1169,7 @@ function renderProducts(products) {
         <div class="product-admin-name">${p.name}</div>
         <div class="product-admin-price">₹${p.price}</div>
         <span class="product-stock-badge ${badgeClass}">${badgeLabel}</span>
-        ${p.imageUrls?.length > 1 ? `<div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:0.4rem;">${p.imageUrls.length} images${p.videoUrl ? ' · video' : ''}</div>` : ''}
+        ${p.imageUrls?.length > 1 ? `<div style="font-size:0.72rem;color:var(--text-muted);margin-bottom:0.4rem;">${p.imageUrls.length} images${(p.videoUrls?.length || (p.videoUrl ? 1 : 0)) ? ' · ' + (p.videoUrls?.length || 1) + ' video(s)' : ''}</div>` : ''}
         <!-- ── Admin Manual Stock Adjust ── -->
         <div style="display:flex;align-items:center;gap:0.4rem;margin:0.5rem 0;flex-wrap:wrap;">
           <button onclick="adjustStock('${p.id}', -1)" style="background:rgba(224,82,82,0.1);border:1px solid rgba(224,82,82,0.3);color:#e05252;border-radius:6px;width:28px;height:28px;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;" title="Decrease stock">−</button>

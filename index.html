@@ -221,6 +221,61 @@
       background: #000;
       display: block;
     }
+
+    /* ─── YOUTUBE EMBED FALLBACK ─── */
+    .yt-fallback {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      width: 100%;
+      height: 100%;
+      background: var(--dark-3);
+      padding: 2rem;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    .yt-fallback-icon {
+      width: 56px;
+      height: 56px;
+      flex-shrink: 0;
+    }
+    .yt-fallback-title {
+      font-family: 'Jost', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--cream-dim);
+      letter-spacing: 0.05em;
+    }
+    .yt-fallback-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: -0.35rem;
+      font-weight: 300;
+    }
+    .yt-fallback-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.6rem 1.4rem;
+      background: #ff0000;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.2s, transform 0.15s;
+      margin-top: 0.25rem;
+    }
+    .yt-fallback-btn:hover {
+      background: #cc0000;
+      transform: scale(1.04);
+    }
     @media (max-width:768px){
       .modal-main-media { height:300px; }
     }
@@ -290,6 +345,56 @@
       color: var(--dark);
       border-color: var(--gold);
       transform: scale(1.04);
+    }
+
+    /* ─── SHARE BUTTON on product card ─── */
+    .card-share-wrap {
+      position: absolute;
+      top: 0.6rem;
+      right: 0.6rem;
+      z-index: 3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+      cursor: pointer;
+    }
+    .card-share-btn {
+      background: rgba(18,15,12,0.82);
+      border: none;
+      border-radius: 50%;
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.15s;
+      backdrop-filter: blur(6px);
+      flex-shrink: 0;
+      padding: 0;
+    }
+    .card-share-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke: #ffffff;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .card-share-label {
+      font-family: 'Jost', sans-serif;
+      font-size: 0.62rem;
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      color: #ffffff;
+      text-shadow: 0 1px 4px rgba(0,0,0,0.7);
+      line-height: 1;
+    }
+    .card-share-wrap:hover .card-share-btn {
+      background: rgba(40,35,28,0.95);
+      transform: scale(1.08);
     }
 
     /* ─── INVENTORY BADGES ─── */
@@ -869,8 +974,8 @@ function openModal(product) {
   activeProduct = product;
   activeMediaIndex = 0;
 
-  const allMedia = [...(product.images || [])];
-  const hasVideo = !!product.videoUrl;
+  const allMedia  = [...(product.images || [])];
+  const videoUrls = product.videoUrls || [];
   const oos = isOutOfStock(product);
 
   document.getElementById('modalCategory').textContent = product.category || '';
@@ -889,65 +994,130 @@ function openModal(product) {
     actionArea.innerHTML = `<button class="btn-gold" onclick="addToCartModal()">Add to Cart</button>`;
   }
 
-  renderModalMedia(allMedia, hasVideo, product.videoUrl, 0);
+  renderModalMedia(allMedia, videoUrls, 0);
   document.getElementById('modalOverlay').classList.add('open');
   document.body.style.overflow = 'hidden';
+
+  // ── Push shareable URL without page reload ──
+  const shareUrl = getProductShareUrl(product.id);
+  history.replaceState({ productId: product.id }, '', shareUrl);
 }
 
-function renderModalMedia(images, hasVideo, videoUrl, activeIdx) {
-  setMainMedia(images, hasVideo, videoUrl, activeIdx);
+function renderModalMedia(images, videoUrls, activeIdx) {
+  setMainMedia(images, videoUrls, activeIdx);
 
   let thumbsHTML = images.map((url, i) =>
     `<img class="thumb ${i === activeIdx ? 'active' : ''}" src="${url}" onclick="switchMedia(${i})">`
   ).join('');
-  if (hasVideo) {
-    thumbsHTML += `<div class="thumb-video-btn ${activeIdx === images.length ? 'active' : ''}" onclick="switchMedia(${images.length})" title="Video">▶</div>`;
-  }
+
+  // One thumb-button per video
+  videoUrls.forEach((vUrl, vi) => {
+    const thumbIdx = images.length + vi;
+    const label = videoUrls.length > 1 ? `▶ ${vi + 1}` : '▶';
+    thumbsHTML += `<div class="thumb-video-btn ${activeIdx === thumbIdx ? 'active' : ''}" onclick="switchMedia(${thumbIdx})" title="Video ${vi + 1}">${label}</div>`;
+  });
+
   document.getElementById('modalThumbs').innerHTML = thumbsHTML;
 }
 
-function setMainMedia(images, hasVideo, videoUrl, idx) {
-  const imgEl = document.getElementById('modalMainImg');
+// ── REUSABLE YOUTUBE EMBED HELPER ──
+// Accepts: shorts/, watch?v=, youtu.be/
+// Always returns: https://www.youtube.com/embed/VIDEO_ID  (or null if not YT)
+function convertYouTubeUrlToEmbed(url) {
+  if (!url) return null;
+  const m = url.match(
+    /(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/
+  );
+  return m ? 'https://www.youtube.com/embed/' + m[1] + '?autoplay=0&rel=0' : null;
+}
+
+// ── YOUTUBE EMBED FALLBACK UI ──
+function _buildYtFallback(originalUrl) {
+  const wrap = document.createElement('div');
+  wrap.className = 'yt-fallback modal-video';
+  wrap.innerHTML = `
+    <svg class="yt-fallback-icon" viewBox="0 0 90 63" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <rect width="90" height="63" rx="14" fill="#FF0000"/>
+      <polygon points="36,16 36,47 62,31.5" fill="#fff"/>
+    </svg>
+    <div class="yt-fallback-title">Video unavailable for embed</div>
+    <div class="yt-fallback-sub">This video cannot be played inline.</div>
+    <a class="yt-fallback-btn" href="${originalUrl}" target="_blank" rel="noopener noreferrer">
+      ▶ Watch on YouTube
+    </a>`;
+  return wrap;
+}
+
+function setMainMedia(images, videoUrls, idx) {
+  const imgEl     = document.getElementById('modalMainImg');
   const container = document.getElementById('modalMainMedia');
 
-  const existingVideo = container.querySelector('.modal-video');
-  if (existingVideo) existingVideo.remove();
+  // Remove any existing video / fallback elements
+  container.querySelectorAll('.modal-video').forEach(v => v.remove());
   imgEl.style.display = 'block';
   imgEl.classList.remove('zoomed');
 
-  const isVideo = hasVideo && idx >= images.length;
-  // Hide/show zoom elements based on media type
   const zoomLens   = document.getElementById('zoomLens');
   const zoomResult = document.getElementById('zoomResult');
   const zoomHint   = document.getElementById('zoomHint');
 
+  const videoIdx = idx - images.length;   // ≥ 0 means we're on a video
+  const isVideo  = videoIdx >= 0 && videoIdx < videoUrls.length;
+
   if (isVideo) {
+    const videoUrl  = videoUrls[videoIdx];
+    const embedUrl  = convertYouTubeUrlToEmbed(videoUrl);
     imgEl.style.display = 'none';
-    if (zoomLens)   zoomLens.style.display   = 'none';
-    if (zoomResult) zoomResult.style.display  = 'none';
-    if (zoomHint)   zoomHint.style.display    = 'none';
+    if (zoomLens)   zoomLens.style.display  = 'none';
+    if (zoomResult) zoomResult.style.display = 'none';
+    if (zoomHint)   zoomHint.style.display   = 'none';
 
-    // Detect YouTube and convert to embed URL
-    const ytMatch = videoUrl.match(
-      /(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/
-    );
-
-    if (ytMatch) {
-      // YouTube → iframe embed
+    if (embedUrl) {
+      // YouTube iframe with graceful embed-block detection
       const iframe = document.createElement('iframe');
-      iframe.className = 'modal-video';
-      iframe.src = 'https://www.youtube.com/embed/' + ytMatch[1] + '?autoplay=0&rel=0';
-      iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+      iframe.className      = 'modal-video';
+      iframe.src            = embedUrl;
+      iframe.allow          = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
       iframe.allowFullscreen = true;
-      iframe.style.border = 'none';
+      iframe.style.border   = 'none';
+
+      // Detect embed-blocked via postMessage from YouTube
+      const _ytMsgHandler = function(e) {
+        if (!e.data || typeof e.data !== 'object') return;
+        // YouTube signals embed block with { event: 'infoDelivery', info: { videoData: { errorCode: 101/150 } } }
+        const code = e.data?.info?.videoData?.errorCode;
+        if ((code === 101 || code === 150) && container.contains(iframe)) {
+          window.removeEventListener('message', _ytMsgHandler);
+          iframe.remove();
+          container.insertBefore(_buildYtFallback(videoUrl), container.querySelector('.zoom-hint'));
+        }
+      };
+      window.addEventListener('message', _ytMsgHandler);
+
+      // Also detect via load + contentWindow access failure (CSP / X-Frame-Options)
+      iframe.addEventListener('load', function() {
+        // If the iframe loaded but is blank (embed blocked), YouTube redirects to a
+        // "Video unavailable" page which still fires load. We rely on postMessage above
+        // for most cases; this is a belt-and-suspenders error fallback only.
+        try {
+          // Will throw if cross-origin restriction blocks embed entirely
+          const doc = iframe.contentDocument;
+          if (doc && doc.body && doc.body.innerHTML === '') {
+            window.removeEventListener('message', _ytMsgHandler);
+            iframe.remove();
+            container.insertBefore(_buildYtFallback(videoUrl), container.querySelector('.zoom-hint'));
+          }
+        } catch (ex) { /* cross-origin — normal, ignore */ }
+      });
+
       container.insertBefore(iframe, container.querySelector('.zoom-hint'));
     } else {
-      // Direct video file (mp4, webm, etc.)
+      // Non-YouTube hosted video
       const v = document.createElement('video');
       v.className = 'modal-video';
-      v.controls = true;
-      v.autoplay = false;
-      v.src = videoUrl;
+      v.controls  = true;
+      v.autoplay  = false;
+      v.src       = videoUrl;
       container.insertBefore(v, container.querySelector('.zoom-hint'));
     }
   } else {
@@ -959,11 +1129,11 @@ function setMainMedia(images, hasVideo, videoUrl, idx) {
 
 function switchMedia(idx) {
   if (!activeProduct) return;
-  const images = activeProduct.images || [];
-  const hasVideo = !!activeProduct.videoUrl;
+  const images    = activeProduct.images    || [];
+  const videoUrls = activeProduct.videoUrls || [];
   activeMediaIndex = idx;
 
-  setMainMedia(images, hasVideo, activeProduct.videoUrl, idx);
+  setMainMedia(images, videoUrls, idx);
 
   document.querySelectorAll('#modalThumbs .thumb, #modalThumbs .thumb-video-btn').forEach((el, i) => {
     el.classList.toggle('active', i === idx);
@@ -972,8 +1142,10 @@ function switchMedia(idx) {
 
 function navImage(dir) {
   if (!activeProduct) return;
-  const images = activeProduct.images || [];
-  const total = images.length + (activeProduct.videoUrl ? 1 : 0);
+  const images    = activeProduct.images    || [];
+  const videoUrls = activeProduct.videoUrls || [];
+  const total = images.length + videoUrls.length;
+  if (total === 0) return;
   activeMediaIndex = (activeMediaIndex + dir + total) % total;
   switchMedia(activeMediaIndex);
 }
@@ -1123,18 +1295,71 @@ function navImage(dir) {
   };
 })();
 
+// ── SHARE HELPERS ──
+
+// Build a future-safe product URL using current origin + pathname.
+// Works on Firebase Hosting, custom domains, and hidden .html extension routes.
+function getProductShareUrl(productId) {
+  return window.location.origin + window.location.pathname + '?product=' + encodeURIComponent(productId);
+}
+
+// Share a product by ID — uses Web Share API on mobile, clipboard fallback elsewhere.
+function shareProduct(productId) {
+  const product = allProducts.find(p => p.id === productId);
+  const url     = getProductShareUrl(productId);
+  const title   = product ? product.name + ' — Tanushree Collection' : 'Tanushree Collection';
+  const text    = product ? 'Check out ' + product.name + ' on Tanushree Collection!' : 'Check out this product on Tanushree Collection!';
+
+  if (navigator.share) {
+    navigator.share({ title, text, url }).catch(() => {/* user cancelled — silent */});
+  } else {
+    navigator.clipboard.writeText(url).then(() => {
+      showToast('Product link copied ✦');
+    }).catch(() => {
+      // Last-resort fallback: execCommand
+      const ta = document.createElement('textarea');
+      ta.value = url;
+      ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+      document.body.appendChild(ta);
+      ta.focus(); ta.select();
+      try { document.execCommand('copy'); showToast('Product link copied ✦'); } catch(e) {}
+      document.body.removeChild(ta);
+    });
+  }
+}
+
+// Auto-open product modal when ?product=ID is present in the URL.
+// Called once after allProducts is first loaded from Firebase.
+function _maybeOpenProductFromUrl() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const id     = params.get('product');
+    if (!id) return;
+    const product = allProducts.find(p => p.id === id);
+    if (product) {
+      openModal(product);
+    } else {
+      // Invalid or deleted product — clean the URL silently, no errors
+      history.replaceState(null, '', window.location.pathname);
+    }
+  } catch (e) { /* safety net */ }
+}
+
 function closeModal() {
   document.getElementById('modalOverlay').classList.remove('open');
   document.body.style.overflow = '';
-  const v = document.querySelector('#modalMainMedia .modal-video');
-  if (v) {
+  activeProduct = null;
+  // Remove ?product= from URL without page reload
+  history.replaceState(null, '', window.location.pathname);
+  // Stop all videos / iframes in the modal
+  document.querySelectorAll('#modalMainMedia .modal-video').forEach(v => {
     if (v.tagName === 'IFRAME') {
-      // Stop YouTube playback by resetting src
-      v.src = v.src;
-    } else {
+      v.src = v.src;   // Reset YouTube playback
+    } else if (v.tagName === 'VIDEO') {
       v.pause();
     }
-  }
+    // .yt-fallback divs are left as-is — no action needed
+  });
 }
 
 document.addEventListener('keydown', e => {
@@ -1179,6 +1404,12 @@ function renderProducts() {
     return `
     <div class="product-card" onclick='openModal(allProducts.find(p=>p.id==="${p.id}"))' style="position:relative;${oos ? 'opacity:0.8;' : ''}">
       ${stockBadgeHtml}
+      <div class="card-share-wrap" onclick="event.stopPropagation();shareProduct('${p.id}')" title="Share this product" aria-label="Share ${p.name}">
+        <button class="card-share-btn">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        </button>
+        <span class="card-share-label">Share</span>
+      </div>
       <img src="${p.images?.[0] || 'no-image.png'}" alt="${p.name}" loading="lazy" style="${oos ? 'filter:grayscale(30%);' : ''}">
       <div class="product-info">
         <div class="product-category">${p.category || ''}</div>
@@ -1196,10 +1427,12 @@ function renderProducts() {
 // Uses onSnapshot so the homepage reacts instantly when stock changes
 // in Firestore (e.g. after another user places an order).
 let _productsUnsubscribe = null;
+let _deepLinkHandled     = false;   // run auto-open only once on first load
 
 function loadProducts() {
   // Tear down any existing listener before starting a new one
   if (_productsUnsubscribe) { _productsUnsubscribe(); _productsUnsubscribe = null; }
+  _deepLinkHandled = false;
 
   let query;
   try {
@@ -1215,6 +1448,10 @@ function loadProducts() {
     allProducts = snap.docs.map(doc => {
       const d = doc.data();
       const stockVal = (typeof d.stock === 'number') ? d.stock : (d.stock != null ? Number(d.stock) : null);
+      // Normalize video URLs: support both videoUrls[] (new) and videoUrl (legacy)
+      const videoUrls = Array.isArray(d.videoUrls) && d.videoUrls.length
+        ? d.videoUrls.filter(v => typeof v === 'string' && v.trim() !== '')
+        : (d.videoUrl ? [d.videoUrl] : []);
       return {
         id:         doc.id,
         name:       d.name,
@@ -1222,7 +1459,7 @@ function loadProducts() {
         category:   d.category,
         desc:       d.desc,
         images:     d.imageUrls || [],
-        videoUrl:   d.videoUrl || null,
+        videoUrls:  videoUrls,
         stock:      stockVal,
         // Treat as out of stock if the flag is set OR stock is exactly 0
         outOfStock: d.outOfStock === true || stockVal === 0
@@ -1231,6 +1468,12 @@ function loadProducts() {
 
     // Re-render the product grid with latest stock data
     renderProducts();
+
+    // ── Deep-link auto-open: only on the very first snapshot ──
+    if (!_deepLinkHandled) {
+      _deepLinkHandled = true;
+      _maybeOpenProductFromUrl();
+    }
 
     // If the product modal is open for a product whose stock just changed,
     // refresh its action area so Add to Cart ↔ Out of Stock stays in sync live.
@@ -1247,6 +1490,10 @@ function loadProducts() {
         }
         const stockBadgeEl = document.getElementById('modalStockBadge');
         if (stockBadgeEl) stockBadgeEl.innerHTML = getStockBadge(updated);
+        // Re-render thumbs if video count changed (e.g. admin updated product)
+        const images    = updated.images    || [];
+        const videoUrls = updated.videoUrls || [];
+        renderModalMedia(images, videoUrls, activeMediaIndex);
       }
     }
   }, err => {
