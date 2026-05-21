@@ -857,6 +857,10 @@
             <label class="tc-label">Stock Quantity *</label>
             <input class="tc-input" id="pStock" type="number" placeholder="e.g. 5" min="0" value="1">
           </div>
+          <div class="form-group">
+            <label class="tc-label">Product Weight (grams)</label>
+            <input class="tc-input" id="pWeight" type="number" placeholder="e.g. 250" min="1">
+          </div>
           <div class="form-group full">
             <label class="tc-label" style="margin-bottom:0.5rem;display:block;">
               Video URLs <span style="color:var(--text-muted);font-size:0.68rem;text-transform:none;margin-left:0.5rem;">MP4 or YouTube links · Add multiple</span>
@@ -1507,6 +1511,8 @@ async function addProduct() {
   const category = document.getElementById('pCategory').value;
   const desc     = document.getElementById('pDesc').value.trim();
   const stock    = document.getElementById('pStock').value.trim();
+  const weightRaw = document.getElementById('pWeight').value.trim();
+  const weightNum = (weightRaw !== '' && Number(weightRaw) > 0) ? Number(weightRaw) : 200;
 
   if (!name || !price || !category) {
     showToast('Name, price and category are required', 'error');
@@ -1531,6 +1537,7 @@ async function addProduct() {
       category,
       desc,
       stock: Number(stock) || 0,
+      weight: weightNum,
       imageUrls:  pendingImageUrls,
       videoUrls:  cleanUploadVideos,
       videoUrl:   cleanUploadVideos[0] || null,   // backward-compat legacy field
@@ -1538,7 +1545,7 @@ async function addProduct() {
     });
 
     showToast('Product added successfully!');
-    ['pName','pPrice','pDesc'].forEach(id => document.getElementById(id).value = '');
+    ['pName','pPrice','pDesc','pWeight'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('pCategory').value = '';
     document.getElementById('pStock').value = '1';
     pendingImageUrls = [];
@@ -3347,6 +3354,10 @@ function filterOosSearch() {
           <label class="tc-label">Stock Quantity *</label>
           <input class="tc-input" id="editStock" type="number" min="0" placeholder="0">
         </div>
+        <div class="form-group">
+          <label class="tc-label">Product Weight (grams)</label>
+          <input class="tc-input" id="editWeight" type="number" min="1" placeholder="200">
+        </div>
         <div class="form-group full">
           <label class="tc-label">Description</label>
           <textarea class="tc-textarea" id="editDesc" placeholder="Product description..." style="min-height:80px;"></textarea>
@@ -3420,6 +3431,7 @@ async function openEditModal(productId) {
   document.getElementById('editPrice').value      = product.price   || '';
   document.getElementById('editDesc').value       = product.desc    || '';
   document.getElementById('editStock').value      = typeof product.stock === 'number' ? product.stock : 0;
+  document.getElementById('editWeight').value     = typeof product.weight === 'number' && product.weight > 0 ? product.weight : 200;
 
   const catSel = document.getElementById('editCategory');
   catSel.value = product.category || '';
@@ -3571,6 +3583,8 @@ async function saveProductEdit() {
   const category  = document.getElementById('editCategory').value;
   const desc      = document.getElementById('editDesc').value.trim();
   const stockVal  = document.getElementById('editStock').value.trim();
+  const editWeightRaw = document.getElementById('editWeight').value.trim();
+  const editWeightNum = (editWeightRaw !== '' && Number(editWeightRaw) > 0) ? Number(editWeightRaw) : 200;
 
   if (!name || !price || !category) {
     showToast('Name, price and category are required', 'error');
@@ -3605,6 +3619,7 @@ async function saveProductEdit() {
       videoUrl:   cleanVideos[0] || null,
       stock:      stockNum,
       outOfStock: stockNum === 0,
+      weight:     editWeightNum,
       updatedAt:  firebase.firestore.FieldValue.serverTimestamp()
     };
 

@@ -396,8 +396,12 @@ if (cart.length === 0) {
   });
 }
 
-// Total cart weight (grams) using ShippingEngine helper
-const totalWeight = window.ShippingEngine ? window.ShippingEngine.cartWeight(cart) : 0;
+// Total cart weight (grams) using dynamic product weights (fallback 200g per item)
+const totalWeight = cart.reduce((sum, item) => {
+  const w = (typeof item.weight === 'number' && item.weight > 0) ? item.weight : 200;
+  const qty = item.quantity || 1;
+  return sum + w * qty;
+}, 0);
 
 // Track current shipping charge (so placeOrder() can read it)
 let currentShippingCharge = 0;

@@ -1044,7 +1044,10 @@ function addToCart(product) {
   }
   const existing = cart.find(i => i.id === product.id);
   if (existing) { existing.quantity++; }
-  else { cart.push({ ...product, quantity: 1 }); }
+  else {
+    const itemWeight = (typeof product.weight === 'number' && product.weight > 0) ? product.weight : 200;
+    cart.push({ ...product, weight: itemWeight, quantity: 1 });
+  }
   saveCart();
   showToast(`${product.name} added to cart`);
 }
@@ -1077,6 +1080,17 @@ function openModal(product) {
   document.getElementById('modalName').textContent = product.name;
   document.getElementById('modalPrice').textContent = '₹' + product.price;
   document.getElementById('modalDesc').textContent = product.desc || 'A beautifully crafted piece from Tanushree Collections.';
+
+  // Weight display
+  const weightGrams = (typeof product.weight === 'number' && product.weight > 0) ? product.weight : 200;
+  const existingWeightEl = document.getElementById('modalWeightDisplay');
+  if (existingWeightEl) existingWeightEl.remove();
+  const weightEl = document.createElement('div');
+  weightEl.id = 'modalWeightDisplay';
+  weightEl.style.cssText = 'font-size:0.82rem;color:var(--text-muted);margin-top:0.35rem;';
+  weightEl.textContent = 'Weight: ' + weightGrams + 'g';
+  const descEl = document.getElementById('modalDesc');
+  if (descEl && descEl.parentNode) descEl.parentNode.insertBefore(weightEl, descEl.nextSibling);
 
   // Stock badge
   document.getElementById('modalStockBadge').innerHTML = getStockBadge(product);
@@ -1572,8 +1586,8 @@ function loadProducts() {
         images:     d.imageUrls || [],
         videoUrls:  videoUrls,
         stock:      stockVal,
-        // Weight in grams; fallback 250g for backward compatibility
-        weight:     (typeof d.weight === 'number' && d.weight > 0) ? d.weight : 250,
+        // Weight in grams; fallback 200g for backward compatibility
+        weight:     (typeof d.weight === 'number' && d.weight > 0) ? d.weight : 200,
         // Treat as out of stock if the flag is set OR stock is exactly 0
         outOfStock: d.outOfStock === true || stockVal === 0
       };
