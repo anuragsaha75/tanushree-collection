@@ -1,0 +1,105 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── ADMIN HELPER ─────────────────────────────────────────────
+    function isAdmin() {
+      return request.auth != null
+        && exists(
+          /databases/$(database)/documents/admins/$(request.auth.token.email)
+        );
+    }
+
+    // ── USERS ────────────────────────────────────────────────────
+    match /users/{userId} {
+      allow read:  if request.auth != null;
+      allow write: if request.auth != null
+                   && request.auth.uid == userId;
+    }
+
+    // ── PRODUCTS ─────────────────────────────────────────────────
+    match /products/{id} {
+      allow read:  if true;
+      allow write: if isAdmin();
+    }
+
+    // ── ORDERS ───────────────────────────────────────────────────
+    match /orders/{id} {
+      allow create: if request.auth != null;
+      allow read:   if request.auth != null
+                    && (
+                      request.auth.uid == resource.data.userId
+                      || isAdmin()
+                    );
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ── RETURNS ──────────────────────────────────────────────────
+    match /returns/{id} {
+      allow create: if request.auth != null;
+      allow read:   if request.auth != null
+                    && (
+                      request.auth.uid == resource.data.userId
+                      || isAdmin()
+                    );
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ── ADMINS ───────────────────────────────────────────────────
+    match /admins/{email} {
+      allow read:  if request.auth != null;
+      allow write: if false;
+    }
+
+    // ── SHIPPING SETTINGS ────────────────────────────────────────
+    // Covers shippingSettings/main (state slabs + favourPincodes).
+    // Readable by any authenticated user (checkout page needs it
+    // to calculate live shipping charges for the customer).
+    // Writable by admin only.
+    match /shippingSettings/{docId} {
+      allow read:  if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // ── SHIPPING CHARGES (legacy / alternate collection name) ────
+    match /shippingCharges/{docId} {
+      allow read:  if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // ── SHIPPING CONFIG (legacy / alternate collection name) ─────
+    match /shippingConfig/{docId} {
+      allow read:  if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // ── FAVOUR PINCODES (legacy / alternate collection name) ─────
+    match /favourPincodes/{docId} {
+      allow read:  if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // ── PAYMENT SETTINGS (legacy collection name) ─────────────────
+    // Kept for backwards-compatibility in case any existing code
+    // still references paymentSettings/main.
+    // Readable by any authenticated user (checkout page needs it).
+    // Writable by admin only.
+    match /paymentSettings/{docId} {
+      allow read:  if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+    // ── SETTINGS (canonical collection) ──────────────────────────
+    // Covers settings/paymentMethods (and any future settings docs).
+    // Readable by any authenticated user so the checkout page can
+    // fetch payment method availability in real time.
+    // Writable by admin only.
+    match /settings/{docId} {
+      allow read:  if request.auth != null;
+      allow write: if isAdmin();
+    }
+
+  }
+}

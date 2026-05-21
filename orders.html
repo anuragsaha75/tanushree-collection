@@ -1140,6 +1140,7 @@ function buildOrderCard(order, idx) {
       <div class="order-card-footer">
         <div>
           <div class="order-total-label">₹${total.toLocaleString('en-IN')}</div>
+          ${order.shippingCharge > 0 ? `<div style="font-size:0.74rem;color:var(--text-muted);margin-top:0.1rem;">Including ₹${order.shippingCharge} shipping</div>` : ''}
           <div class="order-payment-badge">💳 ${payment}</div>
         </div>
         <div class="order-actions">
@@ -1324,10 +1325,25 @@ function openDetailModal(orderId) {
       <div>${productsHTML}</div>
     </div>
 
-    <!-- Total -->
-    <div style="display:flex;justify-content:space-between;align-items:center;padding:1rem 0;border-top:1px solid var(--border);margin-top:0.5rem;">
-      <span style="font-size:0.78rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">Order Total</span>
-      <span style="font-size:1.2rem;font-weight:600;color:var(--gold);">₹${total.toLocaleString('en-IN')}</span>
+    <!-- Total — shipping breakdown (uses stored values, never recalculates) -->
+    <div style="padding:0.75rem 0;border-top:1px solid var(--border);margin-top:0.5rem;">
+      ${order.shippingCharge != null ? `
+      <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:0.4rem;">
+        <span style="color:var(--text-muted);">Products Total</span>
+        <span style="color:var(--cream);">₹${(order.productsTotal || cart.reduce((s,i)=>s+i.price*i.quantity,0)).toLocaleString('en-IN')}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-bottom:0.4rem;">
+        <span style="color:var(--text-muted);">Shipping Charge</span>
+        <span style="color:${order.shippingDetails?.favourPincodeApplied ? 'var(--gold)' : 'var(--cream-dim)'};">
+          ₹${order.shippingCharge}${order.shippingDetails?.favourPincodeApplied ? ' ✦' : ''}
+        </span>
+      </div>
+      ${order.totalWeight > 0 ? `<div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:0.4rem;"><span style="color:var(--text-muted);">Total Weight</span><span style="color:var(--text-muted);">${order.totalWeight}g</span></div>` : ''}
+      <div style="height:1px;background:var(--border);margin:0.4rem 0;"></div>` : ''}
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-size:0.78rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);">Order Total</span>
+        <span style="font-size:1.2rem;font-weight:600;color:var(--gold);">₹${total.toLocaleString('en-IN')}</span>
+      </div>
     </div>
 
     <div class="gold-line"></div>
@@ -2016,12 +2032,25 @@ async function generateAndUploadInvoicePersistent(order) {
   text(`Rs. ${subtotal.toLocaleString('en-IN')}`, COL.total, y, { align: 'right' });
   y += 6;
 
-  // Shipping
+  // Shipping — use stored shippingCharge (never recalculate; synced with checkout / admin)
+  const shippingCharge = order.shippingCharge != null ? Number(order.shippingCharge) : 0;
+  const grandTotal     = order.total != null ? Number(order.total) : (subtotal + shippingCharge);
+  const totalWt        = order.totalWeight || 0;
+
   doc.setTextColor(...GREY);
   text('Shipping', COL.price, y, { align: 'right' });
   doc.setTextColor(...DARK);
-  text('Free', COL.total, y, { align: 'right' });
+  text(shippingCharge > 0 ? `Rs. ${shippingCharge.toLocaleString('en-IN')}` : 'FREE', COL.total, y, { align: 'right' });
   y += 6;
+
+  // Show total weight if available
+  if (totalWt > 0) {
+    doc.setTextColor(...GREY);
+    text('Total Weight', COL.price, y, { align: 'right' });
+    doc.setTextColor(...DARK);
+    text(`${totalWt}g`, COL.total, y, { align: 'right' });
+    y += 6;
+  }
 
   goldRule(y);
   y += 7;
@@ -2037,7 +2066,7 @@ async function generateAndUploadInvoicePersistent(order) {
 
   doc.setFontSize(11);
   doc.setTextColor(...GOLD);
-  text(`Rs. ${subtotal.toLocaleString('en-IN')}`, COL.total - 1, y + 1, { align: 'right' });
+  text(`Rs. ${grandTotal.toLocaleString('en-IN')}`, COL.total - 1, y + 1, { align: 'right' });
   y += 16;
 
   // ──────────────────────────────────────────────

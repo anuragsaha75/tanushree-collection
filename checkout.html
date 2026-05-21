@@ -68,6 +68,42 @@
       .form-row { grid-template-columns: 1fr; }
       .form-row.three { grid-template-columns: 1fr 1fr; }
     }
+
+    /* ─── PAYMENT METHOD AVAILABILITY ─── */
+    .payment-option.pm-disabled {
+      opacity: 0.42;
+      pointer-events: none;
+      cursor: not-allowed;
+      border-color: rgba(224,82,82,0.2);
+      position: relative;
+    }
+    .pm-unavailable-banner {
+      display: none;
+      background: rgba(224,82,82,0.08);
+      border: 1px solid rgba(224,82,82,0.28);
+      border-radius: var(--radius-sm);
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.55rem;
+      font-size: 0.83rem;
+      color: #e05252;
+      line-height: 1.5;
+    }
+    .pm-unavailable-banner.show { display: flex; align-items: flex-start; gap: 0.5rem; }
+    .pm-all-paused-banner {
+      display: none;
+      background: rgba(224,82,82,0.1);
+      border: 1px solid rgba(224,82,82,0.35);
+      border-radius: var(--radius-sm);
+      padding: 1rem 1.1rem;
+      margin-bottom: 1rem;
+      font-size: 0.88rem;
+      color: #e05252;
+      font-family: \'Cormorant Garamond\', serif;
+      font-size: 1.05rem;
+      line-height: 1.5;
+      text-align: center;
+    }
+    .pm-all-paused-banner.show { display: block; }
   </style>
 </head>
 <body>
@@ -147,7 +183,38 @@
         </div>
         <div class="form-group">
           <label class="tc-label">State</label>
-          <input class="tc-input" id="cState" placeholder="State">
+          <select class="tc-input" id="cState" style="appearance:auto;cursor:pointer;background:var(--dark-3);">
+            <option value="">Select State</option>
+            <option>Andhra Pradesh</option>
+            <option>Arunachal Pradesh</option>
+            <option>Assam</option>
+            <option>Bihar</option>
+            <option>Chhattisgarh</option>
+            <option>Delhi</option>
+            <option>Goa</option>
+            <option>Gujarat</option>
+            <option>Haryana</option>
+            <option>Himachal Pradesh</option>
+            <option>Jharkhand</option>
+            <option>Karnataka</option>
+            <option>Kerala</option>
+            <option>Madhya Pradesh</option>
+            <option>Maharashtra</option>
+            <option>Manipur</option>
+            <option>Meghalaya</option>
+            <option>Mizoram</option>
+            <option>Nagaland</option>
+            <option>Odisha</option>
+            <option>Punjab</option>
+            <option>Rajasthan</option>
+            <option>Sikkim</option>
+            <option>Tamil Nadu</option>
+            <option>Telangana</option>
+            <option>Tripura</option>
+            <option>Uttar Pradesh</option>
+            <option>Uttarakhand</option>
+            <option>West Bengal</option>
+          </select>
         </div>
         <div class="form-group">
           <label class="tc-label">Country</label>
@@ -165,7 +232,18 @@
     <div class="tc-card">
       <h4 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;margin-bottom:1rem;">Payment Method</h4>
 
-      <label class="payment-option">
+      <!-- All-paused banner (shown when both methods are OFF) -->
+      <div class="pm-all-paused-banner" id="pmAllPausedBanner">
+        ⚠️ We are NOT accepting orders temporarily.<br>
+        <span style="font-family:'Jost',sans-serif;font-size:0.82rem;color:rgba(224,82,82,0.75);">Please check back soon.</span>
+      </div>
+
+      <!-- COD unavailable notice -->
+      <div class="pm-unavailable-banner" id="pmCodBanner">
+        <span>⚠</span>
+        <span>Cash on Delivery (COD) is temporarily unavailable</span>
+      </div>
+      <label class="payment-option" id="pmCodOption">
         <input type="radio" name="payment" value="COD" checked>
         <div>
           <div style="font-size:0.9rem;font-weight:500;">Cash on Delivery</div>
@@ -173,7 +251,12 @@
         </div>
       </label>
 
-      <label class="payment-option">
+      <!-- UPI unavailable notice -->
+      <div class="pm-unavailable-banner" id="pmUpiBanner">
+        <span>⚠</span>
+        <span>Online Payment Method (UPI/Card Payment/Net Banking) is temporarily unavailable</span>
+      </div>
+      <label class="payment-option" id="pmUpiOption">
         <input type="radio" name="payment" value="UPI">
         <div>
           <div style="font-size:0.9rem;font-weight:500;">UPI</div>
@@ -195,9 +278,23 @@
       <h4 style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;margin-bottom:1rem;">Order Summary</h4>
       <div id="summaryItems"></div>
       <div class="gold-line"></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;">
-        <span style="font-size:0.85rem;color:var(--text-muted);">Total Amount</span>
-        <span style="font-size:1.2rem;font-weight:600;color:var(--gold);" id="summaryTotal">₹0</span>
+
+      <!-- Pricing breakdown -->
+      <div style="display:flex;flex-direction:column;gap:0.65rem;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:0.85rem;color:var(--text-muted);">Products Total</span>
+          <span style="font-size:0.95rem;font-weight:500;color:var(--cream);" id="summaryProductsTotal">₹0</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;" id="shippingRow">
+          <span style="font-size:0.85rem;color:var(--text-muted);" id="shippingLabel">Shipping Charge</span>
+          <span style="font-size:0.95rem;font-weight:500;color:var(--cream-dim);" id="summaryShipping">—</span>
+        </div>
+        <div style="height:1px;background:var(--border);margin:0.2rem 0;"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:0.9rem;font-weight:600;color:var(--gold-light);">Grand Total</span>
+          <span style="font-size:1.25rem;font-weight:700;color:var(--gold);" id="summaryTotal">₹0</span>
+        </div>
+        <div id="shippingNote" style="font-size:0.74rem;color:var(--text-muted);margin-top:-0.2rem;display:none;"></div>
       </div>
     </div>
   </div>
@@ -209,6 +306,7 @@
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="firebase-init.js"></script>
+<script src="shipping.js"></script>
 
 <script>
 let currentUserId = null;
@@ -272,29 +370,118 @@ function showToast(msg, type = 'success') {
 
 const cart = JSON.parse(localStorage.getItem('cart') || '[]');
 
-// Render order summary
+// ══════════════════════════════════════════════════════════════
+//  SHIPPING SYSTEM — Live calculation on state / pin change
+// ══════════════════════════════════════════════════════════════
+
+// ── Render cart items ──────────────────────────────────────────
 const summaryEl = document.getElementById('summaryItems');
-let total = 0;
+let productsTotal = 0;
 
 if (cart.length === 0) {
   summaryEl.innerHTML = '<p style="color:var(--text-muted);font-size:0.88rem;">Your cart is empty.</p>';
 } else {
   cart.forEach(item => {
-    total += item.price * item.quantity;
-
+    productsTotal += item.price * item.quantity;
+    const weightInfo = item.weight ? `<span style="color:var(--text-muted);margin-left:0.35rem;">· ${item.weight * item.quantity}g</span>` : '';
     summaryEl.innerHTML += `
       <div class="order-item">
         <img src="${(item.images && item.images[0]) || 'no-image.png'}" alt="${item.name}" onerror="this.src='no-image.png'">
         <div style="flex:1;">
           <div style="font-size:0.9rem;">${item.name}</div>
-          <div style="font-size:0.8rem;color:var(--text-muted);">Qty: ${item.quantity}</div>
+          <div style="font-size:0.8rem;color:var(--text-muted);">Qty: ${item.quantity}${weightInfo}</div>
         </div>
         <div style="color:var(--gold);font-size:0.9rem;">₹${item.price * item.quantity}</div>
       </div>`;
   });
 }
 
-document.getElementById('summaryTotal').textContent = '₹' + total;
+// Total cart weight (grams) using ShippingEngine helper
+const totalWeight = window.ShippingEngine ? window.ShippingEngine.cartWeight(cart) : 0;
+
+// Track current shipping charge (so placeOrder() can read it)
+let currentShippingCharge = 0;
+let currentShippingState  = '';
+let currentShippingSlab   = '';
+let currentCartWeight     = totalWeight;
+
+/**
+ * Update the summary panel with current shipping info.
+ * Called on page load + whenever state/pin changes.
+ */
+async function updateShippingSummary() {
+  const state  = (document.getElementById('cState')  || {}).value || '';
+  const pin    = (document.getElementById('cPin')    || {}).value || '';
+
+  document.getElementById('summaryProductsTotal').textContent = '₹' + productsTotal;
+
+  if (!state) {
+    // No state selected yet — show pending hint
+    document.getElementById('summaryShipping').textContent   = 'Select state';
+    document.getElementById('summaryShipping').style.color   = 'var(--text-muted)';
+    document.getElementById('summaryTotal').textContent      = '₹' + productsTotal;
+    document.getElementById('shippingNote').style.display    = 'none';
+    currentShippingCharge = 0;
+    return;
+  }
+
+  // Show calculation in progress
+  document.getElementById('summaryShipping').textContent = '…';
+
+  try {
+    const result = await window.ShippingEngine.calculateAsync(state, pin, totalWeight);
+    currentShippingCharge = result.charge;
+    currentShippingState  = state;
+    currentCartWeight     = totalWeight;
+    currentShippingSlab   = result.slab || (result.isFavour ? 'favour' : '');
+
+    const shippingEl = document.getElementById('summaryShipping');
+    shippingEl.textContent = '₹' + result.charge;
+    shippingEl.style.color = result.isFavour ? 'var(--gold)' : 'var(--cream-dim)';
+
+    document.getElementById('summaryTotal').textContent = '₹' + (productsTotal + result.charge);
+
+    // Show weight info + favour pincode note
+    const noteEl = document.getElementById('shippingNote');
+    let noteText = totalWeight > 0 ? `Cart weight: ${totalWeight}g` : '';
+    if (result.isFavour) {
+      noteText += (noteText ? ' · ' : '') + '✦ Local delivery rate applied';
+    }
+    if (noteText) {
+      noteEl.textContent      = noteText;
+      noteEl.style.display    = 'block';
+    } else {
+      noteEl.style.display    = 'none';
+    }
+
+    // Update label
+    document.getElementById('shippingLabel').textContent = 'Shipping Charge';
+  } catch (e) {
+    console.warn('[Shipping] Calculation error:', e);
+    document.getElementById('summaryShipping').textContent = '₹' + window.ShippingEngine.DEFAULTS.defaultCharge;
+    document.getElementById('summaryTotal').textContent    = '₹' + (productsTotal + window.ShippingEngine.DEFAULTS.defaultCharge);
+    currentShippingCharge = window.ShippingEngine.DEFAULTS.defaultCharge;
+    currentShippingState  = state;
+    currentCartWeight     = totalWeight;
+    currentShippingSlab   = 'default';
+  }
+}
+
+// ── Debounce helper for PIN input ─────────────────────────────
+let _shippingDebounce = null;
+function scheduleShippingUpdate(delay = 600) {
+  clearTimeout(_shippingDebounce);
+  _shippingDebounce = setTimeout(updateShippingSummary, delay);
+}
+
+// ── Wire up live listeners ────────────────────────────────────
+document.getElementById('cState').addEventListener('change', () => updateShippingSummary());
+document.getElementById('cPin').addEventListener('input',   () => scheduleShippingUpdate());
+
+// ── Initial render (no state selected yet) ───────────────────
+document.getElementById('summaryProductsTotal').textContent = '₹' + productsTotal;
+document.getElementById('summaryTotal').textContent         = '₹' + productsTotal;
+document.getElementById('summaryShipping').textContent      = 'Select state';
 
 function setErr(id, msg) {
   const el = document.getElementById(id);
@@ -506,6 +693,50 @@ async function placeOrder() {
     return;
   }
 
+  // ══════════════════════════════════════════════════════════════
+  //  SERVER-SIDE PAYMENT SETTINGS VALIDATION
+  //  Fetch the LATEST settings from Firestore right now —
+  //  this is the authoritative check, independent of UI state.
+  //  Prevents bypassing via browser console or stale UI.
+  // ══════════════════════════════════════════════════════════════
+  try {
+    const pmSnap = await window.db.collection('paymentSettings').doc('main').get();
+    let codEnabled = true;
+    let upiEnabled = true;
+
+    if (pmSnap.exists) {
+      const pmData = pmSnap.data();
+      codEnabled = pmData.codEnabled !== false;
+      upiEnabled = pmData.upiEnabled !== false;
+    }
+
+    const PREPAID_METHODS_CHECK = ['UPI', 'Razorpay', 'Online Payment', 'Prepaid'];
+    const selectedIsUPI = PREPAID_METHODS_CHECK.includes(payment);
+    const selectedIsCOD = !selectedIsUPI;
+
+    // Both OFF → block entirely
+    if (!codEnabled && !upiEnabled) {
+      showToast('Orders are temporarily paused. Please try again later.', 'error');
+      updatePaymentMethodUI(false, false); // ensure UI reflects this
+      return;
+    }
+
+    // Selected method is specifically disabled
+    if (selectedIsCOD && !codEnabled) {
+      showToast('Cash on Delivery is temporarily unavailable. Please select another payment method.', 'error');
+      return;
+    }
+    if (selectedIsUPI && !upiEnabled) {
+      showToast('Online Payment (UPI) is temporarily unavailable. Please select another payment method.', 'error');
+      return;
+    }
+  } catch (pmErr) {
+    // If Firestore read fails, fail SAFE — block the order
+    console.error('Payment settings check failed:', pmErr);
+    showToast('Unable to verify payment settings. Please try again.', 'error');
+    return;
+  }
+
   setLoading(true);
 
   const fullPhone = countryCode + ' ' + phone;
@@ -557,7 +788,12 @@ async function placeOrder() {
           payment,
           paymentStatus,
           cart,
-          total:         cart.reduce((s, i) => s + i.price * i.quantity, 0),
+          productsTotal:  productsTotal,
+          shippingCharge: currentShippingCharge,
+          shippingState:  currentShippingState  || state || '',
+          shippingSlab:   currentShippingSlab   || '',
+          cartWeight:     currentCartWeight      || totalWeight || 0,
+          total:         productsTotal + currentShippingCharge,
           status:        orderStatus,
           // stockDeducted=true → admin dashboard will NOT deduct again on Dispatch
           stockDeducted: true,
@@ -624,7 +860,12 @@ async function placeOrder() {
         payment,
         paymentStatus,
         cart,
-        total:         cart.reduce((s, i) => s + i.price * i.quantity, 0),
+        productsTotal:  productsTotal,
+        shippingCharge: currentShippingCharge,
+        shippingState:  currentShippingState  || state || '',
+        shippingSlab:   currentShippingSlab   || '',
+        cartWeight:     currentCartWeight      || totalWeight || 0,
+        total:         productsTotal + currentShippingCharge,
         status:        orderStatus,
         // stockDeducted=false → admin will deduct on Accept
         stockDeducted: false,
@@ -644,6 +885,96 @@ async function placeOrder() {
     setLoading(false);
   }
 }
+
+// ══════════════════════════════════════════════════════════════════
+//  PAYMENT METHOD AVAILABILITY — Realtime listener
+// ══════════════════════════════════════════════════════════════════
+
+let _pmCheckoutUnsubscribe = null;
+
+/**
+ * Attach a realtime Firestore listener to settings/paymentMethods.
+ * Updates checkout UI instantly whenever admin toggles a method.
+ */
+function initPaymentMethodListener() {
+  if (!window.db) return;
+  if (_pmCheckoutUnsubscribe) return; // already listening
+
+  _pmCheckoutUnsubscribe = window.db
+    .collection('settings')
+    .doc('paymentMethods')
+    .onSnapshot(
+      snap => {
+        let codEnabled = true;
+        let upiEnabled = true;
+
+        if (snap && snap.exists) {
+          const d = snap.data();
+          codEnabled = d.codEnabled !== false;
+          upiEnabled = d.upiEnabled !== false;
+        }
+
+        updatePaymentMethodUI(codEnabled, upiEnabled);
+      },
+      err => {
+        // On error, fail open — both methods remain enabled
+        console.warn('[Checkout] Payment settings listener error:', err);
+      }
+    );
+}
+
+/**
+ * Update checkout payment UI based on current settings.
+ * Never modifies order logic — only show/hide and enable/disable UI.
+ */
+function updatePaymentMethodUI(codEnabled, upiEnabled) {
+  const codOption       = document.getElementById('pmCodOption');
+  const upiOption       = document.getElementById('pmUpiOption');
+  const codBanner       = document.getElementById('pmCodBanner');
+  const upiBanner       = document.getElementById('pmUpiBanner');
+  const allPausedBanner = document.getElementById('pmAllPausedBanner');
+  const placeBtn        = document.getElementById('placeBtn');
+  const placeBtnText    = document.getElementById('placeBtnText');
+  const codRadio        = codOption ? codOption.querySelector('input[type="radio"]') : null;
+  const upiRadio        = upiOption ? upiOption.querySelector('input[type="radio"]') : null;
+
+  const bothOff = !codEnabled && !upiEnabled;
+
+  // ── COD option ──
+  if (codOption) codOption.classList.toggle('pm-disabled', !codEnabled);
+  if (codRadio)  codRadio.disabled = !codEnabled;
+  if (codBanner) codBanner.classList.toggle('show', !codEnabled && !bothOff);
+
+  // ── UPI option ──
+  if (upiOption) upiOption.classList.toggle('pm-disabled', !upiEnabled);
+  if (upiRadio)  upiRadio.disabled = !upiEnabled;
+  if (upiBanner) upiBanner.classList.toggle('show', !upiEnabled && !bothOff);
+
+  // ── Both-off state ──
+  if (allPausedBanner) allPausedBanner.classList.toggle('show', bothOff);
+
+  // ── Place Order button ──
+  if (placeBtn) {
+    placeBtn.disabled          = bothOff;
+    placeBtn.style.opacity     = bothOff ? '0.35' : '';
+    placeBtn.style.cursor      = bothOff ? 'not-allowed' : '';
+    placeBtn.style.pointerEvents = bothOff ? 'none' : '';
+  }
+
+  // ── Auto-switch selected radio if its method just got disabled ──
+  if (codRadio && codRadio.checked && !codEnabled) {
+    if (upiEnabled && upiRadio) upiRadio.checked = true;
+    else if (codRadio) codRadio.checked = false; // nothing to switch to
+  } else if (upiRadio && upiRadio.checked && !upiEnabled) {
+    if (codEnabled && codRadio) codRadio.checked = true;
+    else if (upiRadio) upiRadio.checked = false;
+  }
+}
+
+// Start listening once Firebase is ready
+waitForFirebase(() => {
+  initPaymentMethodListener();
+});
 </script>
 </body>
 </html>

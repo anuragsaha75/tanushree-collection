@@ -553,6 +553,222 @@
       .tc-modal-wide { max-width: 100%; }
       .media-img-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
     }
+
+    /* ─── SHIPPING TABLE ─── */
+    .shipping-table { width: 100%; border-collapse: collapse; min-width: 560px; }
+    .shipping-table th {
+      text-align: left;
+      font-size: 0.7rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      padding: 0.85rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      font-weight: 500;
+      background: var(--dark-2);
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    .shipping-table td {
+      padding: 0.55rem 1.25rem;
+      border-bottom: 1px solid rgba(201,168,76,0.06);
+      vertical-align: middle;
+    }
+    .shipping-table tr:last-child td { border-bottom: none; }
+    .shipping-table tr:hover td { background: rgba(201,168,76,0.03); }
+    .shipping-table tr.shipping-row-hidden { display: none; }
+
+    .shipping-state-name {
+      font-size: 0.88rem;
+      color: var(--cream);
+      font-weight: 400;
+    }
+    .shipping-state-type {
+      font-size: 0.68rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 0.15rem;
+    }
+
+    .shipping-input {
+      width: 90px;
+      background: var(--dark-3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xs);
+      color: var(--cream);
+      padding: 0.45rem 0.6rem;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.88rem;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s, background 0.2s;
+      -moz-appearance: textfield;
+    }
+    .shipping-input::-webkit-outer-spin-button,
+    .shipping-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .shipping-input:focus { border-color: var(--gold); background: var(--dark-4); }
+    .shipping-input.changed { border-color: rgba(201,168,76,0.5); background: rgba(201,168,76,0.06); }
+
+    .btn-shipping-reset {
+      background: transparent;
+      border: 1px solid rgba(224,82,82,0.25);
+      color: rgba(224,82,82,0.6);
+      border-radius: var(--radius-xs);
+      width: 28px;
+      height: 28px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto;
+    }
+    .btn-shipping-reset:hover { background: rgba(224,82,82,0.12); border-color: rgba(224,82,82,0.5); color: #e05252; }
+
+    /* ─── FAVOUR PINCODE BUTTON ─── */
+    .btn-favour-pincode {
+      background: rgba(106,90,205,0.12);
+      border: 1px solid rgba(106,90,205,0.35);
+      color: #a99de8;
+      border-radius: var(--radius-xs);
+      padding: 0.38rem 0.85rem;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 500;
+      cursor: pointer;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .btn-favour-pincode:hover {
+      background: rgba(106,90,205,0.22);
+      border-color: rgba(106,90,205,0.6);
+      color: #c5bdf5;
+    }
+
+    /* ─── FAVOUR PINCODE INLINE ROW ACTIONS ─── */
+    .fp-row-hidden { display: none; }
+    .fp-action-btn {
+      background: transparent;
+      border: 1px solid;
+      border-radius: var(--radius-xs);
+      padding: 0.28rem 0.65rem;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.72rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      line-height: 1.4;
+    }
+    .fp-edit-btn   { border-color: rgba(201,168,76,0.35); color: var(--gold); }
+    .fp-edit-btn:hover   { background: rgba(201,168,76,0.12); }
+    .fp-delete-btn { border-color: rgba(224,82,82,0.3); color: #e05252; }
+    .fp-delete-btn:hover { background: rgba(224,82,82,0.12); }
+
+    @media (max-width: 700px) {
+      .shipping-input { width: 72px; }
+      .shipping-table th, .shipping-table td { padding: 0.5rem 0.75rem; }
+    }
+
+    /* ─── PAYMENT METHOD SETTINGS ─── */
+    .pm-setting-card {
+      background: var(--dark-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.4rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1.5rem;
+      margin-bottom: 0.85rem;
+      transition: border-color 0.3s;
+    }
+    .pm-setting-card:hover { border-color: rgba(201,168,76,0.35); }
+    .pm-setting-card.pm-card-on  { border-color: rgba(76,175,128,0.35); }
+    .pm-setting-card.pm-card-off { border-color: rgba(224,82,82,0.25); }
+
+    .pm-setting-left {
+      display: flex;
+      align-items: center;
+      gap: 1.1rem;
+    }
+    .pm-setting-icon {
+      font-size: 1.8rem;
+      flex-shrink: 0;
+    }
+    .pm-setting-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.15rem;
+      color: var(--cream);
+      margin-bottom: 0.2rem;
+    }
+    .pm-setting-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 0.45rem;
+    }
+    .pm-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.7rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      border-radius: 99px;
+      padding: 0.18rem 0.7rem;
+    }
+    .pm-status-on  { background: rgba(76,175,128,0.15); color: #4caf82; border: 1px solid rgba(76,175,128,0.35); }
+    .pm-status-off { background: rgba(224,82,82,0.15);  color: #e05252; border: 1px solid rgba(224,82,82,0.3); }
+
+    .pm-toggle-wrap { flex-shrink: 0; }
+    .pm-toggle-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+    }
+    .pm-toggle-btn:disabled { cursor: not-allowed; opacity: 0.45; }
+    .pm-toggle-track {
+      position: relative;
+      display: inline-block;
+      width: 52px;
+      height: 28px;
+      background: rgba(120,120,120,0.25);
+      border-radius: 99px;
+      border: 1px solid rgba(120,120,120,0.3);
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .pm-toggle-track.pm-track-on {
+      background: rgba(76,175,128,0.3);
+      border-color: rgba(76,175,128,0.55);
+    }
+    .pm-toggle-thumb {
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      background: var(--text-muted);
+      border-radius: 50%;
+      transition: transform 0.3s, background 0.3s;
+    }
+    .pm-toggle-track.pm-track-on .pm-toggle-thumb {
+      transform: translateX(24px);
+      background: #4caf82;
+    }
+
+    @media (max-width: 600px) {
+      .pm-setting-card { flex-direction: column; align-items: flex-start; }
+      .pm-toggle-wrap  { align-self: flex-end; }
+    }
   </style>
 </head>
 <body>
@@ -582,6 +798,15 @@
     </button>
     <button class="sidebar-menu-item" id="tabMembers" onclick="showTab('members')">
       👥 Members
+    </button>
+
+    <div class="sidebar-divider"></div>
+
+    <button class="sidebar-menu-item" id="tabShipping" onclick="showTab('shipping')">
+      🚚 Shipping Charges
+    </button>
+    <button class="sidebar-menu-item" id="tabPaymentSettings" onclick="showTab('paymentSettings')">
+      💳 Payment Settings
     </button>
 
     <button class="btn-logout" onclick="doLogout()">⎋ Sign Out</button>
@@ -792,6 +1017,121 @@
       </div>
     </div>
 
+    <!-- ─── SHIPPING CHARGES SECTION ─── -->
+    <div id="sectionShipping" style="display:none;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;margin-bottom:1.5rem;">
+        <div>
+          <div class="page-title" style="margin-bottom:0.25rem;">Set Shipping Charges</div>
+          <div style="font-size:0.82rem;color:var(--text-muted);">Configure weight-based shipping rates for all Indian states &amp; UTs</div>
+        </div>
+        <div style="display:flex;gap:0.6rem;flex-wrap:wrap;align-items:center;">
+          <input class="search-input" id="shippingSearch" placeholder="Search state or UT…" oninput="filterShippingTable()" style="width:220px;">
+          <button onclick="saveShippingCharges()" id="saveShippingBtn" style="background:linear-gradient(135deg,var(--gold),var(--gold-dark));color:var(--dark);border:none;border-radius:var(--radius-sm);padding:0.65rem 1.4rem;font-family:'Jost',sans-serif;font-size:0.88rem;font-weight:600;cursor:pointer;letter-spacing:0.04em;transition:all 0.25s;display:flex;align-items:center;gap:0.5rem;">
+            <span id="shippingSpinner" style="display:none;width:14px;height:14px;border:2px solid rgba(10,7,5,0.3);border-top-color:var(--dark);border-radius:50%;animation:spin 0.7s linear infinite;"></span>
+            <span id="saveBtnText">💾 Save All Changes</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Default charge card -->
+      <div class="tc-card" style="margin-bottom:1.5rem;padding:1.25rem 1.5rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:0.75rem;">
+          <div>
+            <div style="font-size:0.72rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--gold);margin-bottom:0.3rem;">Default Fallback Rate</div>
+            <div style="font-size:0.84rem;color:var(--text-muted);">Applied when a state has no configured slabs</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:0.75rem;">
+            <span style="color:var(--text-muted);font-size:0.88rem;">₹</span>
+            <input class="tc-input" id="defaultChargeInput" type="number" min="0" placeholder="150" style="width:110px;text-align:center;padding:0.6rem 0.75rem;">
+          </div>
+        </div>
+      </div>
+
+      <!-- Loading state -->
+      <div id="shippingLoadingState" style="text-align:center;padding:3rem;color:var(--text-muted);">
+        <div style="width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 1rem;"></div>
+        Loading shipping configuration…
+      </div>
+
+      <!-- Table -->
+      <div class="tc-card" id="shippingTableWrap" style="padding:0;overflow:hidden;display:none;">
+        <!-- Legend -->
+        <div style="padding:1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:1.5rem;flex-wrap:wrap;">
+          <span style="font-size:0.72rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-muted);">Weight slabs:</span>
+          <span style="font-size:0.8rem;color:var(--cream);">0 – 500 g</span>
+          <span style="font-size:0.8rem;color:var(--cream);">501 – 1000 g</span>
+          <span style="font-size:0.8rem;color:var(--cream);">1001 – 2000 g</span>
+          <span style="font-size:0.72rem;color:var(--text-muted);margin-left:auto;">All values in ₹ &nbsp;·&nbsp; Leave blank = use default</span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="shipping-table" id="shippingTable">
+            <thead>
+              <tr>
+                <th>State / UT</th>
+                <th>0 – 500 g</th>
+                <th>501 – 1000 g</th>
+                <th>1001 – 2000 g</th>
+                <th style="text-align:center;">Reset</th>
+              </tr>
+            </thead>
+            <tbody id="shippingTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── PAYMENT METHOD SETTINGS SECTION ─── -->
+    <div id="sectionPaymentSettings" style="display:none;">
+      <div style="margin-bottom:2rem;">
+        <div class="page-title" style="margin-bottom:0.3rem;">Payment Method Settings</div>
+        <div style="font-size:0.84rem;color:var(--text-muted);">Control which payment methods are accepted on the checkout page in real‑time</div>
+      </div>
+
+      <div id="pmLoadingState" style="text-align:center;padding:3rem;color:var(--text-muted);">
+        <div style="width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 1rem;"></div>
+        Loading payment settings…
+      </div>
+
+      <div id="pmSettingsCard" style="display:none;">
+        <div class="pm-setting-card" id="pmCodCard">
+          <div class="pm-setting-left">
+            <div class="pm-setting-icon">💵</div>
+            <div>
+              <div class="pm-setting-title">Cash on Delivery (COD)</div>
+              <div class="pm-setting-desc">Allow customers to pay when their order arrives</div>
+              <div class="pm-status-badge" id="pmCodStatusBadge">—</div>
+            </div>
+          </div>
+          <div class="pm-toggle-wrap">
+            <button class="pm-toggle-btn" id="pmCodToggle" onclick="togglePaymentMethod('cod')" title="Toggle COD">
+              <span class="pm-toggle-track" id="pmCodTrack"><span class="pm-toggle-thumb"></span></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="pm-setting-card" id="pmUpiCard">
+          <div class="pm-setting-left">
+            <div class="pm-setting-icon">📲</div>
+            <div>
+              <div class="pm-setting-title">UPI / Online Payment</div>
+              <div class="pm-setting-desc">Allow customers to pay via UPI, Card or Net Banking</div>
+              <div class="pm-status-badge" id="pmUpiStatusBadge">—</div>
+            </div>
+          </div>
+          <div class="pm-toggle-wrap">
+            <button class="pm-toggle-btn" id="pmUpiToggle" onclick="togglePaymentMethod('upi')" title="Toggle UPI">
+              <span class="pm-toggle-track" id="pmUpiTrack"><span class="pm-toggle-thumb"></span></span>
+            </button>
+          </div>
+        </div>
+
+        <div style="margin-top:1rem;background:rgba(201,168,76,0.07);border:1px solid rgba(201,168,76,0.2);border-radius:var(--radius-sm);padding:0.85rem 1.1rem;font-size:0.82rem;color:var(--text-muted);line-height:1.6;">
+          ⚡ Changes reflect instantly on the checkout page — no page refresh required by customers.<br>
+          If both methods are disabled, customers will see an "orders paused" notice and cannot place orders.
+        </div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -828,11 +1168,79 @@
   <button class="tc-lightbox-close" onclick="closeLightbox()">✕</button>
   <img id="lightboxImg" src="" alt="Preview">
 </div>
+<!-- ─── FAVOUR PINCODE MODAL ─── -->
+<div class="tc-overlay" id="favourPincodeOverlay" onclick="handleOverlayClick(event,'favourPincodeOverlay')">
+  <div class="tc-modal" id="favourPincodeModal" style="max-width:580px;width:100%;">
+    <div class="tc-modal-header">
+      <div>
+        <div class="tc-modal-title">📍 West Bengal — Favour Pincodes</div>
+        <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.2rem;font-family:'Jost',sans-serif;">Special delivery charges for local pincodes</div>
+      </div>
+      <button class="tc-modal-close" onclick="closeModal('favourPincodeOverlay')" title="Close">✕</button>
+    </div>
+    <div class="tc-modal-body" style="padding-top:0;">
+
+      <!-- Add / Edit form -->
+      <div id="fpFormWrap" style="background:var(--dark-3);border:1px solid var(--border);border-radius:var(--radius-sm);padding:1.1rem 1.25rem;margin-bottom:1.25rem;">
+        <div style="font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--gold);margin-bottom:0.85rem;" id="fpFormTitle">Add New Pincode</div>
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:flex-end;">
+          <div style="flex:1;min-width:130px;">
+            <label style="font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:0.35rem;">Pincode *</label>
+            <input class="tc-input" id="fpPincodeInput" type="text" maxlength="6" placeholder="e.g. 732101" style="padding:0.6rem 0.85rem;font-size:0.9rem;">
+          </div>
+          <div style="flex:1;min-width:130px;">
+            <label style="font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:0.35rem;">Charge (₹) *</label>
+            <input class="tc-input" id="fpChargeInput" type="number" min="0" placeholder="e.g. 20" style="padding:0.6rem 0.85rem;font-size:0.9rem;">
+          </div>
+          <div style="display:flex;gap:0.5rem;">
+            <button onclick="saveFavourPincode()" id="fpSaveBtn" style="background:linear-gradient(135deg,var(--gold),var(--gold-dark));color:var(--dark);border:none;border-radius:var(--radius-sm);padding:0.62rem 1.1rem;font-family:'Jost',sans-serif;font-size:0.82rem;font-weight:600;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:0.4rem;transition:opacity 0.2s;">
+              <span id="fpSaveSpinner" style="display:none;width:12px;height:12px;border:2px solid rgba(10,7,5,0.3);border-top-color:var(--dark);border-radius:50%;animation:spin 0.7s linear infinite;"></span>
+              <span id="fpSaveBtnText">Add</span>
+            </button>
+            <button onclick="cancelFpEdit()" id="fpCancelBtn" style="display:none;background:rgba(120,120,120,0.1);border:1px solid rgba(120,120,120,0.3);color:var(--text-muted);border-radius:var(--radius-sm);padding:0.62rem 0.9rem;font-family:'Jost',sans-serif;font-size:0.82rem;cursor:pointer;transition:all 0.2s;">Cancel</button>
+          </div>
+        </div>
+        <div id="fpValidationMsg" style="display:none;margin-top:0.6rem;font-size:0.8rem;color:#e05252;"></div>
+      </div>
+
+      <!-- Pincode list -->
+      <div id="fpLoadingState" style="text-align:center;padding:2rem;color:var(--text-muted);">
+        <div style="width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 0.75rem;"></div>
+        Loading pincodes…
+      </div>
+
+      <div id="fpTableWrap" style="display:none;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.75rem;">
+          <div style="font-size:0.7rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--text-muted);">Configured Pincodes <span id="fpCount" style="color:var(--gold);margin-left:0.4rem;"></span></div>
+          <input class="search-input" id="fpSearchInput" placeholder="Search pincode…" oninput="filterFpTable()" style="width:160px;padding:0.4rem 0.75rem;font-size:0.8rem;">
+        </div>
+        <div style="overflow-y:auto;max-height:300px;border:1px solid var(--border);border-radius:var(--radius-sm);overflow-x:auto;">
+          <table class="shipping-table" id="fpTable" style="min-width:360px;">
+            <thead>
+              <tr>
+                <th>Pincode</th>
+                <th>Charge (₹)</th>
+                <th style="text-align:center;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="fpTableBody"></tbody>
+          </table>
+        </div>
+        <div id="fpEmptyState" style="display:none;text-align:center;padding:2rem;color:var(--text-muted);font-size:0.85rem;">
+          No pincodes configured yet. Add one above.
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
 <script src="firebase-init.js"></script>
+<script src="shipping.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script>
@@ -868,6 +1276,18 @@ function waitForFirebase(callback) {
   }
 }
 
+// ── ADMIN-READY GATE ──
+// Set to true only after onAuthStateChanged confirms the user is a valid admin.
+// Any Firestore operation that requires auth must wait for this flag.
+let _adminReady = false;
+function waitForAdmin(callback) {
+  if (_adminReady) {
+    callback();
+  } else {
+    setTimeout(() => waitForAdmin(callback), 50);
+  }
+}
+
 waitForFirebase(() => {
 
   window.auth.onAuthStateChanged(async user => {
@@ -886,6 +1306,9 @@ waitForFirebase(() => {
       window.location.href = 'admin-login.html';
       return;
     }
+
+    // ✅ Auth fully confirmed — unlock all Firestore operations
+    _adminReady = true;
 
     try {
       // ✅ START APP ONLY AFTER AUTH CONFIRMED
@@ -928,16 +1351,19 @@ function doLogout() {
 
 // ── TAB SWITCH ──
 function showTab(tab) {
-  ['Products', 'Outofstock', 'Orders', 'Returns', 'Members'].forEach(t => {
+  const tabLower = tab.toLowerCase();
+  ['Products', 'Outofstock', 'Orders', 'Returns', 'Members', 'Shipping', 'PaymentSettings'].forEach(t => {
     const sec = document.getElementById('section' + t);
     const btn = document.getElementById('tab'   + t);
-    if (sec) sec.style.display = (t.toLowerCase() === tab) ? 'block' : 'none';
-    if (btn) btn.classList.toggle('active', t.toLowerCase() === tab);
+    if (sec) sec.style.display = (t.toLowerCase() === tabLower) ? 'block' : 'none';
+    if (btn) btn.classList.toggle('active', t.toLowerCase() === tabLower);
   });
-  if (tab === 'members')    loadMembers();
-  if (tab === 'orders')     loadOrders();
-  if (tab === 'returns')    loadReturns();
-  if (tab === 'outofstock') loadOutOfStock();
+  if (tabLower === 'members')         loadMembers();
+  if (tabLower === 'orders')          loadOrders();
+  if (tabLower === 'returns')         loadReturns();
+  if (tabLower === 'outofstock')      loadOutOfStock();
+  if (tabLower === 'shipping')        loadShippingPanel();
+  if (tabLower === 'paymentsettings') loadPaymentMethodSettings();
 }
 
 // ── QUICK STATS ──
@@ -2170,7 +2596,7 @@ async function buildPremiumInvoice(orderId, order, showStatus) {
   // ═══════════════════════════════════════════════════════════════════════
   const totBlockL = tC3;          // left edge of totals label
   const totBlockR = MR;           // right edge
-  const shipping  = Number(order.shipping || 0);
+  const shipping  = Number(order.shippingCharge ?? order.shipping ?? 0);
   const grand     = Number(order.total || subtotal + shipping);
 
   doc.setCharSpace(0);
@@ -3356,6 +3782,8 @@ async function openOrderDetailsModal(orderId) {
             return '<span style="color:#ffc107;font-weight:600;">⏳ PENDING PAYMENT</span>';
           })()
         }</div></div>
+        <div class="details-field"><div class="df-label">Products Total</div><div class="df-value">${(o.productsTotal != null ? '₹' + o.productsTotal : (Number(o.total || 0) - Number(o.shippingCharge || 0)) > 0 ? '₹' + (Number(o.total || 0) - Number(o.shippingCharge || 0)) : '—')}</div></div>
+        <div class="details-field"><div class="df-label">Shipping Charge</div><div class="df-value">${Number(o.shippingCharge) > 0 ? '₹' + Number(o.shippingCharge) : 'FREE'}</div></div>
         <div class="details-field"><div class="df-label">Total Amount</div><div class="df-value" style="color:var(--gold);font-weight:600;">₹${o.total || 0}</div></div>
         <div class="details-field"><div class="df-label">Status</div><div class="df-value">${o.status || 'Pending'}</div></div>
         <div class="details-field full"><div class="df-label">📍 Delivery Address</div><div class="df-value" style="white-space:pre-line;line-height:1.6;">${o.address || '—'}</div></div>
@@ -3777,5 +4205,733 @@ async function openReturnProofImagesModal(returnId) {
       `<div style="color:#e05252;padding:1rem;">Failed to load return proof images: ${err.message}</div>`;
   }
 }
+
+// ═══════════════════════════════════════════════════════════════
+//  SHIPPING CHARGES ADMIN PANEL
+//  Reads / writes  shippingSettings/main  in Firestore.
+//  Structure matches ShippingEngine.DEFAULTS exactly.
+// ═══════════════════════════════════════════════════════════════
+
+// ── Full list: 28 States + 8 UTs ──
+const ALL_INDIA_REGIONS = [
+  // States
+  { name: 'Andhra Pradesh',        type: 'State' },
+  { name: 'Arunachal Pradesh',     type: 'State' },
+  { name: 'Assam',                 type: 'State' },
+  { name: 'Bihar',                 type: 'State' },
+  { name: 'Chhattisgarh',         type: 'State' },
+  { name: 'Goa',                   type: 'State' },
+  { name: 'Gujarat',               type: 'State' },
+  { name: 'Haryana',               type: 'State' },
+  { name: 'Himachal Pradesh',      type: 'State' },
+  { name: 'Jharkhand',             type: 'State' },
+  { name: 'Karnataka',             type: 'State' },
+  { name: 'Kerala',                type: 'State' },
+  { name: 'Madhya Pradesh',        type: 'State' },
+  { name: 'Maharashtra',           type: 'State' },
+  { name: 'Manipur',               type: 'State' },
+  { name: 'Meghalaya',             type: 'State' },
+  { name: 'Mizoram',               type: 'State' },
+  { name: 'Nagaland',              type: 'State' },
+  { name: 'Odisha',                type: 'State' },
+  { name: 'Punjab',                type: 'State' },
+  { name: 'Rajasthan',             type: 'State' },
+  { name: 'Sikkim',                type: 'State' },
+  { name: 'Tamil Nadu',            type: 'State' },
+  { name: 'Telangana',             type: 'State' },
+  { name: 'Tripura',               type: 'State' },
+  { name: 'Uttar Pradesh',         type: 'State' },
+  { name: 'Uttarakhand',           type: 'State' },
+  { name: 'West Bengal',           type: 'State' },
+  // Union Territories
+  { name: 'Andaman and Nicobar Islands', type: 'UT' },
+  { name: 'Chandigarh',            type: 'UT' },
+  { name: 'Dadra and Nagar Haveli and Daman and Diu', type: 'UT' },
+  { name: 'Delhi',                 type: 'UT' },
+  { name: 'Jammu and Kashmir',     type: 'UT' },
+  { name: 'Ladakh',                type: 'UT' },
+  { name: 'Lakshadweep',           type: 'UT' },
+  { name: 'Puducherry',            type: 'UT' },
+];
+
+// ── Slab definitions matching shipping.js ──
+const SLABS = [
+  { key: 's500',  maxWeight: 500,  label: '0 – 500 g' },
+  { key: 's1000', maxWeight: 1000, label: '501 – 1000 g' },
+  { key: 's2000', maxWeight: 2000, label: '1001 – 2000 g' },
+];
+
+let _shippingLoaded = false;
+
+/**
+ * Render the shipping admin table.
+ * Called once when the tab opens; subsequent opens use cached DOM.
+ */
+function loadShippingPanel() {
+  if (_shippingLoaded) return;          // already rendered
+
+  const loadingEl   = document.getElementById('shippingLoadingState');
+  const tableWrapEl = document.getElementById('shippingTableWrap');
+
+  if (loadingEl)   loadingEl.style.display   = 'block';
+  if (tableWrapEl) tableWrapEl.style.display = 'none';
+
+  // Wait for admin auth to be fully confirmed before hitting Firestore
+  waitForAdmin(() => _loadShippingPanelInner());
+}
+
+async function _loadShippingPanelInner() {
+  const loadingEl   = document.getElementById('shippingLoadingState');
+  const tableWrapEl = document.getElementById('shippingTableWrap');
+  const tbody       = document.getElementById('shippingTableBody');
+  const defaultEl   = document.getElementById('defaultChargeInput');
+
+  // ── Fetch current Firestore config (or fall back to ShippingEngine defaults) ──
+  let cfg = null;
+  try {
+    const doc = await window.db.collection('shippingSettings').doc('main').get();
+    cfg = doc.exists ? doc.data() : null;
+    console.log('[ShippingPanel] Loaded from Firestore:', cfg ? 'yes' : 'doc not found');
+  } catch (e) {
+    console.warn('[ShippingPanel] Firestore fetch failed, using defaults:', e);
+  }
+
+  // Merge: Firestore > ShippingEngine defaults > hard-coded fallback
+  const defaults = (window.ShippingEngine && window.ShippingEngine.DEFAULTS)
+    ? window.ShippingEngine.DEFAULTS
+    : { states: {}, favourPincodes: {}, defaultCharge: 150 };
+
+  const statesData    = (cfg && cfg.states)         ? cfg.states         : defaults.states;
+  const defaultCharge = (cfg && typeof cfg.defaultCharge === 'number')
+                          ? cfg.defaultCharge
+                          : defaults.defaultCharge;
+
+  defaultEl.value = defaultCharge;
+
+  // ── Build table rows ──
+  tbody.innerHTML = '';
+  ALL_INDIA_REGIONS.forEach(region => {
+    const slabs = statesData[region.name] || [];
+
+    // Build a quick lookup: maxWeight → charge
+    const slabMap = {};
+    slabs.forEach(s => { slabMap[s.maxWeight] = s.charge; });
+
+    const tr = document.createElement('tr');
+    tr.dataset.stateName = region.name.toLowerCase();
+
+    // State name cell
+    const tdName = document.createElement('td');
+    tdName.innerHTML = `
+      <div class="shipping-state-name">${region.name}</div>
+      <div class="shipping-state-type">${region.type}</div>`;
+    tr.appendChild(tdName);
+
+    // One input per slab
+    SLABS.forEach(slab => {
+      const td = document.createElement('td');
+      const val = slabMap[slab.maxWeight];
+      const inp = document.createElement('input');
+      inp.type        = 'number';
+      inp.min         = '0';
+      inp.className   = 'shipping-input';
+      inp.dataset.state      = region.name;
+      inp.dataset.maxWeight  = slab.maxWeight;
+      inp.placeholder = '—';
+      if (typeof val === 'number') inp.value = val;
+
+      inp.addEventListener('input', () => inp.classList.add('changed'));
+      td.appendChild(inp);
+      tr.appendChild(td);
+    });
+
+    // Reset button
+    const tdReset = document.createElement('td');
+    tdReset.style.textAlign = 'center';
+    const resetBtn = document.createElement('button');
+    resetBtn.className = 'btn-shipping-reset';
+    resetBtn.title     = 'Clear charges for this state';
+    resetBtn.textContent = '✕';
+    resetBtn.addEventListener('click', () => {
+      tr.querySelectorAll('.shipping-input').forEach(i => {
+        i.value = '';
+        i.classList.remove('changed');
+      });
+    });
+    tdReset.appendChild(resetBtn);
+    tr.appendChild(tdReset);
+
+    // ── Favour Pincode button: West Bengal ONLY ──
+    if (region.name === 'West Bengal') {
+      const tdFavour = document.createElement('td');
+      tdFavour.style.paddingLeft = '0.5rem';
+      const fpBtn = document.createElement('button');
+      fpBtn.className   = 'btn-favour-pincode';
+      fpBtn.title       = 'Manage special delivery pincodes for West Bengal';
+      fpBtn.innerHTML   = '📍 Favour Pincodes';
+      fpBtn.addEventListener('click', () => openFavourPincodeModal());
+      tdFavour.appendChild(fpBtn);
+      tr.appendChild(tdFavour);
+    }
+
+    tbody.appendChild(tr);
+  });
+
+  loadingEl.style.display   = 'none';
+  tableWrapEl.style.display = 'block';
+  _shippingLoaded = true;
+}
+
+/**
+ * Live search / filter for shipping table rows.
+ */
+function filterShippingTable() {
+  const q = (document.getElementById('shippingSearch').value || '').toLowerCase().trim();
+  document.querySelectorAll('#shippingTableBody tr').forEach(tr => {
+    const match = !q || tr.dataset.stateName.includes(q);
+    tr.classList.toggle('shipping-row-hidden', !match);
+  });
+}
+
+/**
+ * Collect all inputs → build Firestore-compatible states object → save.
+ */
+async function saveShippingCharges() {
+  const spinner    = document.getElementById('shippingSpinner');
+  const btnText    = document.getElementById('saveBtnText');
+  const saveBtn    = document.getElementById('saveShippingBtn');
+  const defaultVal = parseFloat(document.getElementById('defaultChargeInput').value);
+
+  // UI: loading state
+  spinner.style.display = 'inline-block';
+  btnText.textContent   = 'Saving…';
+  saveBtn.disabled      = true;
+
+  try {
+    const statesObj = {};
+
+    ALL_INDIA_REGIONS.forEach(region => {
+      const inputs = document.querySelectorAll(
+        `.shipping-input[data-state="${CSS.escape(region.name)}"]`
+      );
+      const slabs = [];
+      inputs.forEach(inp => {
+        const charge = parseFloat(inp.value);
+        if (!isNaN(charge) && charge >= 0) {
+          slabs.push({
+            maxWeight: parseInt(inp.dataset.maxWeight, 10),
+            charge:    charge
+          });
+        }
+      });
+
+      // Only save state if at least one slab is configured
+      if (slabs.length > 0) {
+        // Sort by maxWeight ascending (matches shipping.js expectation)
+        slabs.sort((a, b) => a.maxWeight - b.maxWeight);
+        statesObj[region.name] = slabs;
+      }
+    });
+
+    // Preserve existing favourPincodes (don't overwrite them here)
+    let existingFavour = {};
+    try {
+      const doc = await window.db.collection('shippingSettings').doc('main').get();
+      if (doc.exists && doc.data().favourPincodes) {
+        existingFavour = doc.data().favourPincodes;
+      }
+    } catch (_) {}
+
+    const payload = {
+      states:         statesObj,
+      favourPincodes: existingFavour,
+      defaultCharge:  isNaN(defaultVal) ? 150 : defaultVal,
+      updatedAt:      firebase.firestore.FieldValue.serverTimestamp()
+    };
+
+    await window.db.collection('shippingSettings').doc('main').set(payload);
+
+    // Clear "changed" highlights
+    document.querySelectorAll('.shipping-input.changed')
+            .forEach(i => i.classList.remove('changed'));
+
+    // Bust ShippingEngine cache so checkout picks up new values
+    if (window.ShippingEngine && window.ShippingEngine._resetCache) {
+      window.ShippingEngine._resetCache();
+    }
+
+    showToast('✓ Shipping charges saved successfully!', 'success');
+
+  } catch (err) {
+    console.error('[ShippingPanel] Save failed:', err);
+    showToast('Failed to save: ' + err.message, 'error');
+  } finally {
+    spinner.style.display = 'none';
+    btnText.textContent   = '💾 Save All Changes';
+    saveBtn.disabled      = false;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════
+//  WEST BENGAL — FAVOUR PINCODE MANAGEMENT
+//  Reads / writes  shippingSettings/main → favourPincodes
+//  Structure: { "732101": { state: "West Bengal", charge: 20 } }
+//  Full compatibility with ShippingEngine.calculate() priority logic.
+// ═══════════════════════════════════════════════════════════════
+
+/** In-memory store for the current session */
+let _fpData        = {};   // { pincode: charge }
+let _fpEditingPin  = null; // pincode being edited (null = add mode)
+
+// ─── Open modal ────────────────────────────────────────────────
+async function openFavourPincodeModal() {
+  // Reset form to "add" state
+  cancelFpEdit();
+  document.getElementById('fpLoadingState').style.display = 'block';
+  document.getElementById('fpTableWrap').style.display    = 'none';
+
+  openModal('favourPincodeOverlay');
+  await _loadFpData();
+}
+
+// ─── Load favourPincodes from Firestore ────────────────────────
+async function _loadFpData() {
+  try {
+    _fpData = {};
+    if (window.db) {
+      const doc = await window.db.collection('shippingSettings').doc('main').get();
+      if (doc.exists) {
+        const raw = doc.data().favourPincodes || {};
+        // Extract only West Bengal pincodes
+        Object.entries(raw).forEach(([pin, val]) => {
+          if (val && val.state === 'West Bengal') {
+            _fpData[pin] = typeof val.charge === 'number' ? val.charge : 0;
+          }
+        });
+      }
+    }
+  } catch (e) {
+    console.warn('[FavourPincode] Load failed:', e);
+    showToast('Could not load pincodes: ' + e.message, 'error');
+  }
+  _renderFpTable();
+}
+
+// ─── Render the pincode table inside the modal ─────────────────
+function _renderFpTable() {
+  document.getElementById('fpLoadingState').style.display = 'none';
+  document.getElementById('fpTableWrap').style.display    = 'block';
+
+  const tbody    = document.getElementById('fpTableBody');
+  const emptyEl  = document.getElementById('fpEmptyState');
+  const tableEl  = document.getElementById('fpTable');
+  const countEl  = document.getElementById('fpCount');
+
+  const pins = Object.keys(_fpData).sort();
+  countEl.textContent = pins.length ? `(${pins.length})` : '';
+
+  if (pins.length === 0) {
+    tbody.innerHTML = '';
+    emptyEl.style.display = 'block';
+    tableEl.style.display = 'none';
+    return;
+  }
+
+  emptyEl.style.display = 'none';
+  tableEl.style.display = 'table';
+
+  tbody.innerHTML = '';
+  pins.forEach(pin => {
+    const charge = _fpData[pin];
+    const tr = document.createElement('tr');
+    tr.dataset.fp = pin;
+
+    // Pincode cell
+    const tdPin = document.createElement('td');
+    tdPin.innerHTML = `<span style="font-family:'Jost',sans-serif;font-size:0.9rem;font-weight:500;color:var(--cream);letter-spacing:0.06em;">${pin}</span>`;
+    tr.appendChild(tdPin);
+
+    // Charge cell
+    const tdCharge = document.createElement('td');
+    tdCharge.innerHTML = `<span style="color:var(--gold);font-size:0.9rem;">₹${charge}</span>`;
+    tr.appendChild(tdCharge);
+
+    // Actions cell
+    const tdAct = document.createElement('td');
+    tdAct.style.textAlign = 'center';
+    tdAct.style.whiteSpace = 'nowrap';
+
+    const editBtn = document.createElement('button');
+    editBtn.className = 'fp-action-btn fp-edit-btn';
+    editBtn.textContent = '✎ Edit';
+    editBtn.addEventListener('click', () => startFpEdit(pin, charge));
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'fp-action-btn fp-delete-btn';
+    delBtn.style.marginLeft = '0.4rem';
+    delBtn.textContent = '✕ Delete';
+    delBtn.addEventListener('click', () => deleteFavourPincode(pin));
+
+    tdAct.appendChild(editBtn);
+    tdAct.appendChild(delBtn);
+    tr.appendChild(tdAct);
+
+    tbody.appendChild(tr);
+  });
+
+  // Re-apply any live search filter
+  filterFpTable();
+}
+
+// ─── Live search inside modal ──────────────────────────────────
+function filterFpTable() {
+  const q = (document.getElementById('fpSearchInput').value || '').trim();
+  document.querySelectorAll('#fpTableBody tr').forEach(tr => {
+    tr.classList.toggle('fp-row-hidden', q ? !tr.dataset.fp.includes(q) : false);
+  });
+}
+
+// ─── Start editing a pincode ───────────────────────────────────
+function startFpEdit(pin, charge) {
+  _fpEditingPin = pin;
+  document.getElementById('fpPincodeInput').value   = pin;
+  document.getElementById('fpPincodeInput').disabled = true; // pin is the key — don't change it
+  document.getElementById('fpChargeInput').value    = charge;
+  document.getElementById('fpFormTitle').textContent = `Edit Pincode: ${pin}`;
+  document.getElementById('fpSaveBtnText').textContent = 'Update';
+  document.getElementById('fpCancelBtn').style.display = 'inline-flex';
+  document.getElementById('fpValidationMsg').style.display = 'none';
+  document.getElementById('fpChargeInput').focus();
+}
+
+// ─── Cancel edit → back to add mode ───────────────────────────
+function cancelFpEdit() {
+  _fpEditingPin = null;
+  document.getElementById('fpPincodeInput').value    = '';
+  document.getElementById('fpPincodeInput').disabled = false;
+  document.getElementById('fpChargeInput').value     = '';
+  document.getElementById('fpFormTitle').textContent = 'Add New Pincode';
+  document.getElementById('fpSaveBtnText').textContent = 'Add';
+  document.getElementById('fpCancelBtn').style.display = 'none';
+  document.getElementById('fpValidationMsg').style.display = 'none';
+}
+
+// ─── Validate inputs ───────────────────────────────────────────
+function _validateFp(pin, charge) {
+  if (!pin) return 'Pincode is required.';
+  if (!/^\d{6}$/.test(pin)) return 'Pincode must be exactly 6 digits.';
+  if (charge === '' || charge === null || charge === undefined) return 'Charge is required.';
+  const c = parseFloat(charge);
+  if (isNaN(c)) return 'Charge must be a number.';
+  if (c < 0)   return 'Charge cannot be negative.';
+  // Duplicate check only in add mode
+  if (!_fpEditingPin && _fpData.hasOwnProperty(pin)) return `Pincode ${pin} already exists.`;
+  return null; // valid
+}
+
+// ─── Save (add or update) a pincode ───────────────────────────
+async function saveFavourPincode() {
+  const pinRaw    = (document.getElementById('fpPincodeInput').value || '').trim();
+  const chargeRaw = document.getElementById('fpChargeInput').value;
+  const msgEl     = document.getElementById('fpValidationMsg');
+
+  const err = _validateFp(pinRaw, chargeRaw);
+  if (err) {
+    msgEl.textContent   = '⚠ ' + err;
+    msgEl.style.display = 'block';
+    return;
+  }
+  msgEl.style.display = 'none';
+
+  const charge = parseFloat(chargeRaw);
+
+  // Spinner on
+  document.getElementById('fpSaveSpinner').style.display = 'inline-block';
+  document.getElementById('fpSaveBtnText').textContent   = _fpEditingPin ? 'Updating…' : 'Adding…';
+  document.getElementById('fpSaveBtn').disabled          = true;
+
+  try {
+    // ── Build the merged favourPincodes object ──
+    // 1. Fetch all existing favourPincodes (may include non-WB pincodes)
+    let allFavour = {};
+    const doc = await window.db.collection('shippingSettings').doc('main').get();
+    if (doc.exists && doc.data().favourPincodes) {
+      allFavour = { ...doc.data().favourPincodes };
+    }
+
+    // 2. If editing, remove the old entry (pin doesn't change but safety)
+    if (_fpEditingPin && _fpEditingPin !== pinRaw) {
+      delete allFavour[_fpEditingPin];
+    }
+
+    // 3. Set the new / updated entry
+    allFavour[pinRaw] = { state: 'West Bengal', charge };
+
+    // 4. Write back — only update favourPincodes field
+    await window.db.collection('shippingSettings').doc('main').update({
+      favourPincodes: allFavour,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    // 5. Update local cache
+    if (_fpEditingPin && _fpEditingPin !== pinRaw) delete _fpData[_fpEditingPin];
+    _fpData[pinRaw] = charge;
+
+    // 6. Bust ShippingEngine cache
+    if (window.ShippingEngine && window.ShippingEngine._resetCache) {
+      window.ShippingEngine._resetCache();
+    }
+
+    showToast(_fpEditingPin ? `✓ Pincode ${pinRaw} updated.` : `✓ Pincode ${pinRaw} added.`, 'success');
+    cancelFpEdit();
+    _renderFpTable();
+
+  } catch (err) {
+    console.error('[FavourPincode] Save failed:', err);
+    showToast('Save failed: ' + err.message, 'error');
+  } finally {
+    document.getElementById('fpSaveSpinner').style.display = 'none';
+    document.getElementById('fpSaveBtnText').textContent   = _fpEditingPin ? 'Update' : 'Add';
+    document.getElementById('fpSaveBtn').disabled          = false;
+  }
+}
+
+// ─── Delete a pincode ──────────────────────────────────────────
+async function deleteFavourPincode(pin) {
+  if (!confirm(`Delete pincode ${pin}? This cannot be undone.`)) return;
+
+  try {
+    // Fetch full favourPincodes, remove only this pin, write back
+    let allFavour = {};
+    const doc = await window.db.collection('shippingSettings').doc('main').get();
+    if (doc.exists && doc.data().favourPincodes) {
+      allFavour = { ...doc.data().favourPincodes };
+    }
+    delete allFavour[pin];
+
+    await window.db.collection('shippingSettings').doc('main').update({
+      favourPincodes: allFavour,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    delete _fpData[pin];
+
+    // Bust ShippingEngine cache
+    if (window.ShippingEngine && window.ShippingEngine._resetCache) {
+      window.ShippingEngine._resetCache();
+    }
+
+    // If we were editing this pin, cancel the edit
+    if (_fpEditingPin === pin) cancelFpEdit();
+
+    showToast(`✓ Pincode ${pin} deleted.`, 'success');
+    _renderFpTable();
+
+  } catch (err) {
+    console.error('[FavourPincode] Delete failed:', err);
+    showToast('Delete failed: ' + err.message, 'error');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+//  PAYMENT METHOD SETTINGS
+//  Firestore path: settings / paymentMethods
+// ══════════════════════════════════════════════════════════════════
+
+let _pmUnsubscribe = null;      // Firestore realtime listener handle
+let _pmState = { codEnabled: true, upiEnabled: true }; // local cache
+let _pmSaving = false;          // debounce guard
+
+/**
+ * Load payment method settings and attach a realtime listener.
+ * Safe to call multiple times — previous listener is unsubscribed first.
+ * Uses waitForFirebase so it never fails silently if db isn't ready yet.
+ */
+function loadPaymentMethodSettings() {
+  // Unsubscribe previous listener to prevent duplicates
+  if (_pmUnsubscribe) {
+    _pmUnsubscribe();
+    _pmUnsubscribe = null;
+  }
+
+  const loadingEl = document.getElementById('pmLoadingState');
+  const cardEl    = document.getElementById('pmSettingsCard');
+  if (loadingEl) loadingEl.style.display = 'block';
+  if (cardEl)    cardEl.style.display    = 'none';
+
+  // Wait for admin auth to be fully confirmed before hitting Firestore
+  waitForAdmin(() => {
+    _pmAttachListener();
+  });
+}
+
+/**
+ * Internal: attach the Firestore realtime listener once db is confirmed ready.
+ */
+function _pmAttachListener() {
+  const loadingEl = document.getElementById('pmLoadingState');
+  const cardEl    = document.getElementById('pmSettingsCard');
+
+  try {
+    _pmUnsubscribe = window.db
+      .collection('settings')
+      .doc('paymentMethods')
+      .onSnapshot(
+        async snap => {
+          try {
+            if (snap.exists) {
+              const d = snap.data();
+              _pmState.codEnabled = d.codEnabled !== false; // default true if missing
+              _pmState.upiEnabled = d.upiEnabled !== false;
+            } else {
+              // Document doesn't exist yet — auto-create with safe defaults
+              console.log('[PaymentSettings] Document not found — auto-creating with defaults.');
+              _pmState.codEnabled = true;
+              _pmState.upiEnabled = true;
+              try {
+                await window.db.collection('settings').doc('paymentMethods').set({
+                  codEnabled: true,
+                  upiEnabled: true,
+                  updatedAt:  firebase.firestore.FieldValue.serverTimestamp()
+                });
+                console.log('[PaymentSettings] Auto-created settings/paymentMethods.');
+              } catch (createErr) {
+                console.error('[PaymentSettings] Auto-create failed:', createErr);
+                // Non-fatal — UI still works with in-memory defaults
+              }
+            }
+            if (loadingEl) loadingEl.style.display = 'none';
+            if (cardEl)    cardEl.style.display    = 'block';
+            updatePaymentMethodUI();
+          } catch (innerErr) {
+            console.error('[PaymentSettings] Error processing snapshot:', innerErr);
+            if (loadingEl) loadingEl.style.display = 'none';
+            if (cardEl)    cardEl.style.display    = 'block';
+            updatePaymentMethodUI(); // Show UI with fallback defaults
+          }
+        },
+        err => {
+          console.error('[PaymentSettings] onSnapshot error:', err);
+          // Show UI with fallback defaults so admin is not stuck on spinner
+          if (loadingEl) loadingEl.style.display = 'none';
+          if (cardEl)    cardEl.style.display    = 'block';
+          updatePaymentMethodUI();
+          showToast('Could not load payment settings: ' + err.message, 'error');
+        }
+      );
+  } catch (err) {
+    console.error('[PaymentSettings] Failed to attach listener:', err);
+    if (loadingEl) loadingEl.style.display = 'none';
+    if (cardEl)    cardEl.style.display    = 'block';
+    updatePaymentMethodUI();
+    showToast('Payment settings unavailable.', 'error');
+  }
+}
+
+/**
+ * Update the admin UI cards + badges to reflect current _pmState.
+ */
+function updatePaymentMethodUI() {
+  _pmSetToggleUI('pmCodTrack',        _pmState.codEnabled);
+  _pmSetToggleUI('pmUpiTrack',        _pmState.upiEnabled);
+  _pmSetBadge   ('pmCodStatusBadge',  _pmState.codEnabled);
+  _pmSetBadge   ('pmUpiStatusBadge',  _pmState.upiEnabled);
+  _pmSetCard    ('pmCodCard',         _pmState.codEnabled);
+  _pmSetCard    ('pmUpiCard',         _pmState.upiEnabled);
+}
+
+function _pmSetToggleUI(trackId, isOn) {
+  const track = document.getElementById(trackId);
+  if (!track) return;
+  if (isOn) { track.classList.add('pm-track-on'); }
+  else       { track.classList.remove('pm-track-on'); }
+}
+
+function _pmSetBadge(badgeId, isOn) {
+  const el = document.getElementById(badgeId);
+  if (!el) return;
+  el.textContent = isOn ? '● Active' : '● Inactive';
+  el.className   = 'pm-status-badge ' + (isOn ? 'pm-status-on' : 'pm-status-off');
+}
+
+function _pmSetCard(cardId, isOn) {
+  const el = document.getElementById(cardId);
+  if (!el) return;
+  el.classList.remove('pm-card-on', 'pm-card-off');
+  el.classList.add(isOn ? 'pm-card-on' : 'pm-card-off');
+}
+
+/**
+ * Toggle a specific payment method and save to Firestore.
+ * @param {'cod'|'upi'} method
+ */
+async function togglePaymentMethod(method) {
+  if (_pmSaving) return; // prevent rapid double-clicks
+
+  const codToggle = document.getElementById('pmCodToggle');
+  const upiToggle = document.getElementById('pmUpiToggle');
+
+  // Optimistically update local state
+  if (method === 'cod') {
+    _pmState.codEnabled = !_pmState.codEnabled;
+  } else if (method === 'upi') {
+    _pmState.upiEnabled = !_pmState.upiEnabled;
+  }
+
+  updatePaymentMethodUI();
+  await savePaymentMethodSettings();
+}
+
+/**
+ * Persist current _pmState to Firestore: settings/paymentMethods
+ */
+async function savePaymentMethodSettings() {
+  if (_pmSaving) return;
+  if (!window.db) {
+    console.error('[PaymentSettings] window.db not available — cannot save.');
+    showToast('Save failed: Firebase not ready.', 'error');
+    return;
+  }
+  _pmSaving = true;
+
+  // Snapshot the method that was just toggled (for revert on error)
+  const _savedCod = _pmState.codEnabled;
+  const _savedUpi = _pmState.upiEnabled;
+
+  const codToggle = document.getElementById('pmCodToggle');
+  const upiToggle = document.getElementById('pmUpiToggle');
+  if (codToggle) codToggle.disabled = true;
+  if (upiToggle) upiToggle.disabled = true;
+
+  try {
+    await window.db.collection('settings').doc('paymentMethods').set(
+      {
+        codEnabled: _pmState.codEnabled,
+        upiEnabled: _pmState.upiEnabled,
+        updatedAt:  firebase.firestore.FieldValue.serverTimestamp()
+      },
+      { merge: true }
+    );
+    console.log('[PaymentSettings] Saved → codEnabled:', _pmState.codEnabled, '| upiEnabled:', _pmState.upiEnabled);
+    showToast(
+      _pmState.codEnabled || _pmState.upiEnabled
+        ? '✓ Payment settings saved'
+        : '✓ All payments disabled — orders paused',
+      'success'
+    );
+  } catch (err) {
+    console.error('[PaymentSettings] Save failed:', err);
+    showToast('Save failed: ' + err.message, 'error');
+    // Revert optimistic update on error — restore both values
+    _pmState.codEnabled = _savedCod;
+    _pmState.upiEnabled = _savedUpi;
+    updatePaymentMethodUI();
+  } finally {
+    _pmSaving = false;
+    if (codToggle) codToggle.disabled = false;
+    if (upiToggle) upiToggle.disabled = false;
+  }
+}
 </script>
 </body>
+

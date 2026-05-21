@@ -625,6 +625,7 @@
     .mob-sidebar.open .mob-sidebar-nav a:nth-child(3) { transition-delay: 0.17s; }
     .mob-sidebar.open .mob-sidebar-nav a:nth-child(4) { transition-delay: 0.22s; }
     .mob-sidebar.open .mob-sidebar-nav a:nth-child(5) { transition-delay: 0.27s; }
+    .mob-sidebar.open .mob-sidebar-nav a:nth-child(6) { transition-delay: 0.32s; }
     .mob-sidebar-nav a:active { background: rgba(201,168,76,0.07); }
     .mob-sidebar-nav a::before {
       content: ''; position: absolute; left: 0; top: 20%; bottom: 20%;
@@ -689,6 +690,11 @@
     <button class="mob-sidebar-close" id="mobSidebarClose" aria-label="Close menu" type="button"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
   </div>
   <nav class="mob-sidebar-nav" aria-label="Mobile navigation">
+    <a href="userEndProducts.html">
+      <span class="mob-nav-icon" aria-hidden="true">💎</span>
+      <span class="mob-nav-text"><span class="mob-nav-label">Products</span><span class="mob-nav-sub">Browse all jewellery</span></span>
+      <span class="mob-nav-chevron" aria-hidden="true">›</span>
+    </a>
     <a href="orders.html">
       <span class="mob-nav-icon" aria-hidden="true">📦</span>
       <span class="mob-nav-text"><span class="mob-nav-label">Orders &amp; History</span><span class="mob-nav-sub">Track your purchases</span></span>
@@ -1566,6 +1572,8 @@ function loadProducts() {
         images:     d.imageUrls || [],
         videoUrls:  videoUrls,
         stock:      stockVal,
+        // Weight in grams; fallback 250g for backward compatibility
+        weight:     (typeof d.weight === 'number' && d.weight > 0) ? d.weight : 250,
         // Treat as out of stock if the flag is set OR stock is exactly 0
         outOfStock: d.outOfStock === true || stockVal === 0
       };
